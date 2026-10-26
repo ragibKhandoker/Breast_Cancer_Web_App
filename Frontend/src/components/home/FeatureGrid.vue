@@ -1,11 +1,12 @@
 <script setup>
 import AppIcon from '../common/AppIcon.vue'
 
+// Only features that exist today; add cards here as new features ship.
 const features = [
-  { icon: 'microscope', title: 'Mammography Prediction', text: 'Upload an image and get instant results.', to: '/prediction' },
-  { icon: 'book', title: 'Learn About Breast Cancer', text: 'Know the risks, symptoms and prevention.', to: '/learn' },
-  { icon: 'calendar', title: 'Book Appointment', text: 'Consult with specialists near you.', to: '/support' },
-  { icon: 'file-text', title: 'Download Reports', text: 'Get your prediction report in PDF.', to: '/history' },
+  { icon: 'microscope', title: 'Mammography Prediction', text: 'Upload a PNG or JPG mammogram and get an AI estimate in seconds.', to: '/prediction' },
+  { icon: 'file-text', title: 'Analysis History', text: 'Look back at past analyses with their images, or delete them.', to: '/history' },
+  { icon: 'book', title: 'Step-by-Step Guide', text: 'See exactly what happens from upload to result.', to: '/how-it-works' },
+  { icon: 'mail', title: 'Ask the Team', text: 'Questions or feedback? Send us a message.', to: '/contact' },
 ]
 </script>
 

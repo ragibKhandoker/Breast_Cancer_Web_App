@@ -24,7 +24,7 @@ const people = [person1, person2, person3, person4, person5]
           <span class="caption">Doctors, patients and families supporting each other</span>
         </div>
 
-        <RouterLink to="/support" class="btn btn-light">Get Involved <AppIcon name="arrow-right" :size="18" /></RouterLink>
+        <RouterLink to="/contact" class="btn btn-light">Get Involved <AppIcon name="arrow-right" :size="18" /></RouterLink>
       </div>
     </div>
   </section>

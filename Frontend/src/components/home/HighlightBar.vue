@@ -3,9 +3,9 @@ import AppIcon from '../common/AppIcon.vue'
 
 const items = [
   { icon: 'shield-check', label: 'AI-Powered Prediction', to: '/prediction' },
-  { icon: 'book', label: 'Educational Resources', to: '/resources' },
-  { icon: 'heart', label: 'Patient Support', to: '/support' },
-  { icon: 'users', label: 'Join Our Community', to: '/about' },
+  { icon: 'book', label: 'How It Works', to: '/how-it-works' },
+  { icon: 'heart', label: 'Answers to Your Questions', to: '/faq' },
+  { icon: 'mail', label: 'Get in Touch', to: '/contact' },
 ]
 </script>
 

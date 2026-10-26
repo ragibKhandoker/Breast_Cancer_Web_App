@@ -2,14 +2,15 @@
 import AppIcon from '../common/AppIcon.vue'
 import BrandLogo from './BrandLogo.vue'
 import { CONTACT, SOCIAL_LINKS } from '../../config/siteConfig'
+import { APP_ROUTES } from '../../config/appRoutes'
 
 const quickLinks = [
   { to: '/', label: 'Home' },
-  { to: '/prediction', label: 'Prediction' },
-  { to: '/learn', label: 'Learn' },
-  { to: '/resources', label: 'Resources' },
-  { to: '/support', label: 'Support' },
+  { to: APP_ROUTES.analysis, label: 'Start Analysis' },
+  { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
+  { to: '/faq', label: 'FAQ' },
+  { to: '/contact', label: 'Contact' },
 ]
 const legalLinks = [
   { to: '/privacy', label: 'Privacy Policy' },

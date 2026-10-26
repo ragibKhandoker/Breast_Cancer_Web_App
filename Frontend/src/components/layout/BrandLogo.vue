@@ -16,7 +16,7 @@ defineProps({ dark: { type: Boolean, default: false } })
 
 <style scoped>
 .brand { display: flex; align-items: center; gap: 0.6rem; }
-.name { display: block; font-size: 1.35rem; font-weight: 700; color: var(--purple-900); line-height: 1.1; }
+.name { display: block; font-size: 1.35rem; font-weight: 700; color: var(--purple-900); line-height: 1.25; }
 .accent { color: var(--pink-600); }
 .tagline { display: block; font-size: 0.72rem; color: var(--muted); }
 .dark .name { color: #fff; }

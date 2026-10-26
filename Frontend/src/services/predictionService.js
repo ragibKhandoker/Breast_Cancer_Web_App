@@ -1,11 +1,6 @@
-import axios from 'axios'
+import { http } from './http'
 
-// Empty base URL uses the Vite proxy in development; set VITE_API_URL for a deployed backend.
-const http = axios.create({ baseURL: import.meta.env.VITE_API_URL ?? '' })
-
-export function errorMessage(err) {
-  return err.response?.data?.detail ?? err.message ?? 'Something went wrong'
-}
+export { errorMessage } from './http'
 
 export const imageUrl = (id) => `${http.defaults.baseURL}/api/predictions/${id}/image`
 

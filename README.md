@@ -94,3 +94,9 @@ Port 8080 is not used, because Apache/XAMPP runs there on this machine. To chang
 | GET | `/api/predictions/{id}` | one prediction |
 | GET | `/api/predictions/{id}/image` | the stored image |
 | DELETE | `/api/predictions/{id}` | delete the record and its image |
+| POST | `/api/contact` | JSON `{name, email, subject, message}` → `201 {id, message, receivedAt}`; `400` with per-field `errors` when invalid. Stored in the `contact_messages` collection |
+
+## Public pages (F01)
+
+`/` Home · `/about` · `/how-it-works` · `/faq` · `/contact` · `/prediction` (analysis) · `/history`, plus a Not Found page for unknown URLs.
+Login and Register (`/login`, `/register`) are placeholders until the authentication feature is merged; their paths live in `Frontend/src/config/appRoutes.js`.

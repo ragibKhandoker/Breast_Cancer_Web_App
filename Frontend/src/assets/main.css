@@ -77,6 +77,15 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
     url('./images/prediction-bg.jpg') center 25% / cover no-repeat;
 }
 
+/* Single-column layouts centre the text over the faces in the photo, so wash the whole photo evenly there. */
+@media (max-width: 860px) {
+  .photo-bg:not(.photo-bg--prediction)::before {
+    background:
+      linear-gradient(rgba(255, 246, 250, 0.72), rgba(255, 246, 250, 0.72)),
+      url('./images/doctor-patient-bg.jpg') center 30% / cover no-repeat;
+  }
+}
+
 /* Frosted glass card: the photo behind shows through blurred, and the text on it stays readable. */
 .glass-panel {
   padding: 2rem; border-radius: 24px;
@@ -94,7 +103,7 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
   color: var(--muted); cursor: pointer; text-align: center;
 }
 .dropzone.dragging { border-color: var(--pink-600); background: var(--pink-50); }
-.preview { max-height: 360px; border-radius: 10px; }
+.upload-preview { max-height: 360px; border-radius: 10px; }
 .error { color: var(--high); }
 .warning { background: var(--warn-bg); color: var(--warn-text); padding: 0.75rem; border-radius: 10px; }
 .high { color: var(--high); }

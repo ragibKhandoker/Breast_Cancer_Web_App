@@ -6,7 +6,7 @@ import PinkRibbon from '../components/common/PinkRibbon.vue'
   <section class="container page coming-soon">
     <PinkRibbon :size="60" />
     <h1>{{ $route.meta.title }}</h1>
-    <p class="muted">This page is coming in a later sprint.</p>
+    <p class="muted">{{ $route.meta.description ?? 'This page is coming in a later sprint.' }}</p>
     <RouterLink to="/" class="btn btn-outline">Back to Home</RouterLink>
   </section>
 </template>

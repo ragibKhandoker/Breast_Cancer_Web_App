@@ -5,6 +5,7 @@ import MammogramMonitor from '../common/MammogramMonitor.vue'
 import LeafSpray from '../common/LeafSpray.vue'
 import YouTubeEmbed from '../common/YouTubeEmbed.vue'
 import { HERO_VIDEO_URL } from '../../config/siteConfig'
+import { APP_ROUTES } from '../../config/appRoutes'
 </script>
 
 <template>
@@ -17,9 +18,13 @@ import { HERO_VIDEO_URL } from '../../config/siteConfig'
         </h1>
         <p>Upload a mammography image or learn more about breast cancer. Together, we can fight it!</p>
         <div class="cta">
-          <RouterLink to="/prediction" class="btn btn-primary">Try Prediction <AppIcon name="arrow-right" :size="18" /></RouterLink>
-          <RouterLink to="/learn" class="btn btn-outline">Learn More</RouterLink>
+          <RouterLink :to="APP_ROUTES.analysis" class="btn btn-primary">Start Analysis <AppIcon name="arrow-right" :size="18" /></RouterLink>
+          <RouterLink to="/how-it-works" class="btn btn-outline">How It Works</RouterLink>
         </div>
+        <p class="account">
+          <RouterLink :to="APP_ROUTES.login">Login</RouterLink> or
+          <RouterLink :to="APP_ROUTES.register">create an account</RouterLink>
+        </p>
       </div>
 
       <div v-reveal="200" class="art">
@@ -50,6 +55,9 @@ h1 { margin: 0; font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800; line-he
 .line-pink { display: block; color: var(--pink-600); }
 .copy p { font-size: 1.2rem; color: var(--text); max-width: 440px; margin: 1.25rem 0 2rem; line-height: 1.5; }
 .cta { display: flex; flex-wrap: wrap; gap: 1rem; }
+.copy .account { margin-top: 1.25rem; margin-bottom: 0; font-size: 0.95rem; }
+.account a { color: var(--pink-600); font-weight: 600; }
+.account a:hover { text-decoration: underline; }
 
 .art { position: relative; height: 360px; }
 .monitor { position: absolute; right: 6%; bottom: 0; width: 70%; filter: drop-shadow(0 18px 30px rgba(42, 22, 80, 0.25)); }
@@ -72,6 +80,12 @@ h1 { margin: 0; font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800; line-he
   .hero-inner { grid-template-columns: 1fr; text-align: center; }
   .copy p { margin-left: auto; margin-right: auto; }
   .cta { justify-content: center; }
-  .art { height: 280px; }
+  /* Single column: let the video or monitor size the box instead of a fixed height, so it never spills
+     onto the highlight bar below. */
+  .art { height: auto; padding: 1.5rem 6% 1rem; }
+  .video-frame, .monitor { position: relative; top: auto; right: auto; transform: none; margin: 0 auto; }
+  .video-frame { width: 100%; max-width: 640px; }
+  .monitor { width: 80%; }
+  .ribbon { width: 64px; height: auto; left: 0; top: 0; }
 }
 </style>

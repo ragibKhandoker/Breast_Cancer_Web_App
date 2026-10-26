@@ -56,7 +56,7 @@ onBeforeUnmount(() => previewUrl.value && URL.revokeObjectURL(previewUrl.value))
           @drop.prevent="onDrop"
         >
           <input type="file" accept=".png,.jpg,.jpeg" hidden @change="selectFile($event.target.files[0])" />
-          <img v-if="previewUrl" :src="previewUrl" alt="Selected mammogram" class="preview" />
+          <img v-if="previewUrl" :src="previewUrl" alt="Selected mammogram" class="upload-preview" />
           <span v-else>Drop an image here or click to choose</span>
         </label>
 

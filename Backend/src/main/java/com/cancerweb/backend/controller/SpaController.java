@@ -4,14 +4,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * View controller: hands the Vue app's client-side routes to index.html, so reloading /prediction
- * or /about does not 404. Vue Router then picks the page.
+ * View controller: hands the Vue app's client-side routes to index.html, so opening /about or /faq directly
+ * (or reloading it) works. Vue Router then picks the page, or shows its Not Found page for unknown paths.
+ * Only single-segment paths without a dot match, so /api/**, static files and /actuator are unaffected.
  */
 @Controller
 public class SpaController {
 
-    @GetMapping({ "/prediction", "/history", "/learn", "/resources", "/support", "/about", "/login",
-            "/privacy", "/terms" })
+    @GetMapping("/{path:[^.]+}")
     public String forwardToIndex() {
         return "forward:/index.html";
     }
