@@ -15,7 +15,8 @@ import com.cancerweb.backend.repository.UserRepository;
 
 /**
  * Turns a verified token into the request's {@link CurrentUser}. The role comes from the database, not from the
- * token, so an administrator's role change applies to that user's next request.
+ * token, so an administrator's role change applies to that user's next request, and a password change ends
+ * older logins.
  */
 @Component
 public class TokenUserConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -30,6 +31,11 @@ public class TokenUserConverter implements Converter<Jwt, AbstractAuthentication
     public AbstractAuthenticationToken convert(Jwt jwt) {
         User user = users.findById(jwt.getSubject())
                 .orElseThrow(() -> new InvalidBearerTokenException("The account for this token no longer exists"));
+        // A password change signs out every login from before it.
+        if (user.passwordChangedAt() != null
+                && (jwt.getIssuedAt() == null || jwt.getIssuedAt().isBefore(user.passwordChangedAt()))) {
+            throw new InvalidBearerTokenException("Token was issued before the last password change");
+        }
         CurrentUser principal = new CurrentUser(user.id(), user.email(), user.fullName(), user.role());
         return UsernamePasswordAuthenticationToken.authenticated(principal, null,
                 List.of(new SimpleGrantedAuthority(user.role().authority())));

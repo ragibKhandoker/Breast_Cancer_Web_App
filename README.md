@@ -73,7 +73,7 @@ Spring Boot 4 reads the URI as `spring.mongodb.uri=${MONGODB_URI}` (Boot 3 calle
 
 | Collection | Contents | Indexes |
 |---|---|---|
-| `users` | `fullName`, `email` (lower-cased), `passwordHash` (BCrypt), `role`, `createdAt`, `updatedAt` | `email_unique` (unique) |
+| `users` | `fullName`, `email` (lower-cased), `passwordHash` (BCrypt), `role`, `createdAt`, `updatedAt`, `passwordChangedAt`, and `profile: { phone, dateOfBirth, gender, address, specialization, hospital }` (all optional; accounts made before profiles simply lack them, no migration needed) | `email_unique` (unique) |
 | `predictions` | each scan's metadata and report, plus `ownerId` and `sharedWithDoctorIds` | `owner_createdAt`, `sharedWithDoctorIds` |
 | `fs.files`, `fs.chunks` | the uploaded images (GridFS) | created by GridFS |
 | `revoked_tokens` | logged-out tokens (`_id` = token id) until they would have expired | `expiresAt_ttl` (TTL: MongoDB deletes expired entries) |
@@ -157,6 +157,10 @@ All POST/PATCH/DELETE requests need the CSRF header described above.
 | POST | `/api/auth/login` | anyone | `{email, password}` → `200` user + `bc_auth` cookie; `401` "Invalid email or password." |
 | POST | `/api/auth/logout` | anyone | revokes the token, clears the cookie → `204` |
 | GET | `/api/auth/me` | signed in | `{id, fullName, email, role, createdAt}`; `401` when not signed in |
+| GET | `/api/profile` | signed in | own profile: `{id, fullName, email, role, createdAt, updatedAt, phone, dateOfBirth, gender, address, specialization, hospital}` |
+| PUT | `/api/profile` | signed in | `{fullName, phone, dateOfBirth (YYYY-MM-DD), gender (FEMALE/MALE/OTHER/PREFER_NOT_TO_SAY), address, specialization, hospital}`; blank clears a field; specialization/hospital are kept for doctors only; role/email/password cannot change here |
+| PUT | `/api/profile/email` | signed in | `{email, currentPassword}` → profile; `400` wrong password; `409` email in use |
+| PUT | `/api/profile/password` | signed in | `{currentPassword, newPassword}` → profile + new login cookie; every other login of this account stops working |
 | POST | `/api/predictions` | PATIENT | multipart field `image` (PNG or JPG, ≤ 50 MB) → prediction owned by the caller |
 | GET | `/api/predictions` | PATIENT | own history, newest first |
 | GET | `/api/predictions/{id}` | PATIENT (own), DOCTOR (shared) | one prediction; `404` if missing or not yours |
@@ -178,7 +182,7 @@ Prediction JSON is the same as before, plus `ownerId`.
 ## Pages
 
 Public: `/` Home · `/about` · `/how-it-works` · `/faq` · `/contact` · `/login` · `/register`, plus Not Found and Access Denied pages.
-Signed in: `/dashboard`, `/prediction`, `/history` (patient) · `/doctor` (doctor) · `/admin` (administrator) · `/reports/{id}` (owner, or a doctor it is shared with).
+Signed in: `/profile` (everyone) · `/dashboard`, `/prediction`, `/history` (patient) · `/doctor` (doctor) · `/admin` (administrator) · `/reports/{id}` (owner, or a doctor it is shared with).
 Paths live in `Frontend/src/config/appRoutes.js` and `Frontend/src/router/index.js`.
 
 ## Tests

@@ -32,6 +32,33 @@ export function validatePassword(value) {
   return ''
 }
 
+// Profile fields (same rules as the backend's UpdateProfileRequest). Empty means "not provided" and is fine.
+export const GENDER_OPTIONS = [
+  { value: 'FEMALE', label: 'Female' },
+  { value: 'MALE', label: 'Male' },
+  { value: 'OTHER', label: 'Other' },
+  { value: 'PREFER_NOT_TO_SAY', label: 'Prefer not to say' },
+]
+
+export function validatePhone(value) {
+  const phone = value.trim()
+  return !phone || /^\+?[0-9 ()-]{7,20}$/.test(phone) ? '' : 'Enter a valid phone number, like +8801712345678.'
+}
+
+/** `value` is the yyyy-mm-dd string from <input type="date">. */
+export function validateDateOfBirth(value, today = new Date()) {
+  if (!value) return ''
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return 'Enter the date as YYYY-MM-DD.'
+  if (value >= localIsoDate(today) || value < '1900-01-01') return 'Date of birth must be in the past.'
+  return ''
+}
+
+/** yyyy-mm-dd in the visitor's own time zone (toISOString would give the UTC date). */
+export function localIsoDate(date = new Date()) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
 export function validateConfirm(password, confirm) {
   if (!confirm) return 'Please confirm your password.'
   return password === confirm ? '' : 'Passwords do not match.'

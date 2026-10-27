@@ -34,6 +34,11 @@ export async function signIn(credentials) {
   return user
 }
 
+/** Keeps the header and dashboards in step after the user edits their own name or email. */
+export function updateCurrentUser({ id, fullName, email, role, createdAt }) {
+  if (state.user && state.user.id === id) state.user = { id, fullName, email, role, createdAt }
+}
+
 /** Revokes the token on the server; local state is cleared even if that call fails. */
 export async function signOut() {
   try {

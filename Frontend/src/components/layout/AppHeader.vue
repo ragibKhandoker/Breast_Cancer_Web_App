@@ -8,6 +8,14 @@ import { authState, signOut } from '../../auth/authStore'
 import { homeFor, ROLES } from '../../auth/roles'
 
 const user = computed(() => authState.user)
+const initials = computed(() =>
+  (user.value?.fullName ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join(''),
+)
 
 // Prediction is a patient tool; doctors and administrators reach their pages through Dashboard.
 const links = computed(() => [
@@ -50,6 +58,7 @@ async function logout() {
         <div class="menu-auth">
           <template v-if="user">
             <RouterLink :to="homeFor(user.role)" class="btn btn-primary">Dashboard</RouterLink>
+            <RouterLink :to="APP_ROUTES.profile" class="btn btn-outline">Profile</RouterLink>
             <button type="button" class="btn btn-outline" :disabled="loggingOut" @click="logout">Logout</button>
           </template>
           <template v-else>
@@ -67,6 +76,9 @@ async function logout() {
           <button type="button" class="btn btn-outline auth" :disabled="loggingOut" @click="logout">
             {{ loggingOut ? 'Logging out…' : 'Logout' }}
           </button>
+          <RouterLink :to="APP_ROUTES.profile" class="avatar" :title="`My profile (${user.email})`" aria-label="My profile">
+            {{ initials }}
+          </RouterLink>
         </template>
         <template v-else>
           <RouterLink :to="APP_ROUTES.login" class="btn btn-outline auth">Login</RouterLink>
@@ -105,6 +117,14 @@ async function logout() {
 .icon-btn { background: none; border: 0; border-radius: 8px; color: var(--purple-900); cursor: pointer; padding: 6px; }
 .auth { padding: 0.5rem 1.2rem; font-size: 0.92rem; }
 .menu-btn { display: none; }
+.avatar {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink-600), #b5179e); color: #fff; font-weight: 700; font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(216, 27, 106, 0.3); transition: transform 0.15s;
+}
+.avatar:hover { transform: scale(1.06); }
+.avatar.router-link-active { outline: 3px solid var(--pink-300); outline-offset: 2px; }
+.avatar:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }
 
 @media (max-width: 1100px) {
   .menu-btn { display: block; }
@@ -116,7 +136,7 @@ async function logout() {
   .nav-link { padding: 0.65rem 1rem; }
 }
 @media (max-width: 560px) {
-  .auth { display: none; }
+  .auth, .avatar { display: none; }
   .menu-auth { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
   .menu-auth .btn { flex: 1; justify-content: center; }
 }

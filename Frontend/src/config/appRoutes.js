@@ -8,4 +8,5 @@ export const APP_ROUTES = {
   patientDashboard: '/dashboard',
   doctorDashboard: '/doctor',
   adminDashboard: '/admin',
+  profile: '/profile', // the signed-in user's own account (every role)
 }

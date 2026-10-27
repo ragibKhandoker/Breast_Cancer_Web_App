@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +32,12 @@ public class UserService {
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
+    private final MongoTemplate mongo;
 
-    public UserService(UserRepository users, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository users, PasswordEncoder passwordEncoder, MongoTemplate mongo) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
+        this.mongo = mongo;
     }
 
     /** Emails are compared and stored trimmed and lower-cased. */
@@ -55,7 +62,8 @@ public class UserService {
             throw new EmailAlreadyUsedException();
         }
         Instant now = Instant.now();
-        User user = new User(null, fullName.strip(), normalizedEmail, passwordEncoder.encode(password), role, now, now);
+        User user = new User(null, fullName.strip(), normalizedEmail, passwordEncoder.encode(password), role, now, now,
+                null, null);
         try {
             return users.insert(user);
         } catch (DuplicateKeyException e) {
@@ -85,6 +93,16 @@ public class UserService {
             throw new IllegalArgumentException("You cannot change your own role.");
         }
         User user = get(userId);
-        return user.role() == role ? user : users.save(user.withRole(role, Instant.now()));
+        if (user.role() == role) {
+            return user;
+        }
+        // Only role and updatedAt change, so a profile edit the user makes at the same moment is not lost.
+        User updated = mongo.findAndModify(Query.query(Criteria.where("id").is(userId)),
+                new Update().set("role", role).set("updatedAt", Instant.now()),
+                FindAndModifyOptions.options().returnNew(true), User.class);
+        if (updated == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        return updated;
     }
 }

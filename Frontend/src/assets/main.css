@@ -29,7 +29,8 @@ a { color: inherit; text-decoration: none; }
 code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
 
 .container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
-.page { padding: 2rem 0 3rem; }
+/* Top and bottom only, so .container's side gutter still applies on phones. */
+.page { padding-top: 2rem; padding-bottom: 3rem; }
 .page h1 { color: var(--purple-900); font-size: 1.8rem; margin: 0 0 0.25rem; }
 .muted, .meta { color: var(--muted); }
 .meta { font-size: 0.85rem; margin: 0.25rem 0 0; }

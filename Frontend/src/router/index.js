@@ -14,6 +14,7 @@ import PatientDashboardView from '../views/PatientDashboardView.vue'
 import DoctorDashboardView from '../views/DoctorDashboardView.vue'
 import AdminDashboardView from '../views/AdminDashboardView.vue'
 import ReportView from '../views/ReportView.vue'
+import ProfileView from '../views/ProfileView.vue'
 import { APP_ROUTES } from '../config/appRoutes'
 import { ROLES } from '../auth/roles'
 import { installAuthGuard } from '../auth/guard'
@@ -35,6 +36,7 @@ export const routes = [
   { path: APP_ROUTES.adminDashboard, name: 'admin-dashboard', component: AdminDashboardView, meta: { title: 'Admin Dashboard', roles: [ADMIN] } },
   { path: APP_ROUTES.analysis, name: 'prediction', component: PredictionView, meta: { title: 'Mammography Prediction', roles: [PATIENT] } },
   { path: APP_ROUTES.history, name: 'history', component: HistoryView, meta: { title: 'Prediction History', roles: [PATIENT] } },
+  { path: APP_ROUTES.profile, name: 'profile', component: ProfileView, meta: { title: 'My Profile', roles: [PATIENT, DOCTOR, ADMIN] } },
   { path: '/reports/:id', name: 'report', component: ReportView, meta: { title: 'Report', roles: [PATIENT, DOCTOR] } },
   {
     path: '/forbidden',
