@@ -15,4 +15,9 @@ export default defineConfig({
       '/api': 'http://localhost:8081',
     },
   },
+  // `npm test` runs the specs in tests/ in a simulated browser.
+  test: {
+    environment: 'jsdom',
+    include: ['tests/**/*.spec.js'],
+  },
 })

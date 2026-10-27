@@ -32,12 +32,7 @@ public class StartupReport {
             mongo.executeCommand("{ ping: 1 }");
             database = "[OK] MongoDB connected -> " + host + " / database '" + mongo.getDb().getName() + "'";
         } catch (RuntimeException e) {
-            String message = rootMessage(e);
-            // Atlas answers a TLS "internal_error" when the client IP is not on its access list.
-            String hint = message.contains("internal_error")
-                    ? "Atlas refused this computer's IP. Add it in Atlas -> Network Access -> Add IP Address."
-                    : abbreviate(message) + "\n    Check MONGODB_URI in Backend/.env and the Atlas Network Access IP list.";
-            database = "[FAILED] MongoDB connection failed (" + host + ")\n    " + hint;
+            database = "[FAILED] MongoDB connection failed (" + host + ")\n    " + connectionHint(e);
         }
 
         System.out.println("""
@@ -57,6 +52,15 @@ public class StartupReport {
         String afterCredentials = uri.substring(uri.lastIndexOf('@') + 1).replaceFirst("^mongodb(\\+srv)?://", "");
         int end = afterCredentials.indexOf('/');
         return end < 0 ? afterCredentials : afterCredentials.substring(0, end);
+    }
+
+    /** What to fix when MongoDB cannot be reached, without the connection string. Also used by DatabaseInitializer. */
+    static String connectionHint(Throwable e) {
+        String message = rootMessage(e);
+        // Atlas answers a TLS "internal_error" when the client IP is not on its access list.
+        return message.contains("internal_error")
+                ? "Atlas refused this computer's IP. Add it in Atlas -> Network Access -> Add IP Address."
+                : abbreviate(message) + "\n    Check MONGODB_URI in Backend/.env and the Atlas Network Access IP list.";
     }
 
     private static String rootMessage(Throwable e) {

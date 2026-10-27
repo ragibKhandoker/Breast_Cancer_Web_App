@@ -45,8 +45,17 @@ onMounted(load)
           <span v-if="p.demoMode" class="tag">demo</span>
         </p>
         <p class="meta">{{ new Date(p.createdAt).toLocaleString() }}</p>
-        <button class="link-danger" @click="remove(p.id)">Delete</button>
+        <div class="item-actions">
+          <RouterLink :to="`/reports/${p.id}`" class="report-link">View &amp; share</RouterLink>
+          <button class="link-danger" @click="remove(p.id)">Delete</button>
+        </div>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.item-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
+.item-actions .link-danger { margin: 0; }
+.report-link { color: var(--pink-600); font-weight: 600; }
+</style>

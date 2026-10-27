@@ -8,5 +8,10 @@ import com.cancerweb.backend.model.Prediction;
 
 public interface PredictionRepository extends MongoRepository<Prediction, String> {
 
-    List<Prediction> findAllByOrderByCreatedAtDesc();
+    List<Prediction> findAllByOwnerIdOrderByCreatedAtDesc(String ownerId);
+
+    /** Matches records whose {@code sharedWithDoctorIds} array contains {@code doctorId}. */
+    List<Prediction> findAllBySharedWithDoctorIdsOrderByCreatedAtDesc(String doctorId);
+
+    long countByOwnerIdIsNull();
 }

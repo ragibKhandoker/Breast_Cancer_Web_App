@@ -66,6 +66,9 @@ onBeforeUnmount(() => previewUrl.value && URL.revokeObjectURL(previewUrl.value))
 
         <p v-if="error" class="error">{{ error }}</p>
         <ResultCard v-if="result" :prediction="result" />
+        <p v-if="result" class="next">
+          <RouterLink :to="`/reports/${result.id}`" class="history-link">Open the report to share it with a doctor</RouterLink>
+        </p>
       </div>
     </section>
   </div>
@@ -74,6 +77,7 @@ onBeforeUnmount(() => previewUrl.value && URL.revokeObjectURL(previewUrl.value))
 <style scoped>
 .panel { max-width: 720px; margin: 1rem auto 0; }
 .history-link { color: var(--pink-600); font-weight: 600; }
+.next { margin: 1rem 0 0; }
 
 /* Blurred, see-through drop area so the photo behind stays visible but soft. */
 .dropzone {

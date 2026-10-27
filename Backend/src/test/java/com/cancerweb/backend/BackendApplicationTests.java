@@ -1,10 +1,10 @@
 package com.cancerweb.backend;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class BackendApplicationTests {
+import com.cancerweb.backend.support.IntegrationTest;
+
+class BackendApplicationTests extends IntegrationTest {
 
 	@Test
 	void contextLoads() {

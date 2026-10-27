@@ -34,12 +34,14 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
 .muted, .meta { color: var(--muted); }
 .meta { font-size: 0.85rem; margin: 0.25rem 0 0; }
 
-/* Scroll reveal (see directives/reveal.js): elements glide up and fade in as they enter the screen. */
+/* Scroll reveal (see directives/reveal.js): elements glide and fade in as they enter the screen, rising from
+   below when scrolling down and dropping in from above when scrolling back up. */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(0, 36px, 0) scale(0.98);
+  transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.reveal.reveal--above { transform: translate3d(0, -36px, 0) scale(0.98); }
 .reveal.is-visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
@@ -64,6 +66,9 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
   position: fixed;
   inset: 0;
   z-index: -1;
+  /* Own GPU layer, so the page scrolling over the photo doesn't repaint it every frame. */
+  transform: translateZ(0);
+  will-change: transform;
   background:
     linear-gradient(90deg, rgba(255, 246, 250, 0.82) 0%, rgba(255, 246, 250, 0.45) 45%, rgba(255, 246, 250, 0.05) 75%),
     url('./images/doctor-patient-bg.jpg') center 30% / cover no-repeat;
@@ -94,6 +99,32 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 20px 50px rgba(42, 22, 80, 0.18);
 }
+
+/* Forms on the login, register and dashboard pages (the Contact form keeps its own scoped copy). */
+.form-stack { display: grid; gap: 0.35rem; }
+.form-field { display: grid; gap: 0.4rem; }
+.form-field label { font-weight: 600; color: var(--purple-900); font-size: 0.95rem; }
+.form-field input, .form-field select {
+  width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border); border-radius: 12px;
+  background: #fff; color: var(--text); font: 400 1rem 'Poppins', sans-serif;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-field input:hover, .form-field select:hover { border-color: var(--pink-300); }
+.form-field input:focus, .form-field select:focus {
+  outline: none; border-color: var(--pink-600); box-shadow: 0 0 0 4px rgba(216, 27, 106, 0.15);
+}
+.form-field input[aria-invalid='true'] { border-color: var(--high); }
+.field-error { min-height: 1.25rem; margin: 0; color: var(--high); font-size: 0.85rem; }
+.alert { margin: 0.5rem 0; padding: 0.9rem 1rem; border-radius: 12px; font-weight: 500; line-height: 1.5; }
+.alert.success { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+.alert.error { background: #fdecea; color: #8e1c1c; border: 1px solid #f5b5b0; }
+.alert.info { background: var(--pink-50); color: var(--purple-900); border: 1px solid var(--border); }
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, 0.5); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-sm { padding: 0.45rem 1rem; font-size: 0.9rem; }
 
 /* Prediction and history pages */
 .dropzone {

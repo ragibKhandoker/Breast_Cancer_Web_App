@@ -8,33 +8,56 @@ import FaqView from '../views/FaqView.vue'
 import ContactView from '../views/ContactView.vue'
 import ComingSoonView from '../views/ComingSoonView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import PatientDashboardView from '../views/PatientDashboardView.vue'
+import DoctorDashboardView from '../views/DoctorDashboardView.vue'
+import AdminDashboardView from '../views/AdminDashboardView.vue'
+import ReportView from '../views/ReportView.vue'
 import { APP_ROUTES } from '../config/appRoutes'
+import { ROLES } from '../auth/roles'
+import { installAuthGuard } from '../auth/guard'
 
-const AUTH_PENDING = 'Login and registration are being built as a separate feature and will be available here soon.'
+const { PATIENT, DOCTOR, ADMIN } = ROLES
 
-// Backend SpaController serves index.html for any single-segment path, so each of these opens directly by URL.
+// meta.roles limits a page to signed-in users with those roles; meta.guestOnly is for login/register.
+// Backend SpaController serves index.html for any single-segment path and /reports/{id}, so each opens by URL.
+export const routes = [
+  { path: '/', name: 'home', component: HomeView },
+  { path: '/about', name: 'about', component: AboutView, meta: { title: 'About' } },
+  { path: '/how-it-works', name: 'how-it-works', component: HowItWorksView, meta: { title: 'How It Works' } },
+  { path: '/faq', name: 'faq', component: FaqView, meta: { title: 'FAQ' } },
+  { path: '/contact', name: 'contact', component: ContactView, meta: { title: 'Contact' } },
+  { path: APP_ROUTES.login, name: 'login', component: LoginView, meta: { title: 'Login', guestOnly: true } },
+  { path: APP_ROUTES.register, name: 'register', component: RegisterView, meta: { title: 'Register', guestOnly: true } },
+  { path: APP_ROUTES.patientDashboard, name: 'patient-dashboard', component: PatientDashboardView, meta: { title: 'My Dashboard', roles: [PATIENT] } },
+  { path: APP_ROUTES.doctorDashboard, name: 'doctor-dashboard', component: DoctorDashboardView, meta: { title: 'Doctor Dashboard', roles: [DOCTOR] } },
+  { path: APP_ROUTES.adminDashboard, name: 'admin-dashboard', component: AdminDashboardView, meta: { title: 'Admin Dashboard', roles: [ADMIN] } },
+  { path: APP_ROUTES.analysis, name: 'prediction', component: PredictionView, meta: { title: 'Mammography Prediction', roles: [PATIENT] } },
+  { path: APP_ROUTES.history, name: 'history', component: HistoryView, meta: { title: 'Prediction History', roles: [PATIENT] } },
+  { path: '/reports/:id', name: 'report', component: ReportView, meta: { title: 'Report', roles: [PATIENT, DOCTOR] } },
+  {
+    path: '/forbidden',
+    name: 'forbidden',
+    component: ComingSoonView,
+    meta: { title: 'Access Denied', description: 'Your account does not have access to that page.' },
+  },
+  { path: '/privacy', component: ComingSoonView, meta: { title: 'Privacy Policy' } },
+  { path: '/terms', component: ComingSoonView, meta: { title: 'Terms of Service' } },
+  // Older placeholder links now point to the pages that cover them.
+  { path: '/learn', redirect: '/how-it-works' },
+  { path: '/resources', redirect: '/faq' },
+  { path: '/support', redirect: '/contact' },
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: 'Page Not Found' } },
+]
+
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    { path: '/', name: 'home', component: HomeView },
-    { path: '/about', name: 'about', component: AboutView, meta: { title: 'About' } },
-    { path: '/how-it-works', name: 'how-it-works', component: HowItWorksView, meta: { title: 'How It Works' } },
-    { path: '/faq', name: 'faq', component: FaqView, meta: { title: 'FAQ' } },
-    { path: '/contact', name: 'contact', component: ContactView, meta: { title: 'Contact' } },
-    { path: APP_ROUTES.analysis, name: 'prediction', component: PredictionView, meta: { title: 'Mammography Prediction' } },
-    { path: APP_ROUTES.history, name: 'history', component: HistoryView, meta: { title: 'Prediction History' } },
-    { path: APP_ROUTES.login, component: ComingSoonView, meta: { title: 'Login', description: AUTH_PENDING } },
-    { path: APP_ROUTES.register, component: ComingSoonView, meta: { title: 'Register', description: AUTH_PENDING } },
-    { path: '/privacy', component: ComingSoonView, meta: { title: 'Privacy Policy' } },
-    { path: '/terms', component: ComingSoonView, meta: { title: 'Terms of Service' } },
-    // Older placeholder links now point to the pages that cover them.
-    { path: '/learn', redirect: '/how-it-works' },
-    { path: '/resources', redirect: '/faq' },
-    { path: '/support', redirect: '/contact' },
-    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: 'Page Not Found' } },
-  ],
+  routes,
   scrollBehavior: () => ({ top: 0 }),
 })
+
+installAuthGuard(router)
 
 router.afterEach((to) => {
   document.title = to.meta.title ? `${to.meta.title} | BreastCare` : 'BreastCare — Detect Early, Live Healthier'

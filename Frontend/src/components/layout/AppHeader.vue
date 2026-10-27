@@ -1,22 +1,41 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../common/AppIcon.vue'
 import BrandLogo from './BrandLogo.vue'
 import { APP_ROUTES } from '../../config/appRoutes'
+import { authState, signOut } from '../../auth/authStore'
+import { homeFor, ROLES } from '../../auth/roles'
 
-const links = [
+const user = computed(() => authState.user)
+
+// Prediction is a patient tool; doctors and administrators reach their pages through Dashboard.
+const links = computed(() => [
   { to: '/', label: 'Home' },
-  { to: APP_ROUTES.analysis, label: 'Prediction' },
+  ...(!user.value || user.value.role === ROLES.PATIENT ? [{ to: APP_ROUTES.analysis, label: 'Prediction' }] : []),
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },
   { to: '/contact', label: 'Contact' },
-]
+])
 
 const menuOpen = ref(false)
 const route = useRoute()
+const router = useRouter()
 watch(() => route.path, () => (menuOpen.value = false))
+
+const loggingOut = ref(false)
+async function logout() {
+  loggingOut.value = true
+  try {
+    await signOut()
+  } catch {
+    // The local session is cleared regardless; the cookie expires on its own.
+  } finally {
+    loggingOut.value = false
+    router.replace('/')
+  }
+}
 </script>
 
 <template>
@@ -29,14 +48,30 @@ watch(() => route.path, () => (menuOpen.value = false))
           {{ link.label }}
         </RouterLink>
         <div class="menu-auth">
-          <RouterLink :to="APP_ROUTES.login" class="btn btn-outline">Login</RouterLink>
-          <RouterLink :to="APP_ROUTES.register" class="btn btn-primary">Register</RouterLink>
+          <template v-if="user">
+            <RouterLink :to="homeFor(user.role)" class="btn btn-primary">Dashboard</RouterLink>
+            <button type="button" class="btn btn-outline" :disabled="loggingOut" @click="logout">Logout</button>
+          </template>
+          <template v-else>
+            <RouterLink :to="APP_ROUTES.login" class="btn btn-outline">Login</RouterLink>
+            <RouterLink :to="APP_ROUTES.register" class="btn btn-primary">Register</RouterLink>
+          </template>
         </div>
       </nav>
 
       <div class="actions">
-        <RouterLink :to="APP_ROUTES.login" class="btn btn-outline auth">Login</RouterLink>
-        <RouterLink :to="APP_ROUTES.register" class="btn btn-primary auth">Register</RouterLink>
+        <template v-if="user">
+          <RouterLink :to="homeFor(user.role)" class="btn btn-primary auth" :title="`Signed in as ${user.email}`">
+            Dashboard
+          </RouterLink>
+          <button type="button" class="btn btn-outline auth" :disabled="loggingOut" @click="logout">
+            {{ loggingOut ? 'Logging out…' : 'Logout' }}
+          </button>
+        </template>
+        <template v-else>
+          <RouterLink :to="APP_ROUTES.login" class="btn btn-outline auth">Login</RouterLink>
+          <RouterLink :to="APP_ROUTES.register" class="btn btn-primary auth">Register</RouterLink>
+        </template>
         <button
           class="icon-btn menu-btn"
           type="button"
