@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,6 +72,18 @@ public class ApiExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail badCredentials(BadCredentialsException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password.");
+    }
+
+    /** The password was right but an administrator has disabled the account. */
+    @ExceptionHandler(DisabledException.class)
+    public ProblemDetail disabled(DisabledException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN,
+                "This account has been disabled. Please contact the site administrator.");
+    }
+
+    @ExceptionHandler(MessageNotFoundException.class)
+    public ProblemDetail messageNotFound(MessageNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(PredictionNotFoundException.class)

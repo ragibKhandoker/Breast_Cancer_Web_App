@@ -34,7 +34,7 @@ export const routes = [
   { path: APP_ROUTES.patientDashboard, name: 'patient-dashboard', component: PatientDashboardView, meta: { title: 'My Dashboard', roles: [PATIENT] } },
   { path: APP_ROUTES.doctorDashboard, name: 'doctor-dashboard', component: DoctorDashboardView, meta: { title: 'Doctor Dashboard', roles: [DOCTOR] } },
   { path: APP_ROUTES.adminDashboard, name: 'admin-dashboard', component: AdminDashboardView, meta: { title: 'Admin Dashboard', roles: [ADMIN] } },
-  { path: APP_ROUTES.analysis, name: 'prediction', component: PredictionView, meta: { title: 'Mammography Prediction', roles: [PATIENT] } },
+  { path: APP_ROUTES.analysis, name: 'prediction', component: PredictionView, meta: { title: 'Upload Mammogram', roles: [PATIENT] } },
   { path: APP_ROUTES.history, name: 'history', component: HistoryView, meta: { title: 'Prediction History', roles: [PATIENT] } },
   { path: APP_ROUTES.profile, name: 'profile', component: ProfileView, meta: { title: 'My Profile', roles: [PATIENT, DOCTOR, ADMIN] } },
   { path: '/reports/:id', name: 'report', component: ReportView, meta: { title: 'Report', roles: [PATIENT, DOCTOR] } },

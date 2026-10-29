@@ -10,8 +10,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.PartialIndexFilter;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Component;
 
+import com.cancerweb.backend.model.ContactMessage;
 import com.cancerweb.backend.model.Prediction;
 import com.cancerweb.backend.model.RevokedToken;
 import com.cancerweb.backend.model.User;
@@ -57,6 +60,15 @@ public class DatabaseInitializer implements ApplicationRunner {
                 new Index().on("ownerId", Direction.ASC).on("createdAt", Direction.DESC).named("owner_createdAt"));
         mongo.indexOps(Prediction.class).createIndex(
                 new Index().on("sharedWithDoctorIds", Direction.ASC).named("sharedWithDoctorIds"));
+        // One record per upload attempt, so retrying an upload cannot save the image twice. Only records that
+        // carry an uploadId are indexed; older ones have none.
+        mongo.indexOps(Prediction.class).createIndex(new Index().on("ownerId", Direction.ASC).on("uploadId", Direction.ASC)
+                .unique().partial(PartialIndexFilter.of(Criteria.where("uploadId").exists(true))).named("owner_uploadId_unique"));
+        // Admin overview counts and chart, and the Contact inbox.
+        mongo.indexOps(Prediction.class).createIndex(new Index().on("createdAt", Direction.DESC).named("createdAt"));
+        mongo.indexOps(User.class).createIndex(new Index().on("role", Direction.ASC).named("role"));
+        mongo.indexOps(ContactMessage.class).createIndex(
+                new Index().on("status", Direction.ASC).on("createdAt", Direction.DESC).named("status_createdAt"));
         // MongoDB deletes each entry once its token's own expiry has passed.
         mongo.indexOps(RevokedToken.class).createIndex(
                 new Index().on("expiresAt", Direction.ASC).expire(Duration.ZERO).named("expiresAt_ttl"));

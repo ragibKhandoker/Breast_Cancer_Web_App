@@ -1,172 +1,138 @@
 <script setup>
-import { reactive, ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import AppIcon from '../components/common/AppIcon.vue'
+import AdminOverviewPanel from '../components/admin/AdminOverviewPanel.vue'
+import AdminUsersPanel from '../components/admin/AdminUsersPanel.vue'
+import AdminMessagesPanel from '../components/admin/AdminMessagesPanel.vue'
+import AdminSettingsPanel from '../components/admin/AdminSettingsPanel.vue'
 import { authState } from '../auth/authStore'
-import { ROLES, ROLE_LABELS } from '../auth/roles'
-import { validateEmail, validateFullName, validatePassword } from '../auth/validation'
-import { listUsers, createUser, changeRole } from '../services/adminService'
-import { errorMessage, fieldErrors } from '../services/http'
-import PasswordField from '../components/auth/PasswordField.vue'
+import { listMessages } from '../services/adminService'
+import { APP_ROUTES } from '../config/appRoutes'
 
-const users = ref([])
-const loading = ref(true)
-const listError = ref('')
-const rowMessage = reactive({}) // userId -> { text, ok }
-const savingId = ref('')
+// The administrator's console. The open tab lives in the URL (?tab=users), so reloads and links keep it.
+const TABS = [
+  { id: 'overview', label: 'Overview', icon: 'calendar', component: AdminOverviewPanel },
+  { id: 'users', label: 'Users', icon: 'users', component: AdminUsersPanel },
+  { id: 'messages', label: 'Messages', icon: 'mail', component: AdminMessagesPanel },
+  { id: 'settings', label: 'Website settings', icon: 'file-text', component: AdminSettingsPanel },
+]
 
-const counts = computed(() =>
-  Object.keys(ROLES).map((role) => ({ role, count: users.value.filter((u) => u.role === role).length })),
+const route = useRoute()
+const router = useRouter()
+const active = computed(() => TABS.find((t) => t.id === route.query.tab) ?? TABS[0])
+
+function open(id) {
+  router.replace({ query: id === 'overview' ? {} : { tab: id } })
+}
+
+const user = computed(() => authState.user)
+const initials = computed(() =>
+  (user.value?.fullName ?? '').split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join(''),
 )
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  return hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+})
 
-async function load() {
+const unread = ref(0)
+async function refreshUnread() {
   try {
-    users.value = await listUsers()
-  } catch (err) {
-    listError.value = errorMessage(err)
-  } finally {
-    loading.value = false
+    unread.value = (await listMessages('NEW')).length
+  } catch {
+    // The badge is a convenience; the Messages tab shows any error.
   }
 }
 
-async function updateRole(user, select) {
-  const role = select.value
-  if (role === user.role) return
-  savingId.value = user.id
-  try {
-    const updated = await changeRole(user.id, role)
-    Object.assign(user, updated)
-    rowMessage[user.id] = { text: `Now ${ROLE_LABELS[updated.role]}`, ok: true }
-  } catch (err) {
-    select.value = user.role // show the role that is actually saved
-    rowMessage[user.id] = { text: errorMessage(err), ok: false }
-  } finally {
-    savingId.value = ''
-  }
+function onKeydown(event, index) {
+  const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key]
+  if (!step) return
+  const next = TABS[(index + step + TABS.length) % TABS.length]
+  open(next.id)
+  document.getElementById(`tab-${next.id}`)?.focus()
 }
 
-// Create account
-const form = reactive({ fullName: '', email: '', password: '', role: ROLES.DOCTOR })
-const formErrors = reactive({ fullName: '', email: '', password: '' })
-const creating = ref(false)
-const createResult = ref(null) // { ok, text }
-
-async function submitCreate() {
-  formErrors.fullName = validateFullName(form.fullName)
-  formErrors.email = validateEmail(form.email)
-  formErrors.password = validatePassword(form.password)
-  if (formErrors.fullName || formErrors.email || formErrors.password) return
-
-  creating.value = true
-  createResult.value = null
-  try {
-    const user = await createUser({ ...form, fullName: form.fullName.trim(), email: form.email.trim() })
-    users.value.unshift(user)
-    createResult.value = { ok: true, text: `Created ${ROLE_LABELS[user.role].toLowerCase()} account for ${user.email}.` }
-    Object.assign(form, { fullName: '', email: '', password: '', role: ROLES.DOCTOR })
-  } catch (err) {
-    const errors = fieldErrors(err)
-    for (const key of Object.keys(formErrors)) formErrors[key] = errors[key] ?? formErrors[key]
-    createResult.value = { ok: false, text: errorMessage(err) }
-  } finally {
-    creating.value = false
-  }
-}
-
-onMounted(load)
+onMounted(refreshUnread)
 </script>
 
 <template>
-  <section class="container page">
-    <h1>Administration</h1>
-    <p class="muted">Manage accounts and roles. Medical records are private to patients and the doctors they choose.</p>
-
-    <div class="stats">
-      <div v-for="item in counts" :key="item.role" class="card stat">
-        <strong>{{ item.count }}</strong>
-        <span class="muted">{{ ROLE_LABELS[item.role] }}{{ item.count === 1 ? '' : 's' }}</span>
+  <section class="container page console">
+    <!-- Admin profile -->
+    <div class="card admin-card">
+      <div class="avatar" aria-hidden="true">{{ initials }}</div>
+      <div class="who">
+        <p class="eyebrow">{{ greeting }}</p>
+        <h1>{{ user?.fullName }}</h1>
+        <p class="muted">
+          <span class="badge"><AppIcon name="shield-check" :size="14" /> Administrator</span>
+          {{ user?.email }}
+        </p>
       </div>
+      <RouterLink :to="APP_ROUTES.profile" class="btn btn-outline btn-sm">Edit my profile</RouterLink>
     </div>
 
-    <div class="layout">
-      <div class="card">
-        <h2>Users</h2>
-        <p v-if="loading" class="muted">Loading…</p>
-        <p v-else-if="listError" class="error">{{ listError }}</p>
-        <div v-else class="table-wrap">
-          <table>
-            <thead>
-              <tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Joined</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in users" :key="user.id">
-                <td>{{ user.fullName }}</td>
-                <td class="email">{{ user.email }}</td>
-                <td>
-                  <span v-if="user.id === authState.user?.id" class="muted">{{ ROLE_LABELS[user.role] }} (you)</span>
-                  <template v-else>
-                    <select
-                      :value="user.role"
-                      :disabled="savingId === user.id"
-                      :aria-label="`Role for ${user.email}`"
-                      @change="updateRole(user, $event.target)"
-                    >
-                      <option v-for="role in Object.keys(ROLES)" :key="role" :value="role">{{ ROLE_LABELS[role] }}</option>
-                    </select>
-                    <span v-if="rowMessage[user.id]" class="row-msg" :class="rowMessage[user.id].ok ? 'low' : 'high'" role="status">
-                      {{ rowMessage[user.id].text }}
-                    </span>
-                  </template>
-                </td>
-                <td class="meta">{{ new Date(user.createdAt).toLocaleDateString() }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <!-- Tabs -->
+    <div class="tabs" role="tablist" aria-label="Admin console">
+      <button
+        v-for="(tab, i) in TABS"
+        :id="`tab-${tab.id}`"
+        :key="tab.id"
+        type="button"
+        role="tab"
+        :aria-selected="active.id === tab.id"
+        :aria-controls="`panel-${tab.id}`"
+        :tabindex="active.id === tab.id ? 0 : -1"
+        :class="{ on: active.id === tab.id }"
+        @click="open(tab.id)"
+        @keydown="onKeydown($event, i)"
+      >
+        <AppIcon :name="tab.icon" :size="17" />
+        {{ tab.label }}
+        <span v-if="tab.id === 'messages' && unread" class="badge-count" :aria-label="`${unread} unread`">{{ unread }}</span>
+      </button>
+    </div>
 
-      <form class="card form-stack" novalidate @submit.prevent="submitCreate">
-        <h2>Create account</h2>
-        <p class="muted small">Use this for doctors and administrators. Patients can also sign up themselves.</p>
-        <div class="form-field">
-          <label for="new-name">Full name</label>
-          <input id="new-name" v-model="form.fullName" maxlength="100" :aria-invalid="!!formErrors.fullName" aria-describedby="new-name-error" />
-          <p id="new-name-error" class="field-error">{{ formErrors.fullName }}</p>
-        </div>
-        <div class="form-field">
-          <label for="new-email">Email</label>
-          <input id="new-email" v-model="form.email" type="email" maxlength="254" autocomplete="off" :aria-invalid="!!formErrors.email" aria-describedby="new-email-error" />
-          <p id="new-email-error" class="field-error">{{ formErrors.email }}</p>
-        </div>
-        <PasswordField id="new-password" v-model="form.password" label="Temporary password" autocomplete="new-password" :error="formErrors.password" />
-        <div class="form-field">
-          <label for="new-role">Role</label>
-          <select id="new-role" v-model="form.role">
-            <option v-for="role in Object.keys(ROLES)" :key="role" :value="role">{{ ROLE_LABELS[role] }}</option>
-          </select>
-        </div>
-        <div v-if="createResult" class="alert" :class="createResult.ok ? 'success' : 'error'" role="status">{{ createResult.text }}</div>
-        <button type="submit" class="btn btn-primary" :disabled="creating" :aria-busy="creating">
-          <span v-if="creating" class="spinner" aria-hidden="true"></span>
-          {{ creating ? 'Creating…' : 'Create Account' }}
-        </button>
-      </form>
+    <div :id="`panel-${active.id}`" role="tabpanel" :aria-labelledby="`tab-${active.id}`" class="panel">
+      <KeepAlive>
+        <component :is="active.component" :key="active.id" @open-tab="open" @unread-changed="refreshUnread" />
+      </KeepAlive>
     </div>
   </section>
 </template>
 
 <style scoped>
-h2 { margin: 0 0 0.75rem; color: var(--purple-900); font-size: 1.2rem; }
-.small { font-size: 0.88rem; margin: -0.4rem 0 0.5rem; }
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.25rem 0; }
-.stat { display: grid; gap: 0.1rem; text-align: center; }
-.stat strong { font-size: 1.8rem; color: var(--pink-600); }
-.layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-th, td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-th { color: var(--muted); font-weight: 600; }
-.email { overflow-wrap: anywhere; }
-td select { padding: 0.35rem 0.5rem; border: 1.5px solid var(--border); border-radius: 8px; font: inherit; background: #fff; }
-.row-msg { display: block; font-size: 0.8rem; margin-top: 0.2rem; }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-@media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+.admin-card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1.25rem; padding: 1.4rem 1.6rem;
+  background:
+    radial-gradient(circle at 95% 10%, rgba(181, 23, 158, 0.12), transparent 40%),
+    linear-gradient(120deg, #fff 0%, var(--pink-50) 100%);
+}
+.avatar {
+  display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-900), #6b3fb5); color: #fff; font-size: 1.6rem; font-weight: 700;
+  box-shadow: 0 8px 20px rgba(42, 22, 80, 0.25);
+}
+.eyebrow { margin: 0; font-size: 0.82rem; font-weight: 600; color: var(--pink-600); text-transform: uppercase; letter-spacing: 0.04em; }
+.who h1 { margin: 0.1rem 0 0.2rem; font-size: 1.6rem; overflow-wrap: anywhere; }
+.who .muted { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; overflow-wrap: anywhere; }
+.badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.6rem; border-radius: 999px; background: var(--purple-900); color: #fff; font-size: 0.76rem; font-weight: 600; }
+
+.tabs { display: flex; gap: 0.35rem; margin: 1.25rem 0 1rem; padding: 0.35rem; border-radius: 16px; background: #fff; border: 1px solid var(--border); overflow-x: auto; }
+.tabs button {
+  display: inline-flex; align-items: center; gap: 0.45rem; flex: none; padding: 0.6rem 1.05rem; border: 0; border-radius: 12px;
+  background: none; color: var(--muted); font: 600 0.92rem 'Poppins', sans-serif; cursor: pointer; transition: background-color 0.15s, color 0.15s;
+}
+.tabs button:hover { color: var(--pink-600); background: var(--pink-50); }
+.tabs button.on { background: var(--pink-600); color: #fff; box-shadow: 0 6px 16px rgba(216, 27, 106, 0.25); }
+.tabs button:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 1px; }
+.badge-count { min-width: 20px; padding: 0 0.4rem; border-radius: 999px; background: var(--pink-600); color: #fff; font-size: 0.72rem; line-height: 20px; text-align: center; }
+.tabs button.on .badge-count { background: #fff; color: var(--pink-600); }
+
+@media (max-width: 640px) {
+  .admin-card { grid-template-columns: auto minmax(0, 1fr); padding: 1.2rem; }
+  .admin-card .btn { grid-column: 1 / -1; justify-content: center; }
+  .avatar { width: 58px; height: 58px; font-size: 1.3rem; }
+  .who h1 { font-size: 1.3rem; }
+  .tabs button { padding: 0.55rem 0.75rem; font-size: 0.86rem; }
+}
 </style>

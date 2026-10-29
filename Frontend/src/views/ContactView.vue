@@ -2,7 +2,7 @@
 import PageHeader from '../components/common/PageHeader.vue'
 import AppIcon from '../components/common/AppIcon.vue'
 import ContactForm from '../components/contact/ContactForm.vue'
-import { CONTACT } from '../config/siteConfig'
+import { site } from '../config/siteSettings'
 </script>
 
 <template>
@@ -21,17 +21,17 @@ import { CONTACT } from '../config/siteConfig'
     <aside class="info">
       <h2>Contact details</h2>
       <ul>
-        <li>
+        <li v-if="site.contact.email">
           <span class="icon"><AppIcon name="mail" :size="18" /></span>
-          <a :href="`mailto:${CONTACT.email}`">{{ CONTACT.email }}</a>
+          <a :href="`mailto:${site.contact.email}`">{{ site.contact.email }}</a>
         </li>
-        <li>
+        <li v-if="site.contact.phone">
           <span class="icon"><AppIcon name="phone" :size="18" /></span>
-          <span>{{ CONTACT.phone }}</span>
+          <span>{{ site.contact.phone }}</span>
         </li>
-        <li>
+        <li v-if="site.contact.address">
           <span class="icon"><AppIcon name="map-pin" :size="18" /></span>
-          <span>{{ CONTACT.address }}</span>
+          <span>{{ site.contact.address }}</span>
         </li>
       </ul>
       <p class="note">

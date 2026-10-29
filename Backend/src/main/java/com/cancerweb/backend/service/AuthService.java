@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -63,6 +64,11 @@ public class AuthService {
                 UserService.normalizeEmail(request.email()), request.password()));
         String userId = ((UserDetails) result.getPrincipal()).getUsername();
         User user = users.findById(userId).orElseThrow(() -> new BadCredentialsException("Bad credentials"));
+        // Checked only after the password matched, so a disabled account is not revealed to someone guessing.
+        if (user.isDisabled()) {
+            throw new DisabledException("Account disabled");
+        }
+        userService.recordLogin(user.id());
         return new Login(user, jwtService.issue(user));
     }
 

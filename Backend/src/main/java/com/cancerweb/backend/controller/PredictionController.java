@@ -45,9 +45,11 @@ public class PredictionController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public Prediction create(@RequestParam("image") MultipartFile image, @AuthenticationPrincipal CurrentUser me)
-            throws IOException {
-        return service.analyse(image, me);
+    public Prediction create(@RequestParam("image") MultipartFile image,
+            @RequestParam(value = "view", required = false) String view,
+            @RequestParam(value = "uploadId", required = false) String uploadId,
+            @AuthenticationPrincipal CurrentUser me) throws IOException {
+        return service.analyse(image, view, uploadId, me);
     }
 
     @GetMapping

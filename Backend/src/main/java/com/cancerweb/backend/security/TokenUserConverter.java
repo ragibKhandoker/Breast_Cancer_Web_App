@@ -31,6 +31,9 @@ public class TokenUserConverter implements Converter<Jwt, AbstractAuthentication
     public AbstractAuthenticationToken convert(Jwt jwt) {
         User user = users.findById(jwt.getSubject())
                 .orElseThrow(() -> new InvalidBearerTokenException("The account for this token no longer exists"));
+        if (user.isDisabled()) {
+            throw new InvalidBearerTokenException("The account has been disabled");
+        }
         // A password change signs out every login from before it.
         if (user.passwordChangedAt() != null
                 && (jwt.getIssuedAt() == null || jwt.getIssuedAt().isBefore(user.passwordChangedAt()))) {

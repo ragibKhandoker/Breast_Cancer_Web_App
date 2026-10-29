@@ -1,4 +1,5 @@
 <script setup>
+import { isMalignant } from '../prediction/verdict'
 import { ref, onMounted } from 'vue'
 import { listPredictions, deletePrediction, imageUrl, errorMessage } from '../services/predictionService'
 
@@ -40,8 +41,9 @@ onMounted(load)
       <div v-for="(p, i) in predictions" :key="p.id" v-reveal="(i % 4) * 100" class="card history-item">
         <img :src="imageUrl(p.id)" :alt="p.originalFilename" class="thumb" />
         <p class="filename">{{ p.originalFilename }}</p>
-        <p :class="p.label === 'malignant' ? 'high' : 'low'">
-          {{ Math.round(p.malignantProbability * 1000) / 10 }}% malignancy
+        <p v-if="p.view" class="meta">{{ p.view }} view</p>
+        <p :class="isMalignant(p) ? 'high' : 'low'">
+          {{ isMalignant(p) ? 'Malignant' : 'Benign' }} · {{ Math.round(p.malignantProbability * 1000) / 10 }}% malignancy
           <span v-if="p.demoMode" class="tag">demo</span>
         </p>
         <p class="meta">{{ new Date(p.createdAt).toLocaleString() }}</p>

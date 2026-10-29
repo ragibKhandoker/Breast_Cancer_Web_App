@@ -27,7 +27,8 @@ public class AuthCookies implements BearerTokenResolver {
      * not checked there, so an expired login cannot block logging in again. Logout reads the cookie itself.
      */
     private static final Set<String> TOKEN_FREE_PATHS = Set.of(
-            "/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/contact");
+            "/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/contact",
+            "/api/site-settings");
 
     private final AuthProperties properties;
 

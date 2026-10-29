@@ -1,4 +1,5 @@
 <script setup>
+import { isMalignant } from '../prediction/verdict'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { authState, onSessionEnd } from '../auth/authStore'
 import { listSharedReports, imageUrl, errorMessage } from '../services/predictionService'
@@ -36,8 +37,8 @@ onMounted(load)
       <RouterLink v-for="{ report, patient } in shared" :key="report.id" :to="`/reports/${report.id}`" class="card history-item">
         <img :src="imageUrl(report.id)" :alt="report.originalFilename" class="thumb" />
         <p class="filename">{{ patient.fullName }}</p>
-        <p :class="report.label === 'malignant' ? 'high' : 'low'">
-          {{ percent(report) }}% malignancy
+        <p :class="isMalignant(report) ? 'high' : 'low'">
+          {{ isMalignant(report) ? 'Malignant' : 'Benign' }} · {{ percent(report) }}% malignancy
           <span v-if="report.demoMode" class="tag">demo</span>
         </p>
         <p class="meta">{{ new Date(report.createdAt).toLocaleString() }}</p>

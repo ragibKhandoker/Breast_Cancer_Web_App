@@ -64,7 +64,7 @@ class RecordOwnershipTest extends IntegrationTest {
     private Prediction store(String ownerId) {
         ObjectId imageId = gridFs.store(new ByteArrayInputStream(IMAGE), "scan.png", "image/png");
         return predictions.save(new Prediction(null, "scan.png", "image/png", IMAGE.length, imageId.toHexString(),
-                "benign", 0.2, 0.8, "test", false, Instant.now(), ownerId, List.of()));
+                "benign", 0.2, 0.8, "test", false, Instant.now(), ownerId, List.of(), null, "MLO", 0.5, false));
     }
 
     private String path(String suffix) {

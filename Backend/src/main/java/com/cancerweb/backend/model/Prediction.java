@@ -13,6 +13,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * {@code ownerId} is the patient who uploaded it, taken from the login token, never from the request.
  * {@code sharedWithDoctorIds} lists the doctors the patient chose to show it to; it is not sent to the browser.
  * Records saved before accounts existed have no owner: they stay in the database but nobody can open them.
+ * {@code uploadId} is an optional id the browser picks for one upload attempt, so a retried upload returns the
+ * record it already created instead of saving the image twice. It is not sent to the browser.
+ * {@code view} is the mammographic view the patient chose (CC or MLO). {@code threshold} is the model's decision
+ * threshold when this result was made, and {@code lowConfidence} marks a probability close to it. Records made
+ * before these fields existed have them null / false.
  */
 @Document("predictions")
 public record Prediction(
@@ -28,7 +33,11 @@ public record Prediction(
         boolean demoMode,
         Instant createdAt,
         String ownerId,
-        @JsonIgnore List<String> sharedWithDoctorIds) {
+        @JsonIgnore List<String> sharedWithDoctorIds,
+        @JsonIgnore String uploadId,
+        String view,
+        Double threshold,
+        boolean lowConfidence) {
 
     public List<String> sharedWithDoctorIds() {
         return sharedWithDoctorIds == null ? List.of() : sharedWithDoctorIds;

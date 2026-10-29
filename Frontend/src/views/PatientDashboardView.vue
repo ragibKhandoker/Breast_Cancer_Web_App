@@ -1,4 +1,5 @@
 <script setup>
+import { isMalignant } from '../prediction/verdict'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { authState, onSessionEnd } from '../auth/authStore'
 import { listPredictions, imageUrl, errorMessage } from '../services/predictionService'
@@ -52,7 +53,7 @@ onMounted(load)
       <RouterLink v-for="p in recent" :key="p.id" :to="`/reports/${p.id}`" class="card history-item">
         <img :src="imageUrl(p.id)" :alt="p.originalFilename" class="thumb" />
         <p class="filename">{{ p.originalFilename }}</p>
-        <p :class="p.label === 'malignant' ? 'high' : 'low'">{{ percent(p) }}% malignancy</p>
+        <p :class="isMalignant(p) ? 'high' : 'low'">{{ isMalignant(p) ? 'Malignant' : 'Benign' }} · {{ percent(p) }}% malignancy</p>
         <p class="meta">{{ new Date(p.createdAt).toLocaleString() }}</p>
       </RouterLink>
     </div>

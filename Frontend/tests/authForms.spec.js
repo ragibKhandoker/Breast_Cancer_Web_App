@@ -18,6 +18,8 @@ vi.mock('../src/services/predictionService', () => ({
 }))
 vi.mock('../src/services/adminService', () => ({
   listUsers: vi.fn().mockResolvedValue([]),
+  listMessages: vi.fn().mockResolvedValue([]),
+  getOverview: vi.fn().mockReturnValue(new Promise(() => {})),
 }))
 
 const noReveal = { mounted() {} }

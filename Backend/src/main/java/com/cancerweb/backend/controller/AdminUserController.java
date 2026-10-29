@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cancerweb.backend.dto.AccountStatusRequest;
 import com.cancerweb.backend.dto.ChangeRoleRequest;
 import com.cancerweb.backend.dto.CreateUserRequest;
 import com.cancerweb.backend.dto.UserResponse;
@@ -43,6 +44,13 @@ public class AdminUserController {
     public UserResponse create(@Valid @RequestBody CreateUserRequest request) {
         return UserResponse.from(
                 userService.createAccount(request.fullName(), request.email(), request.password(), request.role()));
+    }
+
+    /** Disable or re-enable an account. A disabled account cannot log in, and its current logins stop working. */
+    @PatchMapping("/{id}/status")
+    public UserResponse setStatus(@PathVariable String id, @Valid @RequestBody AccountStatusRequest request,
+            @AuthenticationPrincipal CurrentUser admin) {
+        return UserResponse.from(userService.setDisabled(admin.id(), id, request.disabled()));
     }
 
     @PatchMapping("/{id}/role")

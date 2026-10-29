@@ -21,6 +21,7 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 
 import com.cancerweb.backend.model.Role;
@@ -42,15 +43,18 @@ class PredictionWorkflowTest extends IntegrationTest {
         String patientId = userService.listAll().getFirst().id();
         byte[] png = samplePng();
 
-        String body = mvc.perform(multipart("/api/predictions")
+        String body = mvc.perform(multipart("/api/predictions").param("view", "CC")
                         .file(new MockMultipartFile("image", "mammo.png", "image/png", png))
                         .cookie(patient).with(csrf()))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.label").value(anyOf(is("benign"), is("malignant"))))
+                .andExpect(jsonPath("$.label").value(anyOf(is("benign"), is("malignant"), is("uncertain"))))
                 .andExpect(jsonPath("$.malignantProbability").isNumber())
                 .andExpect(jsonPath("$.modelVersion").exists())
                 .andExpect(jsonPath("$.demoMode").isBoolean())
                 .andExpect(jsonPath("$.originalFilename").value("mammo.png"))
+                .andExpect(jsonPath("$.view").value("CC"))
+                .andExpect(jsonPath("$.threshold").isNumber())
+                .andExpect(jsonPath("$.lowConfidence").isBoolean())
                 .andExpect(jsonPath("$.ownerId").value(patientId))
                 .andReturn().getResponse().getContentAsString();
         String id = JsonPath.read(body, "$.id");
@@ -69,22 +73,141 @@ class PredictionWorkflowTest extends IntegrationTest {
     @Test
     void rejectsFilesThatAreNotImages() throws Exception {
         Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
-        mvc.perform(multipart("/api/predictions")
+        mvc.perform(multipart("/api/predictions").param("view", "CC")
                         .file(new MockMultipartFile("image", "notes.txt", "text/plain", "hello".getBytes()))
                         .cookie(patient).with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("Upload a PNG or JPG mammogram"));
     }
 
-    private static byte[] samplePng() throws Exception {
-        BufferedImage image = new BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB);
-        for (int x = 0; x < 64; x++) {
-            for (int y = 0; y < 64; y++) {
-                image.setRGB(x, y, (x * 4) << 16 | (y * 4) << 8 | 128);
-            }
+    @Test
+    void retryingAnUploadReturnsTheFirstRecordInsteadOfSavingTwice() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        MockMultipartFile image = new MockMultipartFile("image", "mammo.png", "image/png", samplePng());
+        String uploadId = "3f2b8c1e-7d4a-4b9e-9c2f-1a2b3c4d5e6f";
+
+        String first = mvc.perform(multipart("/api/predictions").param("view", "CC").file(image).param("uploadId", uploadId)
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.uploadId").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        mvc.perform(multipart("/api/predictions").param("view", "CC").file(image).param("uploadId", uploadId).cookie(patient).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value((String) JsonPath.read(first, "$.id")));
+
+        assertThat(mongo.getCollection("predictions").countDocuments()).isEqualTo(1);
+        assertThat(mongo.getCollection("fs.files").countDocuments()).isEqualTo(1);
+    }
+
+    @Test
+    void storesTheTypeFoundInTheFileNotTheOneTheBrowserSent() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        String body = mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "mammo.png", "text/html", samplePng()))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.contentType").value("image/png"))
+                .andReturn().getResponse().getContentAsString();
+        mvc.perform(get("/api/predictions/" + JsonPath.read(body, "$.id") + "/image").cookie(patient))
+                .andExpect(content().contentType("image/png"));
+    }
+
+    @Test
+    void rejectsFilesNamedLikeImagesThatAreNotImages() throws Exception {
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "scan.png", "image/png", "<html>not an image</html>".getBytes()))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Upload a PNG or JPG mammogram"));
+        assertThat(mongo.getCollection("fs.files").countDocuments()).isZero();
+    }
+
+    @Test
+    void rejectsEmptyFilesAndMalformedUploadIds() throws Exception {
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "scan.png", "image/png", new byte[0]))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("The selected file is empty. Upload a PNG or JPG mammogram"));
+        mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "mammo.png", "image/png", samplePng()))
+                        .param("uploadId", "{\"$gt\": \"\"}")
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Invalid upload id"));
+    }
+
+    @Test
+    void theViewIsOptionalButMustBeValidWhenSent() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        mvc.perform(multipart("/api/predictions")
+                        .file(new MockMultipartFile("image", "mammo.png", "image/png", samplePng()))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.view").doesNotExist());
+        for (String view : new String[] { "LATERAL", "cc" }) {
+            mvc.perform(multipart("/api/predictions").param("view", view)
+                            .file(new MockMultipartFile("image", "mammo.png", "image/png", samplePng()))
+                            .cookie(patient).with(csrf()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.detail").value(
+                            "Choose the mammogram view: CC (craniocaudal) or MLO (mediolateral oblique)"));
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
-        return out.toByteArray();
+    }
+
+    @Test
+    void rejectsColourPhotos() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        byte[] photo = new ClassPathResource("preprocessing/colour.png").getContentAsByteArray();
+        mvc.perform(multipart("/api/predictions").param("view", "MLO")
+                        .file(new MockMultipartFile("image", "holiday.png", "image/png", photo))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("not a mammogram")));
+        assertThat(mongo.getCollection("predictions").countDocuments()).isZero();
+    }
+
+    @Test
+    void rejectsGreyImagesThatAreNotMammograms() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        byte[] cartoon = new ClassPathResource("preprocessing/grey_cartoon.png").getContentAsByteArray();
+        mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "cartoon.png", "image/png", cartoon))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("does not look like a mammogram")));
+        assertThat(mongo.getCollection("predictions").countDocuments()).isZero();
+        assertThat(mongo.getCollection("fs.files").countDocuments()).isZero();
+    }
+
+    @Test
+    void modelInfoIsPublic() throws Exception {
+        mvc.perform(get("/api/model"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.available").isBoolean())
+                .andExpect(jsonPath("$.trained").isBoolean())
+                .andExpect(jsonPath("$.threshold").isNumber())
+                .andExpect(jsonPath("$.imageHeight").isNumber());
+    }
+
+    @Test
+    void doctorsCannotUpload() throws Exception {
+        Cookie doctor = signedIn(Role.DOCTOR, "doc@example.com");
+        mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "mammo.png", "image/png", samplePng()))
+                        .cookie(doctor).with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    /** A real CBIS-DDSM mammogram (src/test/resources/preprocessing), so the mammogram check lets it through. */
+    private static byte[] samplePng() throws Exception {
+        return new ClassPathResource("preprocessing/portrait.png").getContentAsByteArray();
     }
 }

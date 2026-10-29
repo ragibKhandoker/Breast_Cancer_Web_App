@@ -1,16 +1,22 @@
 package com.cancerweb.backend.service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -44,36 +50,79 @@ public class PredictionService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("png", "jpg", "jpeg");
     private static final String SHARED_WITH = "sharedWithDoctorIds";
+    private static final byte[] PNG_SIGNATURE = { (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+    private static final byte[] JPEG_SIGNATURE = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF };
+    /** The browser sends a UUID; anything else of a sane length and alphabet is accepted too. */
+    private static final Pattern UPLOAD_ID = Pattern.compile("[A-Za-z0-9-]{8,64}");
+    /** Craniocaudal and mediolateral oblique, the two standard mammogram views the model was trained on. */
+    public static final Set<String> VIEWS = Set.of("CC", "MLO");
 
     private final PredictionRepository repository;
     private final MongoTemplate mongo;
     private final GridFsTemplate gridFs;
-    private final OnnxPredictor predictor;
+    private final CancerModel predictor;
+    private final MammogramGate gate;
     private final UserRepository users;
 
     public PredictionService(PredictionRepository repository, MongoTemplate mongo, GridFsTemplate gridFs,
-            OnnxPredictor predictor, UserRepository users) {
+            CancerModel predictor, MammogramGate gate, UserRepository users) {
         this.repository = repository;
         this.mongo = mongo;
         this.gridFs = gridFs;
         this.predictor = predictor;
+        this.gate = gate;
         this.users = users;
     }
 
-    public Prediction analyse(MultipartFile file, CurrentUser owner) throws IOException {
+    /**
+     * Checks, analyses and stores one mammogram. With an {@code uploadId}, repeating the same upload (a retry
+     * after a dropped connection) returns the record the first attempt created instead of storing a second one.
+     */
+    public Prediction analyse(MultipartFile file, String view, String uploadId, CurrentUser owner) throws IOException {
+        // The view is optional (the upload page no longer asks for it); a value that is sent must be valid.
+        if (view != null && !view.isBlank() && !VIEWS.contains(view)) {
+            throw new IllegalArgumentException("Choose the mammogram view: CC (craniocaudal) or MLO (mediolateral oblique)");
+        }
+        if (uploadId != null && !UPLOAD_ID.matcher(uploadId).matches()) {
+            throw new IllegalArgumentException("Invalid upload id");
+        }
+        if (uploadId != null) {
+            Optional<Prediction> earlier = repository.findByOwnerIdAndUploadId(owner.id(), uploadId);
+            if (earlier.isPresent()) {
+                return earlier.get();
+            }
+        }
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("The selected file is empty. Upload a PNG or JPG mammogram");
+        }
         String filename = file.getOriginalFilename() == null ? "image" : file.getOriginalFilename();
-        if (file.isEmpty() || !ALLOWED_EXTENSIONS.contains(extension(filename))) {
+        byte[] bytes = file.getBytes();
+        // The type comes from the file's own bytes, not the name or the browser's Content-Type, and it is the
+        // type the image is later served with.
+        String contentType = detectImageType(bytes);
+        if (!ALLOWED_EXTENSIONS.contains(extension(filename)) || contentType == null) {
             throw new IllegalArgumentException("Upload a PNG or JPG mammogram");
         }
 
-        MlPrediction result = predictor.predict(file.getBytes());
+        // Refuse colour photos, then anything the mammogram check does not recognise, before any analysis.
+        BufferedImage image = OnnxPredictor.readMammogram(bytes);
+        byte[] gray = OnnxPredictor.grayscale(image);
+        gate.requireMammogram(gray, image.getWidth(), image.getHeight());
+        MlPrediction result = predictor.predict(image, gray);
 
-        ObjectId imageId = gridFs.store(file.getInputStream(), filename, file.getContentType());
-        Prediction prediction = new Prediction(null, filename, file.getContentType(), file.getSize(),
+        ObjectId imageId = gridFs.store(new ByteArrayInputStream(bytes), filename, contentType);
+        Prediction prediction = new Prediction(null, filename, contentType, bytes.length,
                 imageId.toHexString(), result.label(), result.malignantProbability(),
                 result.benignProbability(), result.modelVersion(), result.demoMode(), Instant.now(),
-                owner.id(), List.of());
-        return repository.save(prediction);
+                owner.id(), List.of(), uploadId, view == null || view.isBlank() ? null : view, result.threshold(),
+                result.lowConfidence());
+        try {
+            return repository.save(prediction);
+        } catch (DuplicateKeyException e) {
+            // Two attempts of the same upload ran at once and the other one saved first: keep only its record.
+            gridFs.delete(byFileId(imageId.toHexString()));
+            return repository.findByOwnerIdAndUploadId(owner.id(), uploadId).orElseThrow(() -> e);
+        }
     }
 
     /** The patient's own history, newest first. */
@@ -175,6 +224,21 @@ public class PredictionService {
 
     private static Query byFileId(String fileId) {
         return Query.query(Criteria.where("_id").is(new ObjectId(fileId)));
+    }
+
+    /** "image/png" or "image/jpeg" from the file signature, or null for anything else. */
+    static String detectImageType(byte[] bytes) {
+        if (startsWith(bytes, PNG_SIGNATURE)) {
+            return "image/png";
+        }
+        if (startsWith(bytes, JPEG_SIGNATURE)) {
+            return "image/jpeg";
+        }
+        return null;
+    }
+
+    private static boolean startsWith(byte[] bytes, byte[] prefix) {
+        return bytes.length >= prefix.length && Arrays.equals(bytes, 0, prefix.length, prefix, 0, prefix.length);
     }
 
     private static String extension(String filename) {

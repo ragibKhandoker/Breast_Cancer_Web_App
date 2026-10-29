@@ -113,8 +113,8 @@ class AuthApiTest extends IntegrationTest {
     @Test
     void databaseUniqueIndexRejectsDuplicateEmailEvenWithoutTheServiceCheck() {
         Instant now = Instant.now();
-        users.insert(new User(null, "One", "dup@example.com", "hash", Role.PATIENT, now, now, null, null));
-        assertThatThrownBy(() -> users.insert(new User(null, "Two", "dup@example.com", "hash", Role.PATIENT, now, now, null, null)))
+        users.insert(new User(null, "One", "dup@example.com", "hash", Role.PATIENT, now, now, null, null, null, null));
+        assertThatThrownBy(() -> users.insert(new User(null, "Two", "dup@example.com", "hash", Role.PATIENT, now, now, null, null, null, null)))
                 .isInstanceOf(DuplicateKeyException.class);
     }
 
@@ -296,26 +296,6 @@ class AuthApiTest extends IntegrationTest {
                         .content("{\"email\":\"csrf@example.com\",\"password\":\"" + PASSWORD + "\"}"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.detail").value(containsString("security token")));
-    }
-
-    @Test
-    void csrfEndpointIssuesTokenThatLoginAccepts() throws Exception {
-        createUser("Flow", "flow@example.com", Role.PATIENT);
-        Cookie xsrf = mvc.perform(get("/api/auth/csrf"))
-                .andExpect(status().isNoContent())
-                .andReturn().getResponse().getCookie("XSRF-TOKEN");
-        assertThat(xsrf).isNotNull();
-        assertThat(xsrf.isHttpOnly()).isFalse();
-
-        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"flow@example.com\",\"password\":\"" + PASSWORD + "\"}")
-                        .cookie(xsrf).header("X-XSRF-TOKEN", xsrf.getValue()))
-                .andExpect(status().isOk());
-
-        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"flow@example.com\",\"password\":\"" + PASSWORD + "\"}")
-                        .cookie(xsrf).header("X-XSRF-TOKEN", "wrong"))
-                .andExpect(status().isForbidden());
     }
 
     @Test

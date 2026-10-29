@@ -1,57 +1,86 @@
-"""Export the model to ONNX so Spring Boot can run it with ONNX Runtime.
+"""Export the trained model to ONNX so Spring Boot can run it with ONNX Runtime on the server's CPU.
 
-Run: python export_onnx.py
-Reads weights/model.pt if it exists (from train.py); otherwise exports an untrained demo model.
-Writes weights/model.onnx.
+Run: python export_onnx.py           (after train.py and evaluate.py)  -> weights/model.onnx
+     python export_onnx.py --demo    untrained placeholder, so the site can start before a model exists
 
-The exported graph takes RGB pixels in [0, 1], shape [1, 3, 512, 512], and does the ImageNet
-normalisation and softmax itself, so the Java side only has to resize and scale the image.
+The graph takes RGB pixels in [0, 1], shape [1, 3, IMAGE_HEIGHT, IMAGE_WIDTH], and returns
+[benign, malignant] probabilities; normalisation and softmax are inside it, so Java only resizes and scales.
+
+Metadata the backend reads: version, trained, classes, threshold, image_height, image_width and metrics (the
+JSON from evaluate.py). Export stops if metrics.json was not measured on this exact model.pt, so the website can
+never show numbers that belong to a different model.
 """
+import argparse
+import inspect
+import json
+import sys
+
 import onnx
 import torch
 
-from model import CLASSES, IMAGE_SIZE, WEIGHTS_PATH, build_model
+from evaluate import file_sha256
+from model import CLASSES, IMAGE_HEIGHT, IMAGE_WIDTH, METRICS_PATH, WEIGHTS_PATH, build_model, load_trained
 
 ONNX_PATH = WEIGHTS_PATH.with_suffix(".onnx")
 
 
-class ExportWrapper(torch.nn.Module):
+class ProbabilityOutput(torch.nn.Module):
     def __init__(self, model):
         super().__init__()
         self.model = model
-        self.register_buffer("mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
-        self.register_buffer("std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
 
     def forward(self, image):
-        return torch.softmax(self.model((image - self.mean) / self.std), dim=1)
+        return self.model(image, probabilities=True)
 
 
 def main():
-    trained = WEIGHTS_PATH.exists()
-    model = build_model(pretrained_backbone=not trained)
-    version = "untrained-demo"
-    if trained:
-        checkpoint = torch.load(WEIGHTS_PATH, map_location="cpu")
-        model.load_state_dict(checkpoint["state_dict"])
-        version = checkpoint.get("version", "efficientnet_b0")
+    # The PyTorch exporter prints emoji, which a Windows console cannot encode.
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(errors="replace")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--demo", action="store_true", help="export an untrained placeholder model")
+    args = parser.parse_args()
 
-    wrapper = ExportWrapper(model).eval()
+    if args.demo:
+        model, version, threshold, metrics = build_model(init="imagenet").eval(), "untrained-demo", 0.5, None
+    else:
+        if not WEIGHTS_PATH.exists():
+            raise SystemExit(f"{WEIGHTS_PATH} not found. Run train.py first (or --demo for a placeholder).")
+        if not METRICS_PATH.exists():
+            raise SystemExit(f"{METRICS_PATH} not found. Run evaluate.py first.")
+        metrics = json.loads(METRICS_PATH.read_text())
+        if metrics.get("model_sha256") != file_sha256(WEIGHTS_PATH):
+            raise SystemExit("metrics.json was measured on a different model.pt. Run evaluate.py again.")
+        model, checkpoint = load_trained()
+        version, threshold = checkpoint["version"], checkpoint["threshold"]
+
     ONNX_PATH.parent.mkdir(exist_ok=True)
+    # Keep the weights inside the one .onnx file; older PyTorch versions (as on Kaggle) always do and lack the flag.
+    options = {"external_data": False} if "external_data" in inspect.signature(torch.onnx.export).parameters else {}
     torch.onnx.export(
-        wrapper,
-        torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE),
+        ProbabilityOutput(model).eval(),
+        torch.rand(1, 3, IMAGE_HEIGHT, IMAGE_WIDTH),
         ONNX_PATH,
         input_names=["image"],
         output_names=["probabilities"],
-        external_data=False,
+        **options,
     )
 
-    # Metadata the backend reads to label results and to warn when the model is untrained.
     onnx_model = onnx.load(ONNX_PATH)
-    for key, value in {"version": version, "trained": str(trained).lower(), "classes": ",".join(CLASSES)}.items():
+    props = {
+        "version": version,
+        "trained": str(not args.demo).lower(),
+        "classes": ",".join(CLASSES),
+        "threshold": f"{threshold:.6f}",
+        "image_height": str(IMAGE_HEIGHT),
+        "image_width": str(IMAGE_WIDTH),
+    }
+    if metrics:
+        props["metrics"] = json.dumps(metrics, separators=(",", ":"))
+    for key, value in props.items():
         onnx_model.metadata_props.add(key=key, value=value)
     onnx.save(onnx_model, ONNX_PATH)
-    print(f"exported {ONNX_PATH} (version={version}, trained={trained})")
+    print(f"exported {ONNX_PATH} (version={version}, trained={not args.demo}, threshold={threshold:.3f})")
 
 
 if __name__ == "__main__":

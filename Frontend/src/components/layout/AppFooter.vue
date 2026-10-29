@@ -1,7 +1,8 @@
 <script setup>
 import AppIcon from '../common/AppIcon.vue'
 import BrandLogo from './BrandLogo.vue'
-import { CONTACT, SOCIAL_LINKS } from '../../config/siteConfig'
+import { computed } from 'vue'
+import { site } from '../../config/siteSettings'
 import { APP_ROUTES } from '../../config/appRoutes'
 
 const quickLinks = [
@@ -16,12 +17,15 @@ const legalLinks = [
   { to: '/privacy', label: 'Privacy Policy' },
   { to: '/terms', label: 'Terms of Service' },
 ]
-const contacts = [
-  { icon: 'phone', label: 'Phone', value: CONTACT.phone, href: `tel:${CONTACT.phone.replace(/[^\d+]/g, '')}` },
-  { icon: 'mail', label: 'Email', value: CONTACT.email, href: `mailto:${CONTACT.email}` },
-  { icon: 'map-pin', label: 'Address', value: CONTACT.address },
-]
-const socials = Object.entries(SOCIAL_LINKS).filter(([, url]) => url)
+// From the Admin Console's website settings (or siteConfig.js defaults); empty values are hidden.
+const contacts = computed(() =>
+  [
+    { icon: 'phone', label: 'Phone', value: site.contact.phone, href: `tel:${(site.contact.phone ?? '').replace(/[^\d+]/g, '')}` },
+    { icon: 'mail', label: 'Email', value: site.contact.email, href: `mailto:${site.contact.email}` },
+    { icon: 'map-pin', label: 'Address', value: site.contact.address },
+  ].filter((item) => item.value),
+)
+const socials = computed(() => Object.entries(site.social).filter(([, url]) => url))
 const year = new Date().getFullYear()
 </script>
 

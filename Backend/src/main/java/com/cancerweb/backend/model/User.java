@@ -11,7 +11,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * the API directly: controllers map it to UserResponse or ProfileResponse so the password hash cannot leak.
  *
  * <p>{@code passwordChangedAt} (whole seconds) invalidates every login token issued before the last password
- * change. Older documents have neither it nor {@code profile}; both read as null.
+ * change. {@code disabled} is set by an administrator: the account can neither log in nor use an existing
+ * login. Older documents lack the newer fields; they read as null, meaning "not set" / "not disabled".
  */
 @Document("users")
 public record User(
@@ -23,9 +24,15 @@ public record User(
         Instant createdAt,
         Instant updatedAt,
         UserProfile profile,
-        Instant passwordChangedAt) {
+        Instant passwordChangedAt,
+        Boolean disabled,
+        Instant lastLoginAt) {
 
     public UserProfile profile() {
         return profile == null ? UserProfile.EMPTY : profile;
+    }
+
+    public boolean isDisabled() {
+        return Boolean.TRUE.equals(disabled);
     }
 }

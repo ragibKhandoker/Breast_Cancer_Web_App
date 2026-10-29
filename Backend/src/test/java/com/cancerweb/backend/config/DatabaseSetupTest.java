@@ -43,6 +43,7 @@ class DatabaseSetupTest extends IntegrationTest {
         assertThat(email.isUnique()).isTrue();
         assertThat(index("predictions", "owner_createdAt")).isNotNull();
         assertThat(index("predictions", "sharedWithDoctorIds")).isNotNull();
+        assertThat(index("predictions", "owner_uploadId_unique").isUnique()).isTrue();
         assertThat(index("revoked_tokens", "expiresAt_ttl").getExpireAfter()).contains(Duration.ZERO);
     }
 

@@ -4,7 +4,7 @@ import PinkRibbon from '../common/PinkRibbon.vue'
 import MammogramMonitor from '../common/MammogramMonitor.vue'
 import LeafSpray from '../common/LeafSpray.vue'
 import YouTubeEmbed from '../common/YouTubeEmbed.vue'
-import { HERO_VIDEO_URL } from '../../config/siteConfig'
+import { site } from '../../config/siteSettings'
 import { APP_ROUTES } from '../../config/appRoutes'
 </script>
 
@@ -30,12 +30,12 @@ import { APP_ROUTES } from '../../config/appRoutes'
       <div v-reveal="200" class="art">
         <LeafSpray class="leaf leaf-left" aria-hidden="true" />
         <LeafSpray class="leaf leaf-right" aria-hidden="true" />
-        <YouTubeEmbed v-if="HERO_VIDEO_URL" :url="HERO_VIDEO_URL" title="Breast cancer awareness video" class="video-frame" />
+        <YouTubeEmbed v-if="site.heroVideoUrl" :url="site.heroVideoUrl" title="Breast cancer awareness video" class="video-frame" />
         <MammogramMonitor v-else class="monitor" aria-hidden="true" />
         <PinkRibbon class="ribbon" :size="110" aria-hidden="true" />
         <AppIcon name="heart" class="float-heart h1" :size="26" />
         <AppIcon name="heart" class="float-heart h2" :size="20" />
-        <AppIcon v-if="!HERO_VIDEO_URL" name="heart" class="float-heart h3" :size="16" />
+        <AppIcon v-if="!site.heroVideoUrl" name="heart" class="float-heart h3" :size="16" />
       </div>
     </div>
   </section>

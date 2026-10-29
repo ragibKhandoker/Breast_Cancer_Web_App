@@ -56,7 +56,7 @@ public abstract class IntegrationTest {
 
     private static final TransitionWalker.ReachedState<RunningMongodProcess> MONGOD = startMongod();
     private static final List<String> COLLECTIONS =
-            List.of("users", "predictions", "revoked_tokens", "contact_messages", "fs.files", "fs.chunks");
+            List.of("users", "predictions", "revoked_tokens", "contact_messages", "site_settings", "fs.files", "fs.chunks");
 
     @Autowired
     protected MockMvc mvc;

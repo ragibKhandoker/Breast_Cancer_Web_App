@@ -6,17 +6,17 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
-import com.cancerweb.backend.service.OnnxPredictor;
+import com.cancerweb.backend.service.CancerModel;
 
 /** Prints whether MongoDB and the model are ready, plus the URLs, once the server has started. */
 @Component
 public class StartupReport {
 
     private final MongoTemplate mongo;
-    private final OnnxPredictor predictor;
+    private final CancerModel predictor;
     private final Environment env;
 
-    public StartupReport(MongoTemplate mongo, OnnxPredictor predictor, Environment env) {
+    public StartupReport(MongoTemplate mongo, CancerModel predictor, Environment env) {
         this.mongo = mongo;
         this.predictor = predictor;
         this.env = env;

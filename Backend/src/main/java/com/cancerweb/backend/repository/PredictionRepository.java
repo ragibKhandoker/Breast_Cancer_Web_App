@@ -1,6 +1,7 @@
 package com.cancerweb.backend.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -14,4 +15,7 @@ public interface PredictionRepository extends MongoRepository<Prediction, String
     List<Prediction> findAllBySharedWithDoctorIdsOrderByCreatedAtDesc(String doctorId);
 
     long countByOwnerIdIsNull();
+
+    /** The record an earlier attempt of the same upload created, if any. */
+    Optional<Prediction> findByOwnerIdAndUploadId(String ownerId, String uploadId);
 }

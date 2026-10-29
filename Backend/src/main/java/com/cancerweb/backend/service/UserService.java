@@ -63,7 +63,7 @@ public class UserService {
         }
         Instant now = Instant.now();
         User user = new User(null, fullName.strip(), normalizedEmail, passwordEncoder.encode(password), role, now, now,
-                null, null);
+                null, null, null, null);
         try {
             return users.insert(user);
         } catch (DuplicateKeyException e) {
@@ -97,12 +97,35 @@ public class UserService {
             return user;
         }
         // Only role and updatedAt change, so a profile edit the user makes at the same moment is not lost.
-        User updated = mongo.findAndModify(Query.query(Criteria.where("id").is(userId)),
-                new Update().set("role", role).set("updatedAt", Instant.now()),
-                FindAndModifyOptions.options().returnNew(true), User.class);
+        return modify(userId, new Update().set("role", role).set("updatedAt", Instant.now()));
+    }
+
+    /**
+     * Disabling stops the account from logging in and ends its current logins on their next request
+     * (TokenUserConverter checks it). An administrator cannot disable their own account.
+     */
+    public User setDisabled(String adminId, String userId, boolean disabled) {
+        if (adminId.equals(userId)) {
+            throw new IllegalArgumentException("You cannot disable your own account.");
+        }
+        get(userId);
+        return modify(userId, new Update().set("disabled", disabled).set("updatedAt", Instant.now()));
+    }
+
+    /** Called after a successful login, for the administrator's user list. */
+    public void recordLogin(String userId) {
+        mongo.updateFirst(byId(userId), new Update().set("lastLoginAt", Instant.now()), User.class);
+    }
+
+    private User modify(String userId, Update update) {
+        User updated = mongo.findAndModify(byId(userId), update, FindAndModifyOptions.options().returnNew(true), User.class);
         if (updated == null) {
             throw new UserNotFoundException("User not found");
         }
         return updated;
+    }
+
+    private static Query byId(String userId) {
+        return Query.query(Criteria.where("id").is(userId));
     }
 }

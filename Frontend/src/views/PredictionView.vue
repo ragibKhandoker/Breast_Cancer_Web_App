@@ -1,73 +1,47 @@
 <script setup>
-import { ref, onBeforeUnmount } from 'vue'
-import { analyzeImage, errorMessage } from '../services/predictionService'
+import { ref, nextTick } from 'vue'
+import MammogramUpload from '../components/prediction/MammogramUpload.vue'
 import ResultCard from '../components/prediction/ResultCard.vue'
+import ModelPerformance from '../components/prediction/ModelPerformance.vue'
+import { APP_ROUTES } from '../config/appRoutes'
 
-const file = ref(null)
-const previewUrl = ref('')
+// The report the backend returned for the last upload. Nothing is shown until the backend has saved it.
 const result = ref(null)
-const error = ref('')
-const loading = ref(false)
-const dragging = ref(false)
+const resultHeading = ref(null)
 
-function selectFile(selected) {
-  if (!selected) return
-  file.value = selected
-  result.value = null
-  error.value = ''
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-  previewUrl.value = URL.createObjectURL(selected)
+async function onUploaded(report) {
+  result.value = report
+  await nextTick()
+  resultHeading.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
-
-function onDrop(event) {
-  dragging.value = false
-  selectFile(event.dataTransfer.files[0])
-}
-
-async function analyze() {
-  loading.value = true
-  error.value = ''
-  try {
-    result.value = await analyzeImage(file.value)
-  } catch (err) {
-    error.value = errorMessage(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-onBeforeUnmount(() => previewUrl.value && URL.revokeObjectURL(previewUrl.value))
 </script>
 
 <template>
   <div class="photo-bg photo-bg--prediction">
     <section class="container page">
       <div v-reveal class="glass-panel panel">
-        <h1>Mammography Prediction</h1>
-        <p class="muted">
-          Upload a PNG or JPG mammogram, up to 50 MB. <RouterLink to="/history" class="history-link">View past results</RouterLink>
+        <h1>Upload Your Mammogram</h1>
+        <p class="intro">
+          Choose a mammogram image from your device. After you upload it, our AI model estimates the probability that
+          it shows signs of malignancy, and the image and result are saved to your account so you can review them later
+          or share them with your doctor.
+          <RouterLink :to="APP_ROUTES.history" class="history-link">View past results</RouterLink>
         </p>
 
-        <label
-          class="dropzone"
-          :class="{ dragging }"
-          @dragover.prevent="dragging = true"
-          @dragleave="dragging = false"
-          @drop.prevent="onDrop"
-        >
-          <input type="file" accept=".png,.jpg,.jpeg" hidden @change="selectFile($event.target.files[0])" />
-          <img v-if="previewUrl" :src="previewUrl" alt="Selected mammogram" class="upload-preview" />
-          <span v-else>Drop an image here or click to choose</span>
-        </label>
+        <MammogramUpload @uploaded="onUploaded" @reset="result = null" />
 
-        <button class="btn btn-primary" :disabled="!file || loading" @click="analyze">
-          {{ loading ? 'Analyzing…' : 'Analyze' }}
-        </button>
+        <section v-if="result" class="result-section" aria-labelledby="result-title">
+          <h2 id="result-title" ref="resultHeading" class="result-title">Your result</h2>
+          <ResultCard :prediction="result" />
+          <p class="next">
+            <RouterLink :to="`/reports/${result.id}`" class="history-link">Open the report to share it with a doctor</RouterLink>
+          </p>
+        </section>
 
-        <p v-if="error" class="error">{{ error }}</p>
-        <ResultCard v-if="result" :prediction="result" />
-        <p v-if="result" class="next">
-          <RouterLink :to="`/reports/${result.id}`" class="history-link">Open the report to share it with a doctor</RouterLink>
+        <ModelPerformance class="performance-section" :highlight-view="result?.view ?? ''" />
+
+        <p class="disclaimer">
+          For research and education only. This tool is not a medical device and does not replace a radiologist or doctor.
         </p>
       </div>
     </section>
@@ -75,17 +49,19 @@ onBeforeUnmount(() => previewUrl.value && URL.revokeObjectURL(previewUrl.value))
 </template>
 
 <style scoped>
-.panel { max-width: 720px; margin: 1rem auto 0; }
-.history-link { color: var(--pink-600); font-weight: 600; }
+.panel { max-width: 1040px; margin: 1rem auto 0; }
+.intro { max-width: 68ch; margin: 0.35rem 0 0; line-height: 1.6; color: var(--purple-900); }
+.history-link { color: var(--pink-600); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.history-link:focus-visible { outline: 3px solid var(--purple-900); outline-offset: 2px; border-radius: 4px; }
+.result-section { margin-top: 2rem; scroll-margin-top: 6rem; }
+.result-title { margin: 0; color: var(--purple-900); font-size: 1.3rem; scroll-margin-top: 6rem; }
+.result-section :deep(.result) { margin-top: 0.75rem; }
 .next { margin: 1rem 0 0; }
+.performance-section { margin-top: 2rem; }
+.disclaimer { margin-top: 1.5rem; color: var(--purple-900); }
 
-/* Blurred, see-through drop area so the photo behind stays visible but soft. */
-.dropzone {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(14px);
-  border-color: rgba(216, 27, 106, 0.55);
-  color: var(--purple-900);
-  font-weight: 500;
+@media (max-width: 600px) {
+  .panel { padding: 1.25rem; }
+  .page h1 { font-size: 1.5rem; }
 }
-.dropzone.dragging { background: rgba(253, 227, 239, 0.6); border-color: var(--pink-600); }
 </style>

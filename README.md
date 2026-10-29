@@ -77,7 +77,10 @@ Spring Boot 4 reads the URI as `spring.mongodb.uri=${MONGODB_URI}` (Boot 3 calle
 | `predictions` | each scan's metadata and report, plus `ownerId` and `sharedWithDoctorIds` | `owner_createdAt`, `sharedWithDoctorIds` |
 | `fs.files`, `fs.chunks` | the uploaded images (GridFS) | created by GridFS |
 | `revoked_tokens` | logged-out tokens (`_id` = token id) until they would have expired | `expiresAt_ttl` (TTL: MongoDB deletes expired entries) |
-| `contact_messages` | Contact form messages | — |
+| `contact_messages` | Contact form messages, with `status` NEW/READ (older messages without it count as NEW) | `status_createdAt` |
+| `site_settings` | one document (`_id: "site"`): footer contacts, social links, Home video, announcement, who saved it last | — |
+
+`users` also holds `disabled` and `lastLoginAt`, and `predictions` / `users` get `createdAt` / `role` indexes for the admin overview. All are created at startup; older documents need no migration.
 
 Scans and their reports are one `predictions` document each, so there are no separate `scans` / `reports` collections.
 
@@ -88,23 +91,73 @@ db.predictions.updateOne({ _id: ObjectId("<prediction id>") }, { $set: { ownerId
 
 ## 2. The model (ONNX)
 
-`ML-Service/weights/model.onnx` is what the backend loads. A demo version is already exported. It is untrained, so its numbers are random, and the website shows a "Demo mode" warning.
+`ML-Service/weights/model.onnx` is what the backend loads and runs **on the server's CPU** with ONNX Runtime. Visitors' devices only upload the image, so no one needs a GPU to use the site. Training is a one-time developer step done on Kaggle, never on the machine that runs the website.
 
-To get real predictions, train on mammograms (for example CBIS-DDSM). Use a GPU, such as Google Colab or Kaggle:
+The model file carries its own test results (accuracy, precision, recall, specificity, F1, ROC-AUC, overall and for CC and MLO views). The website shows exactly those numbers (`GET /api/model`, the "How accurate is this model?" panel on `/prediction`). A model without them runs in **demo mode**: results are marked meaningless and no accuracy is shown.
 
+### What runs on the server (CPU, about 6 seconds per image)
+
+1. **Colour check**: colour photos are refused (mammograms are grayscale).
+2. **Mammogram check** (`weights/gate/gate.onnx`, MobileNetV3, `ML-Service/train_gate.py`): refuses anything that is not a mammogram, such as grey cartoons, photos, drawings, chest or dental X-rays, ultrasound and documents. Without this file every upload is refused.
+3. **Cancer estimate**, three models in two stages, each joined by logistic regression on logits:
+   - the ResNet50 fine-tuned on CBIS-DDSM below (`weights/model.onnx`, 0.2 s) and net0 of [ianpan/mammoscreen](https://huggingface.co/ianpan/mammoscreen) (Apache-2.0) with [ianpan/mammo-crop](https://huggingface.co/ianpan/mammo-crop) (`weights/mammoscreen/`, 1.7 s), combined as in `weights/ensemble/ensemble.json` (`ML-Service/compare_ensemble.py`);
+   - that estimate joined with fold 0 of the **RSNA 2023 Screening Mammography Breast Cancer Detection 1st-place model** ([dangnh0611](https://github.com/dangnh0611/kaggle_rsna_breast_cancer), MIT; ConvNeXt-small at 2048 x 1024, `weights/firstplace/firstplace_fold0.onnx`, 3.8 s), as in `weights/final/final.json` (`ML-Service/calibrate_final.py`).
+4. **Result**: *Malignant* when the final estimate is 50% or more (the larger of the two percentages), otherwise *Benign*; both percentages are shown.
+
+Each stage falls back when a file is missing: without the 1st-place model the two-model combination is used, without mammoscreen the ResNet alone.
+
+**Why INbreast decides**: the 1st-place model was trained on RSNA, VinDr-Mammo, MiniDDSM (which contains CBIS-DDSM), CMMD, CDD-CESM and BMCD, so CBIS-DDSM and VinDr can no longer test it fairly. INbreast (Portugal, digital, 410 images, 108 patients) is in no model's training data. The final combination was fitted and tested on INbreast by patient-split cross-validation (fitted on half the patients, scored on the other half, 20 random splits), so every reported score comes from a fit that never saw that patient.
+
+| INbreast, unseen patients | Current two-model estimate | 1st-place fold 0 alone | **Final (installed)** |
+|---|---|---|---|
+| ROC-AUC, BI-RADS 5-6 vs 1-3 | 0.916 | 0.925 | **0.948** (over 20 splits 0.911-0.948) |
+| ROC-AUC, BI-RADS 4-6 vs 1-3 | 0.844 | 0.847 | **0.871** |
+| At 50%: accuracy / cancers found / benign right (5-6 vs 1-3) | 89.1% / 78.9% / 91.0% | - | **93.7% / 68.4% / 98.4%** |
+
+INbreast is small, so the intervals are wide; its labels are BI-RADS (6 = biopsy-proven). The earlier two-model results on CBIS-DDSM and VinDr are below.
+
+**Earlier two-model results** (ROC-AUC; sensitivity / specificity at its threshold):
+
+| Test set | ResNet alone | mammoscreen net0 alone | **Combined (installed)** |
+|---|---|---|---|
+| CBIS-DDSM test, 595 images, biopsy-proven malignant vs benign | 0.760 | 0.681 | **0.786** (62% / 82%) |
+| VinDr-Mammo test, 2,218 images, BI-RADS 4-5 vs 1-3 | 0.652 | 0.637 | **0.712** (56% / 76%) |
+| VinDr-Mammo test, BI-RADS 4-5 vs normal (BI-RADS 1) | 0.636 | 0.684 | **0.710** (56% / 77%) |
+
+Mammogram check, on images it never saw while training: grey cartoons 99.9% refused, sketches 99.3% refused; mammograms from an unseen source (MIAS) 89.8% accepted, so a few real mammograms from new machines can be refused. The final check was trained on all categories.
+
+Other models tried and not used: the original Hugging Face classifier (ROC-AUC 0.55, found 2% of cancers), mammoscreen's full 3-net ensemble (no better than net0 here, 5 s per image), `edziocodes/medgemma-breast-cancer` (a 4-billion-parameter chat model trained on 256 px slices; about 10 GB, minutes per image on a CPU).
+
+> These numbers are far from perfect: the estimate misses cancers and raises false alarms. VinDr labels are radiologists' BI-RADS, not biopsies. Research and education only.
+
+**Files to deploy** (all git-ignored, about 390 MB): `weights/model.onnx`, `weights/mammoscreen/crop.onnx`, `weights/mammoscreen/net0.onnx`, `weights/ensemble/ensemble.json`, `weights/firstplace/firstplace_fold0.onnx`, `weights/final/final.json`, `weights/gate/gate.onnx`, `weights/gate/gate_metrics.json`. Paths can be changed with `MODEL_PATH`, `MAMMOSCREEN_DIR`, `ENSEMBLE_PATH`, `FIRSTPLACE_PATH`, `FINAL_PATH` and `GATE_PATH`. Kaggle notebooks that rebuild them: `kaggle_train.ipynb` (ResNet), `kaggle_mammoscreen.ipynb` (mammoscreen export), `kaggle_gate.ipynb` (mammogram check); `compare_ensemble.py` produced the combination.
+
+### The model and why it is retrained
+
+- Starting point: the ResNet50 mammography classifier from [umairinayat/medical-models](https://huggingface.co/umairinayat/medical-models) (MIT). Its card reports 99.6% accuracy, but that was measured on a random split of heavily augmented lesion crops (about 72 copies of each INbreast image), where copies of the same lesion are in training and test. On real full mammograms from unseen patients it scored **59% accuracy, ROC-AUC 0.55, and caught 2% of cancers** (5 of 244; `ML-Service/weights/hf_baseline_metrics.json`). Those published numbers are therefore not used anywhere.
+- It is fine-tuned on **CBIS-DDSM full mammograms, both CC and MLO views** (TCIA, CC BY 3.0; 3,086 images via Hugging Face `dbaek111/CBIS-DDSM_1024`, labels from `FLARE25-Agent-Xray/CBIS-DDSM`). Splits are **by patient**: test = the official CBIS-DDSM test set minus patients also in training; validation = 15% of training patients. The best epoch and the decision threshold are chosen on validation; the test set is used once, at the end.
+- Classes: benign / malignant (CBIS-DDSM has no normal images). The result is flagged as uncertain when the probability is within 10 points of the threshold.
+- The backend prepares images exactly like training (grayscale, Pillow-identical bilinear resize to 512 x 512; checked by `PreprocessingTest`) and refuses colour photos, which are not mammograms.
+
+### Train on Kaggle (free GPU, about 30-60 minutes)
+
+1. Sign in at https://www.kaggle.com, verify your phone number once (needed for internet access in notebooks).
+2. **Create → New Notebook → File → Import Notebook**, and upload `ML-Service/kaggle_train.ipynb`.
+3. In the notebook's right-hand panel: **Accelerator → GPU T4 x2**, **Internet → On**.
+4. **Run All**. The notebook downloads the starting model and the data (checking their SHA-256), splits by patient, trains, tests, exports `model.onnx`, and checks that ONNX gives the same answers as PyTorch. The last cell prints the test results.
+5. From the **Output** panel download `breastcare_model.zip`, unzip it into `ML-Service/weights/` (replacing `model.onnx`), and restart the backend. The startup log shows the model version; `/prediction` now shows its test results.
+
+To deploy, copy the files listed above to the server (see **Files to deploy**).
+
+If you change any script in `ML-Service`, run `python make_kaggle_notebook.py` so the notebook carries the new version. The scripts can also run on any CUDA GPU machine directly: `python download_pretrained.py`, `prepare_cbis.py`, `train.py`, `evaluate.py`, `export_onnx.py` (on a GTX 16xx card add `--no-amp` to `train.py`; its fp16 gives NaN).
+
+Optional check that the backend gives the same probability as Python for a model (`portrait.png` is in `Backend/src/test/resources/preprocessing`):
 ```powershell
-cd ML-Service
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu   # or the CUDA build on a GPU
-pip install -r requirements.txt
-
-# data/train/{benign,malignant}/*.png and data/val/{benign,malignant}/*.png
-python train.py --data data --epochs 15     # -> weights/model.pt
-python export_onnx.py                       # -> weights/model.onnx
+$env:PARITY_MODEL="..\ML-Service\weights\model.onnx"; $env:PARITY_EXPECTED="<P(malignant) from Python>"
+.\mvnw.cmd test -Dtest=ModelParityCheck
 ```
 
-Restart the backend to load the new model. If you train on Colab, copy `model.onnx` into `ML-Service/weights/`.
+> Limits: CBIS-DDSM test images all have a biopsy-checked finding, so performance on routine screening (mostly normal images) is not measured, and real-world results can be lower. Research and education only.
 
 ## 3. Run the website
 
@@ -131,7 +184,7 @@ Port 8080 is not used, because Apache/XAMPP runs there on this machine. To chang
 |---|---|---|
 | **PATIENT** | signing up at `/register` | analyse mammograms; see, delete and share **only their own** reports (`/dashboard`, `/prediction`, `/history`, `/reports/{id}`) |
 | **DOCTOR** | an administrator creating it, or changing a user's role | see the reports patients have **shared with them** (`/doctor`, `/reports/{id}`); cannot upload or delete |
-| **ADMIN** | `ADMIN_EMAIL`/`ADMIN_PASSWORD` on first start, or another admin | list users, create accounts with any role, change roles (`/admin`). **Cannot read medical records.** Cannot change their own role, so there is always an admin |
+| **ADMIN** | `ADMIN_EMAIL`/`ADMIN_PASSWORD` on first start, or another admin | the Admin Console at `/admin`: site overview and system status, user management (create, change role, disable/enable, last login), the Contact inbox, and website settings (footer contacts, social links, Home video, announcement banner). **Cannot read individual medical records**, only totals. Cannot change their own role or disable themselves, so there is always an admin |
 
 Public sign-up always creates a PATIENT; a `role` sent in the request is ignored.
 
@@ -161,8 +214,9 @@ All POST/PATCH/DELETE requests need the CSRF header described above.
 | PUT | `/api/profile` | signed in | `{fullName, phone, dateOfBirth (YYYY-MM-DD), gender (FEMALE/MALE/OTHER/PREFER_NOT_TO_SAY), address, specialization, hospital}`; blank clears a field; specialization/hospital are kept for doctors only; role/email/password cannot change here |
 | PUT | `/api/profile/email` | signed in | `{email, currentPassword}` → profile; `400` wrong password; `409` email in use |
 | PUT | `/api/profile/password` | signed in | `{currentPassword, newPassword}` → profile + new login cookie; every other login of this account stops working |
-| POST | `/api/predictions` | PATIENT | multipart field `image` (PNG or JPG, ≤ 50 MB) → prediction owned by the caller |
+| POST | `/api/predictions` | PATIENT | multipart field `image` (PNG or JPEG, ≤ 50 MB, checked by content, grayscale), `view` (`CC` or `MLO`, required) and optional `uploadId` → `201` prediction owned by the caller; the same `uploadId` again returns the first record instead of a second one. `400` not a PNG/JPEG or unreadable; `413` too large; `503` model or database unavailable |
 | GET | `/api/predictions` | PATIENT | own history, newest first |
+| GET | `/api/model` | anyone | running model: `{available, version, trained, threshold, uncertainMargin, imageHeight, imageWidth, metrics}`; `metrics` is the held-out test report (null in demo mode) |
 | GET | `/api/predictions/{id}` | PATIENT (own), DOCTOR (shared) | one prediction; `404` if missing or not yours |
 | GET | `/api/predictions/{id}/image` | PATIENT (own), DOCTOR (shared) | the stored image |
 | DELETE | `/api/predictions/{id}` | PATIENT (own) | delete the record and its image |
@@ -171,13 +225,33 @@ All POST/PATCH/DELETE requests need the CSRF header described above.
 | DELETE | `/api/predictions/{id}/shares/{doctorId}` | PATIENT (own) | stop sharing → `204` |
 | GET | `/api/predictions/shared` | DOCTOR | `[{report, patient: {id, fullName}}]` shared with the caller |
 | GET | `/api/doctors` | PATIENT | doctors to share with `[{id, fullName}]` |
-| GET | `/api/admin/users` | ADMIN | all users (no password hashes) |
+| GET | `/api/site-settings` | anyone | website settings `{configured, contactPhone, contactEmail, contactAddress, facebookUrl, youtubeUrl, linkedinUrl, twitterUrl, heroVideoUrl, announcementText, announcementEnabled}`; `configured: false` until an admin saves them (the site then uses `Frontend/src/config/siteConfig.js`) |
+| GET | `/api/admin/overview` | ADMIN | site totals (users by role, analyses, benign/malignant, shared, messages), uploads per day for 14 days, system status. Totals only, no patient data |
+| GET | `/api/admin/site-settings` | ADMIN | as `/api/site-settings`, plus `updatedAt` and `updatedBy` |
+| PUT | `/api/admin/site-settings` | ADMIN | save all website settings; links must be `http(s)://`, the video a YouTube link |
+| GET | `/api/admin/messages?status=NEW\|READ` | ADMIN | Contact form messages, newest first (no `status` = all) |
+| PATCH | `/api/admin/messages/{id}` | ADMIN | `{status: "NEW" \| "READ"}` |
+| DELETE | `/api/admin/messages/{id}` | ADMIN | delete a message → `204` |
+| PATCH | `/api/admin/users/{id}/status` | ADMIN | `{disabled: true \| false}`; a disabled account cannot log in and its logins stop working; not allowed on your own account |
+| GET | `/api/admin/users` | ADMIN | all users with `disabled` and `lastLoginAt` (no password hashes) |
 | POST | `/api/admin/users` | ADMIN | `{fullName, email, password, role}` → `201` user |
 | PATCH | `/api/admin/users/{id}/role` | ADMIN | `{role}` → user; `400` for your own account |
 | POST | `/api/contact` | anyone | JSON `{name, email, subject, message}` → `201 {id, message, receivedAt}`; `400` with per-field `errors` when invalid. Stored in the `contact_messages` collection |
 | GET | `/actuator/health` | anyone | health check (other actuator endpoints: ADMIN) |
 
-Prediction JSON is the same as before, plus `ownerId`.
+Prediction JSON is the same as before, plus `ownerId`, `view` (CC/MLO), `threshold` (the model's decision threshold) and `lowConfidence`. Older records have them null/false.
+
+## Mammogram upload (F05)
+
+`/prediction` (patients) is the upload page: [`views/PredictionView.vue`](Frontend/src/views/PredictionView.vue) with [`components/prediction/MammogramUpload.vue`](Frontend/src/components/prediction/MammogramUpload.vue) and [`UploadPrivacyNotice.vue`](Frontend/src/components/prediction/UploadPrivacyNotice.vue).
+
+- **View**: the patient chooses CC (craniocaudal) or MLO (mediolateral oblique); it is required, stored with the report and shown with the result.
+- **Choosing a file**: drag and drop, or *Browse Files* (keyboard accessible). One image at a time; a preview, the file name, format and size are shown, with *Change image* and *Remove*.
+- **Accepted files**: PNG and JPEG (`.png`, `.jpg`, `.jpeg`) up to 50 MB. DICOM is not supported, because the backend reads images with Java ImageIO. The limits live in [`Frontend/src/prediction/mammogramFile.js`](Frontend/src/prediction/mammogramFile.js) and, on the server, `spring.servlet.multipart.*` in `application.properties` plus `PredictionService`; change both together.
+- **Checks in the browser**: extension, the browser's MIME type, size, empty files, and the file's first bytes (PNG/JPEG signature), so a renamed document is caught before uploading. The backend checks everything again on its own and stores the type found in the file's bytes, never the one the browser sent.
+- **Consent**: the privacy notice describes what the backend really does (image analysed on this server, saved with the result to the patient's account, visible to the patient and the doctors they share with, kept until the patient deletes the report). *Upload Image* stays disabled until a valid file is chosen and the consent box is ticked. Nothing is uploaded before that, and nothing is put in browser storage.
+- **Upload**: one request stores the image and runs the model, so the page shows real upload progress (percentage) and then an "Analysing…" step until the backend answers. Success and the result are shown only from the backend's response.
+- **Errors and retry**: network failures, timeouts and `5xx` show *Retry upload*, which keeps the chosen file and sends the same `uploadId`, so a retry after a dropped connection cannot save the image twice. Rejected files (`400`, `413`) ask for another image; an expired login (`401`) goes to the login page as everywhere else.
 
 ## Pages
 
@@ -192,7 +266,7 @@ cd Backend
 .\mvnw.cmd test        # auth, tokens, roles, record ownership, MongoDB setup, prediction flow
 
 cd ..\Frontend
-npm test               # validation, route guards, session state, API client, login/register forms
+npm test               # validation, route guards, session state, API client, login/register forms, mammogram upload
 ```
 
 Backend tests run against a temporary local MongoDB that Flapdoodle downloads once (cached in `~/.embedmongo`). They never connect to Atlas, and refuse to delete data unless they are on the `breast_cancer_test` database. No Docker is needed.
