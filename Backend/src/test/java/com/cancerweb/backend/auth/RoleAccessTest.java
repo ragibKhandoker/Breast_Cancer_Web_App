@@ -29,7 +29,7 @@ class RoleAccessTest extends IntegrationTest {
     @Test
     void anonymousVisitorsGet401OnPrivateApis() throws Exception {
         for (String path : new String[] { "/api/predictions", "/api/predictions/shared", "/api/admin/users",
-                "/api/doctors", "/api/auth/me", "/api/predictions/abc/image" }) {
+                "/api/doctors", "/api/auth/me", "/api/predictions/abc/image", "/api/predictions/abc/heatmap" }) {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
         }
     }

@@ -18,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * {@code view} is the mammographic view the patient chose (CC or MLO). {@code threshold} is the model's decision
  * threshold when this result was made, and {@code lowConfidence} marks a probability close to it. Records made
  * before these fields existed have them null / false.
+ * {@code heatmap} is the picture for the report page (see {@link Heatmap}), made on first request at
+ * /api/predictions/{id}/heatmap and served only there. It plays no part in the score.
  */
 @Document("predictions")
 public record Prediction(
@@ -37,7 +39,8 @@ public record Prediction(
         @JsonIgnore String uploadId,
         String view,
         Double threshold,
-        boolean lowConfidence) {
+        boolean lowConfidence,
+        @JsonIgnore Heatmap heatmap) {
 
     public List<String> sharedWithDoctorIds() {
         return sharedWithDoctorIds == null ? List.of() : sharedWithDoctorIds;

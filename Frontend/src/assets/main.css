@@ -76,16 +76,23 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
   pointer-events: none;
 }
 
-/* Prediction page: doctor reviewing results with a patient, with only a light wash so the photo stays clear. */
+/* Prediction page: doctor reading a mammogram on a lightbox, with only a light wash so the photo stays clear. */
 .photo-bg--prediction::before {
   background:
     linear-gradient(rgba(255, 246, 250, 0.15), rgba(255, 246, 250, 0.15)),
-    url('./images/prediction-bg.jpg') center 25% / cover no-repeat;
+    url('./images/prediction-mammogram-bg.webp') center 30% / cover no-repeat;
+}
+
+/* Contact page: pink-ribbon awareness photo, washed evenly in pink so the header text and cards stay readable. */
+.photo-bg--contact::before {
+  background:
+    linear-gradient(rgba(255, 246, 250, 0.55), rgba(255, 246, 250, 0.55)),
+    url('./images/contact-bg.jpg') center 35% / cover no-repeat;
 }
 
 /* Single-column layouts centre the text over the faces in the photo, so wash the whole photo evenly there. */
 @media (max-width: 860px) {
-  .photo-bg:not(.photo-bg--prediction)::before {
+  .photo-bg:not(.photo-bg--prediction):not(.photo-bg--contact)::before {
     background:
       linear-gradient(rgba(255, 246, 250, 0.72), rgba(255, 246, 250, 0.72)),
       url('./images/doctor-patient-bg.jpg') center 30% / cover no-repeat;

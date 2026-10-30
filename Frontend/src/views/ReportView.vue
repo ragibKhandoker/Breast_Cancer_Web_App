@@ -2,9 +2,13 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ResultCard from '../components/prediction/ResultCard.vue'
+import ScanViewer from '../components/report/ScanViewer.vue'
+import ReportStatus from '../components/report/ReportStatus.vue'
+import MedicalDisclaimer from '../components/report/MedicalDisclaimer.vue'
 import { authState, onSessionEnd } from '../auth/authStore'
 import {
   getPrediction,
+  getHeatmap,
   deletePrediction,
   imageUrl,
   listShares,
@@ -21,6 +25,8 @@ const router = useRouter()
 const report = ref(null)
 const loading = ref(true)
 const error = ref('')
+const heatmap = ref(null)
+const heatmapState = ref('loading')
 
 // Sharing (owner only)
 const shares = ref([])
@@ -38,6 +44,7 @@ async function load(id) {
   report.value = null
   try {
     report.value = await getPrediction(id)
+    loadHeatmap(id)
     if (isOwner.value) {
       ;[shares.value, doctors.value] = await Promise.all([listShares(id), listDoctors()])
     }
@@ -46,6 +53,20 @@ async function load(id) {
     error.value = err.response?.status === 404 ? 'This report does not exist or you do not have access to it.' : errorMessage(err)
   } finally {
     loading.value = false
+  }
+}
+
+// Loaded after the report so the page shows at once; older reports get their heatmap made on this request.
+async function loadHeatmap(id) {
+  heatmap.value = null
+  heatmapState.value = 'loading'
+  try {
+    const data = await getHeatmap(id)
+    if (route.params.id !== id) return
+    heatmap.value = data
+    heatmapState.value = data ? 'ready' : 'unavailable'
+  } catch {
+    if (route.params.id === id) heatmapState.value = 'error'
   }
 }
 
@@ -88,6 +109,7 @@ async function remove() {
 
 const stop = onSessionEnd(() => {
   report.value = null
+  heatmap.value = null
   shares.value = []
 })
 onBeforeUnmount(stop)
@@ -107,9 +129,15 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
       <p class="meta">Analysed {{ new Date(report.createdAt).toLocaleString() }}</p>
 
       <div class="layout">
-        <img :src="imageUrl(report.id)" :alt="report.originalFilename" class="card scan" />
+        <ScanViewer
+          :src="imageUrl(report.id)"
+          :alt="`Mammogram ${report.originalFilename}`"
+          :heatmap="heatmap"
+          :heatmap-state="heatmapState"
+        />
         <div>
           <ResultCard :prediction="report" />
+          <ReportStatus :report="report" :is-owner="isOwner" :shares="shares" class="status-card" />
 
           <div v-if="isOwner" class="card share">
             <h2>Share with a doctor</h2>
@@ -143,12 +171,14 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
         </div>
       </div>
     </template>
+
+    <MedicalDisclaimer />
   </section>
 </template>
 
 <style scoped>
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; margin-top: 1rem; align-items: start; }
-.scan { width: 100%; padding: 0.5rem; background: #000; }
+.status-card { margin-top: 1rem; }
 .layout :deep(.result) { margin-top: 0; }
 .share { margin-top: 1rem; }
 .share h2 { margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--purple-900); }

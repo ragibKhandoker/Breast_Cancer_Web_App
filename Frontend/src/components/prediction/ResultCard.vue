@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { VIEWS } from '../../prediction/mammogramFile'
-import { isMalignant as isMalignantReport } from '../../prediction/verdict'
+import { isMalignant as isMalignantReport, riskCategory } from '../../prediction/verdict'
 
 // One analysis result: Benign or Malignant, whichever of the two percentages is larger.
 const props = defineProps({ prediction: { type: Object, required: true } })
@@ -9,6 +9,7 @@ const props = defineProps({ prediction: { type: Object, required: true } })
 const malignantPercent = computed(() => Math.round(props.prediction.malignantProbability * 1000) / 10)
 const benignPercent = computed(() => Math.round((100 - malignantPercent.value) * 10) / 10)
 const isMalignant = computed(() => isMalignantReport(props.prediction))
+const risk = computed(() => riskCategory(props.prediction))
 const viewLabel = computed(() => VIEWS.find((v) => v.value === props.prediction.view)?.label)
 </script>
 
@@ -21,6 +22,10 @@ const viewLabel = computed(() => VIEWS.find((v) => v.value === props.prediction.
     <p v-if="viewLabel" class="meta view">View: {{ viewLabel }}</p>
 
     <p class="verdict" :class="isMalignant ? 'high' : 'low'" role="status">{{ isMalignant ? 'Malignant' : 'Benign' }}</p>
+    <p class="risk" :class="`risk--${risk.level}`">
+      <span class="risk-label">AI risk category: {{ risk.label }}</span>
+      <span class="risk-hint">{{ risk.hint }}</span>
+    </p>
 
     <div class="split">
       <div class="side" :class="{ larger: !isMalignant }">
@@ -45,7 +50,13 @@ const viewLabel = computed(() => VIEWS.find((v) => v.value === props.prediction.
 
 <style scoped>
 .view { margin: 0 0 0.5rem; font-weight: 600; color: var(--purple-900); }
-.verdict { margin: 0 0 0.75rem; font-size: 2rem; font-weight: 700; }
+.verdict { margin: 0 0 0.5rem; font-size: 2rem; font-weight: 700; }
+.risk { display: grid; gap: 0.15rem; margin: 0 0 0.9rem; padding: 0.6rem 0.85rem; border-radius: 12px; border-left: 4px solid; }
+.risk-label { font-weight: 700; }
+.risk-hint { font-size: 0.88rem; color: var(--text); }
+.risk--low { border-color: var(--low); background: #edf7ee; color: var(--low); }
+.risk--intermediate { border-color: var(--warn-text); background: var(--warn-bg); color: var(--warn-text); }
+.risk--high { border-color: var(--high); background: #fdecea; color: var(--high); }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.6rem; }
 .side { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 12px; }
 .side.larger { border-color: currentColor; background: var(--pink-50); }

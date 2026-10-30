@@ -69,6 +69,15 @@ export async function getPrediction(id) {
   return data
 }
 
+/**
+ * The report's heatmap ({ rows, cols, values, modelVersion }), or null when the server's model cannot make one
+ * (204). Older reports get theirs made on this first request, so it can take a few seconds.
+ */
+export async function getHeatmap(id) {
+  const { status, data } = await http.get(`/api/predictions/${encodeURIComponent(id)}/heatmap`)
+  return status === 204 || !data ? null : data
+}
+
 export async function deletePrediction(id) {
   await http.delete(`/api/predictions/${encodeURIComponent(id)}`)
 }

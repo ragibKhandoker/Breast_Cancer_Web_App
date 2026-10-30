@@ -64,7 +64,7 @@ class RecordOwnershipTest extends IntegrationTest {
     private Prediction store(String ownerId) {
         ObjectId imageId = gridFs.store(new ByteArrayInputStream(IMAGE), "scan.png", "image/png");
         return predictions.save(new Prediction(null, "scan.png", "image/png", IMAGE.length, imageId.toHexString(),
-                "benign", 0.2, 0.8, "test", false, Instant.now(), ownerId, List.of(), null, "MLO", 0.5, false));
+                "benign", 0.2, 0.8, "test", false, Instant.now(), ownerId, List.of(), null, "MLO", 0.5, false, null));
     }
 
     private String path(String suffix) {
@@ -93,6 +93,7 @@ class RecordOwnershipTest extends IntegrationTest {
     void anotherPatientCannotReadImageDeleteOrShareTheRecord() throws Exception {
         mvc.perform(get(path("")).cookie(bob)).andExpect(status().isNotFound());
         mvc.perform(get(path("/image")).cookie(bob)).andExpect(status().isNotFound());
+        mvc.perform(get(path("/heatmap")).cookie(bob)).andExpect(status().isNotFound());
         mvc.perform(get(path("/shares")).cookie(bob)).andExpect(status().isNotFound());
         mvc.perform(delete(path("")).cookie(bob).with(csrf())).andExpect(status().isNotFound());
         mvc.perform(withJson(post(path("/shares")), "{\"doctorId\":\"" + doctorId + "\"}").cookie(bob))
@@ -120,6 +121,7 @@ class RecordOwnershipTest extends IntegrationTest {
 
         // Sharing with one doctor does not open it to others, and doctors cannot delete.
         mvc.perform(get(path("")).cookie(otherDoctor)).andExpect(status().isNotFound());
+        mvc.perform(get(path("/heatmap")).cookie(otherDoctor)).andExpect(status().isNotFound());
         mvc.perform(delete(path("")).cookie(doctor).with(csrf())).andExpect(status().isForbidden());
     }
 

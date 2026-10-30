@@ -253,6 +253,19 @@ Prediction JSON is the same as before, plus `ownerId`, `view` (CC/MLO), `thresho
 - **Upload**: one request stores the image and runs the model, so the page shows real upload progress (percentage) and then an "Analysing…" step until the backend answers. Success and the result are shown only from the backend's response.
 - **Errors and retry**: network failures, timeouts and `5xx` show *Retry upload*, which keeps the chosen file and sends the same `uploadId`, so a retry after a dropped connection cannot save the image twice. Rejected files (`400`, `413`) ask for another image; an expired login (`401`) goes to the login page as everywhere else.
 
+## AI result page and heatmap viewer (F09)
+
+`/reports/{id}` (the patient who owns the report, or a doctor it is shared with) is [`views/ReportView.vue`](Frontend/src/views/ReportView.vue) with the components in [`components/report/`](Frontend/src/components/report/).
+
+- **Score and risk category**: [`ResultCard.vue`](Frontend/src/components/prediction/ResultCard.vue) shows Benign/Malignant, both percentages and an *AI risk category*: Low or High from the verdict, Intermediate when the model was not confident (`lowConfidence`, or the older `uncertain` label). The rule is `riskCategory()` in [`prediction/verdict.js`](Frontend/src/prediction/verdict.js).
+- **Scan and heatmap**: [`ScanViewer.vue`](Frontend/src/components/report/ScanViewer.vue) shows the original image and switches between *Original* and *Heatmap* (with an opacity slider and a colour legend). Zoom with the buttons, Ctrl + scroll (or trackpad pinch), double-click or the `+` `-` `0` keys; drag or use the arrow keys to move when zoomed in.
+- **Where the heatmap comes from**: the ResNet50 ends in average pooling and one linear layer, so applying that layer to each cell of the last feature map gives each region's share of the score (a class activation map). [`ML-Service/heatmap_output.py`](ML-Service/heatmap_output.py) reads `weights/model.onnx` (it never changes it) and writes a copy with that extra output, `weights/heatmap.onnx` (16 x 16 cells for a 512 x 512 input). It checks that the map's mean gives back the model's own probabilities. Run it once, and again whenever `model.onnx` is replaced: `cd ML-Service; .venv\Scripts\python heatmap_output.py`. Without `heatmap.onnx` the report says a heatmap is not available.
+- **The score is not affected**: training, `export_onnx.py`, `model.onnx` and the analysis (`OnnxPredictor`, `CancerModel`) are unchanged. The backend runs `heatmap.onnx` ([`HeatmapModel.java`](Backend/src/main/java/com/cancerweb/backend/service/HeatmapModel.java), path `ml.heatmap.path`) only to draw the picture.
+- **Heatmap API**: `GET /api/predictions/{id}/heatmap` (same access rules as the report) returns `{ rows, cols, values, modelVersion }`, where each value is that region's malignant minus benign logit. It is made from the stored image the first time a report is opened, then kept with the report. Answers `204` when the server has no `heatmap.onnx`.
+- **Limits**: the heatmap explains the ResNet50 only. The other models in the combined score (mammoscreen, the RSNA 1st-place model) give no map. Colours are relative to the strongest region in that image, so a benign result has coloured areas too. It shows what the AI looked at, not where a tumour is. On some images the strongest areas are outside the breast (background, labels).
+- **Status**: [`ReportStatus.vue`](Frontend/src/components/report/ReportStatus.vue) shows the scan status (analysis complete, low confidence, or demo model) and the doctor review status: *Not shared with a doctor*, *Awaiting doctor review* (with the doctors' names) for the owner, or *Shared with you for review* for a doctor. The site has no "reviewed" step yet, so a report cannot be marked as reviewed.
+- **Disclaimer**: [`MedicalDisclaimer.vue`](Frontend/src/components/report/MedicalDisclaimer.vue) stays stuck to the bottom of the screen on the report page, including when the report cannot be opened, and cannot be closed.
+
 ## Pages
 
 Public: `/` Home · `/about` · `/how-it-works` · `/faq` · `/contact` · `/login` · `/register`, plus Not Found and Access Denied pages.
@@ -266,7 +279,7 @@ cd Backend
 .\mvnw.cmd test        # auth, tokens, roles, record ownership, MongoDB setup, prediction flow
 
 cd ..\Frontend
-npm test               # validation, route guards, session state, API client, login/register forms, mammogram upload
+npm test               # validation, route guards, session state, API client, login/register forms, mammogram upload, result page
 ```
 
 Backend tests run against a temporary local MongoDB that Flapdoodle downloads once (cached in `~/.embedmongo`). They never connect to Atlas, and refuse to delete data unless they are on the `breast_cancer_test` database. No Docker is needed.

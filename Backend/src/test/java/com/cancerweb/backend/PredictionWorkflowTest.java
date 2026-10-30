@@ -18,6 +18,7 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import com.cancerweb.backend.model.Role;
 import com.cancerweb.backend.support.IntegrationTest;
 import com.jayway.jsonpath.JsonPath;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 
 import jakarta.servlet.http.Cookie;
 
@@ -78,6 +81,35 @@ class PredictionWorkflowTest extends IntegrationTest {
                         .cookie(patient).with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("Upload a PNG or JPG mammogram"));
+    }
+
+    @Test
+    void reportHasAHeatmapAndOlderReportsGetOneOnFirstRequest() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        String body = mvc.perform(multipart("/api/predictions")
+                        .file(new MockMultipartFile("image", "mammo.png", "image/png", samplePng()))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.heatmap").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        String id = JsonPath.read(body, "$.id");
+        String heatmap = "/api/predictions/" + id + "/heatmap";
+        Assumptions.assumeTrue(mvc.perform(get(heatmap).cookie(patient)).andReturn().getResponse().getStatus() == 200,
+                "heatmap.onnx not found; run ML-Service/heatmap_output.py");
+
+        String first = mvc.perform(get(heatmap).cookie(patient))
+                .andExpect(jsonPath("$.rows").value(16))
+                .andExpect(jsonPath("$.cols").value(16))
+                .andExpect(jsonPath("$.values.length()").value(256))
+                .andExpect(jsonPath("$.modelVersion").isString())
+                .andReturn().getResponse().getContentAsString();
+
+        // A report saved before heatmaps existed: the map is made from the stored image and kept.
+        mongo.getCollection("predictions").updateOne(Filters.eq("_id", new ObjectId(id)), Updates.unset("heatmap"));
+        mvc.perform(get(heatmap).cookie(patient)).andExpect(status().isOk()).andExpect(content().json(first));
+        assertThat(mongo.getCollection("predictions").find(Filters.eq("_id", new ObjectId(id))).first().get("heatmap"))
+                .isNotNull();
     }
 
     @Test

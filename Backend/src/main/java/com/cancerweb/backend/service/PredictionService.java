@@ -3,6 +3,7 @@ package com.cancerweb.backend.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +33,7 @@ import com.cancerweb.backend.dto.SharedReportResponse;
 import com.cancerweb.backend.dto.UserSummary;
 import com.cancerweb.backend.exception.PredictionNotFoundException;
 import com.cancerweb.backend.exception.UserNotFoundException;
+import com.cancerweb.backend.model.Heatmap;
 import com.cancerweb.backend.model.MlPrediction;
 import com.cancerweb.backend.model.Prediction;
 import com.cancerweb.backend.model.Role;
@@ -63,15 +65,17 @@ public class PredictionService {
     private final CancerModel predictor;
     private final MammogramGate gate;
     private final UserRepository users;
+    private final HeatmapModel heatmapModel;
 
     public PredictionService(PredictionRepository repository, MongoTemplate mongo, GridFsTemplate gridFs,
-            CancerModel predictor, MammogramGate gate, UserRepository users) {
+            CancerModel predictor, MammogramGate gate, UserRepository users, HeatmapModel heatmapModel) {
         this.repository = repository;
         this.mongo = mongo;
         this.gridFs = gridFs;
         this.predictor = predictor;
         this.gate = gate;
         this.users = users;
+        this.heatmapModel = heatmapModel;
     }
 
     /**
@@ -115,7 +119,7 @@ public class PredictionService {
                 imageId.toHexString(), result.label(), result.malignantProbability(),
                 result.benignProbability(), result.modelVersion(), result.demoMode(), Instant.now(),
                 owner.id(), List.of(), uploadId, view == null || view.isBlank() ? null : view, result.threshold(),
-                result.lowConfidence());
+                result.lowConfidence(), null);
         try {
             return repository.save(prediction);
         } catch (DuplicateKeyException e) {
@@ -169,6 +173,32 @@ public class PredictionService {
             throw new PredictionNotFoundException(prediction.id());
         }
         return resource;
+    }
+
+    /**
+     * The heatmap of a report the viewer may open, made from its stored image on first request and then kept. It is
+     * separate from the analysis: the report's score is never recomputed or changed here. Empty when the server
+     * has no heatmap model.
+     */
+    public Optional<Heatmap> heatmap(String id, CurrentUser viewer) throws IOException {
+        Prediction prediction = findAccessible(id, viewer);
+        if (prediction.heatmap() != null) {
+            return Optional.of(prediction.heatmap());
+        }
+        if (!heatmapModel.available()) {
+            return Optional.empty();
+        }
+        byte[] bytes;
+        try (InputStream in = loadImage(prediction).getInputStream()) {
+            bytes = in.readAllBytes();
+        }
+        Heatmap heatmap = heatmapModel.heatmap(OnnxPredictor.readMammogram(bytes));
+        if (heatmap == null) {
+            return Optional.empty();
+        }
+        mongo.updateFirst(Query.query(Criteria.where("id").is(prediction.id()).and("heatmap").is(null)),
+                Update.update("heatmap", heatmap), Prediction.class);
+        return Optional.of(heatmap);
     }
 
     public void delete(String id, CurrentUser owner) {

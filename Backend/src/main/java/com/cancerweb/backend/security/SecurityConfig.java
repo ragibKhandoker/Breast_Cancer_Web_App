@@ -71,8 +71,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/doctors").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.GET, "/api/predictions/shared").hasRole("DOCTOR")
-                        // Doctors may open a single report and its image, but only ones shared with them.
-                        .requestMatchers(HttpMethod.GET, "/api/predictions/*", "/api/predictions/*/image")
+                        // Doctors may open a single report, its image and heatmap, but only ones shared with them.
+                        .requestMatchers(HttpMethod.GET, "/api/predictions/*", "/api/predictions/*/image",
+                                "/api/predictions/*/heatmap")
                                 .hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/api/predictions", "/api/predictions/**").hasRole("PATIENT")
                         .requestMatchers("/api/**").authenticated()

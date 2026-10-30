@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cancerweb.backend.dto.ShareRequest;
 import com.cancerweb.backend.dto.SharedReportResponse;
 import com.cancerweb.backend.dto.UserSummary;
+import com.cancerweb.backend.model.Heatmap;
 import com.cancerweb.backend.model.Prediction;
 import com.cancerweb.backend.security.CurrentUser;
 import com.cancerweb.backend.service.PredictionService;
@@ -78,6 +79,15 @@ public class PredictionController {
                 .contentType(MediaType.parseMediaType(contentType))
                 .cacheControl(CacheControl.noStore().cachePrivate())
                 .body(service.loadImage(prediction));
+    }
+
+    /** The report's heatmap, or 204 No Content when the server's model cannot make one. */
+    @GetMapping("/{id}/heatmap")
+    public ResponseEntity<Heatmap> heatmap(@PathVariable String id, @AuthenticationPrincipal CurrentUser me)
+            throws IOException {
+        return service.heatmap(id, me)
+                .map(heatmap -> ResponseEntity.ok().cacheControl(CacheControl.noStore().cachePrivate()).body(heatmap))
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @DeleteMapping("/{id}")
