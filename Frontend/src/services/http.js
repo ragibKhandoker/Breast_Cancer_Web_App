@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { currentSlot } from '../auth/tabSession'
 
 // Shared API client. An empty base URL uses the Vite proxy in development and the same origin when Spring Boot
 // serves the built site; set VITE_API_URL at build time for a backend on another host.
@@ -26,6 +27,9 @@ export function ensureCsrfToken() {
 }
 
 http.interceptors.request.use(async (config) => {
+  // Which of this browser's logins to use: this tab's own (see auth/tabSession.js).
+  config.headers = config.headers ?? {}
+  config.headers['X-Auth-Slot'] = currentSlot()
   if (!SAFE_METHODS.includes((config.method ?? 'get').toLowerCase()) && !hasCookie(CSRF_COOKIE)) {
     await ensureCsrfToken()
   }

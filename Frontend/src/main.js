@@ -5,6 +5,7 @@ import reveal from './directives/reveal'
 import { setupSmoothScroll } from './plugins/smoothScroll'
 import { http, setUnauthorizedHandler, setPasswordChangeRequiredHandler } from './services/http'
 import { authState } from './auth/authStore'
+import { markSlotAsLatest } from './auth/tabSession'
 import { refreshNotifications } from './notifications/notificationStore'
 import { handleSessionExpired, handlePasswordChangeRequired } from './auth/guard'
 import './assets/main.css'
@@ -27,6 +28,13 @@ http.interceptors.response.use((response) => {
   }
   return response
 })
+
+// A link opened in a new tab should be signed in as the tab it came from: remember the focused signed-in tab.
+function followThisTab() {
+  if (authState.user && document.visibilityState === 'visible') markSlotAsLatest()
+}
+window.addEventListener('focus', followThisTab)
+document.addEventListener('visibilitychange', followThisTab)
 
 createApp(App).use(router).directive('reveal', reveal).mount('#app')
 setupSmoothScroll(router)

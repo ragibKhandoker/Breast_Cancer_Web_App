@@ -1,5 +1,6 @@
 import { reactive, readonly } from 'vue'
 import * as authService from '../services/authService'
+import { markSlotAsLatest, forgetSlotIfLatest, startNewSlot, prepareTab } from './tabSession'
 
 /**
  * Who is signed in, shared by the whole app. The login token itself is an HttpOnly cookie that scripts cannot
@@ -12,11 +13,24 @@ const sessionEndListeners = new Set()
 
 export const authState = readonly(state)
 
-/** Loads the current user once (on first navigation). Safe to call repeatedly. */
+/**
+ * Loads the current user once (on first navigation). Safe to call repeatedly. A new or duplicated tab first
+ * copies the latest tab's login into its own session (see tabSession.js), so it starts signed in but logging out
+ * here will not sign that other tab out.
+ */
 export function initAuth() {
   if (state.ready) return Promise.resolve(state.user)
-  loading ??= authService
-    .fetchCurrentUser()
+  loading ??= prepareTab()
+    .then(async (copyFrom) => {
+      if (copyFrom) {
+        try {
+          return await authService.forkLogin(copyFrom)
+        } catch {
+          // Nothing to copy (that tab signed out or expired): this tab starts signed out.
+        }
+      }
+      return authService.fetchCurrentUser()
+    })
     .catch(() => null) // Backend unreachable: treat as signed out; API calls will show the error.
     .then((user) => {
       state.user = user
@@ -31,6 +45,7 @@ export async function signIn(credentials) {
   const user = await authService.login(credentials)
   state.user = user
   state.ready = true
+  markSlotAsLatest()
   return user
 }
 
@@ -53,8 +68,18 @@ export async function signOut() {
   try {
     await authService.logout()
   } finally {
+    forgetSlotIfLatest()
     endSession()
   }
+}
+
+/**
+ * "Use another account in this tab": this tab gets a fresh session slot and shows as signed out, while the
+ * other tabs stay signed in with their own accounts. Nothing is sent to the server.
+ */
+export function useAnotherAccount() {
+  startNewSlot()
+  endSession()
 }
 
 /** Forgets the user and tells pages to drop any medical data they hold for them. */

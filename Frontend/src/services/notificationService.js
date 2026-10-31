@@ -24,7 +24,7 @@ const ICONS = {
   PASSWORD_HELP: 'shield-check', CONTACT_MESSAGE: 'mail', SURGEON_SUBMITTED: 'file-text', SURGEON_APPROVED: 'check-circle',
   SURGEON_REJECTED: 'alert-circle', REPORT_SHARED: 'microscope', APPOINTMENT_REQUESTED: 'calendar',
   APPOINTMENT_RESCHEDULED: 'calendar', APPOINTMENT_CONFIRMED: 'check-circle', APPOINTMENT_CANCELLED: 'close',
-  APPOINTMENT_COMPLETED: 'heart',
+  APPOINTMENT_COMPLETED: 'heart', USER_MESSAGE: 'message', ADMIN_MESSAGE: 'message',
 }
 export const iconFor = (type) => ICONS[type] ?? 'bell'
 

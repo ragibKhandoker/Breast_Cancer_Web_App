@@ -56,4 +56,19 @@ describe('header navigation', () => {
     expect(navLink(await mountHeader(patient), 'Prediction').attributes('title')).toBeUndefined()
     expect(navLink(await mountHeader(doctor), 'Prediction').attributes('title')).toBe('Prediction is for patient accounts')
   })
+
+  it('keeps Logout and "Use another account" in the avatar menu, not on the bar', async () => {
+    const wrapper = await mountHeader(patient)
+    const bar = wrapper.find('.actions')
+    expect(bar.findAll('button').some((b) => b.text() === 'Logout')).toBe(false)
+    expect(wrapper.find('#user-menu-panel').exists()).toBe(false)
+
+    await wrapper.find('.user-btn').trigger('click')
+    const menu = wrapper.find('#user-menu-panel')
+    expect(menu.text()).toContain('Pat')
+    expect(menu.text()).toContain('Patient')
+    expect(menu.find('a[href="/profile"]').exists()).toBe(true)
+    expect(menu.text()).toContain('Use another account')
+    expect(menu.text()).toContain('Logout')
+  })
 })

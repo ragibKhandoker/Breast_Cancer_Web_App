@@ -11,6 +11,8 @@ import NotFoundView from '../views/NotFoundView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
+import PasswordHelpStatusView from '../views/PasswordHelpStatusView.vue'
+import MessagesView from '../views/MessagesView.vue'
 import PatientDashboardView from '../views/PatientDashboardView.vue'
 import DoctorDashboardView from '../views/DoctorDashboardView.vue'
 import AdminDashboardView from '../views/AdminDashboardView.vue'
@@ -41,6 +43,9 @@ export const routes = [
   { path: APP_ROUTES.login, name: 'login', component: LoginView, meta: { title: 'Login', guestOnly: true } },
   { path: APP_ROUTES.register, name: 'register', component: RegisterView, meta: { title: 'Register', guestOnly: true } },
   { path: APP_ROUTES.forgotPassword, name: 'forgot-password', component: ForgotPasswordView, meta: { title: 'Forgot Password', guestOnly: true } },
+  // Open to everyone: the secret request code is what protects it.
+  { path: APP_ROUTES.passwordHelpStatus, name: 'password-help-status', component: PasswordHelpStatusView, meta: { title: 'Password Help Status' } },
+  { path: APP_ROUTES.messages, name: 'messages', component: MessagesView, meta: { title: 'Messages', roles: [PATIENT, DOCTOR] } },
   { path: APP_ROUTES.patientDashboard, name: 'patient-dashboard', component: PatientDashboardView, meta: { title: 'My Dashboard', roles: [PATIENT] } },
   { path: APP_ROUTES.doctorDashboard, name: 'doctor-dashboard', component: DoctorDashboardView, meta: { title: 'Doctor Dashboard', roles: [DOCTOR] } },
   { path: APP_ROUTES.adminDashboard, name: 'admin-dashboard', component: AdminDashboardView, meta: { title: 'Admin Dashboard', roles: [ADMIN] } },

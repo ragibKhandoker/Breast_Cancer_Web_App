@@ -43,6 +43,10 @@ onMounted(load)
         <strong>My history</strong>
         <span class="muted">{{ loading ? 'Loading…' : `${total} saved ${total === 1 ? 'analysis' : 'analyses'}` }}</span>
       </RouterLink>
+      <RouterLink :to="APP_ROUTES.messages" class="card action">
+        <strong>Messages</strong>
+        <span class="muted">Talk to the BreastCare administrators</span>
+      </RouterLink>
       <RouterLink :to="APP_ROUTES.surgeons" class="card action">
         <strong>Find a Breast Surgeon</strong>
         <span class="muted">Book a consultation with a verified Breast Surgeon</span>

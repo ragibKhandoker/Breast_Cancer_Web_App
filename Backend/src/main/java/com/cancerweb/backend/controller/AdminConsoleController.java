@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cancerweb.backend.dto.AdminOverview;
 import com.cancerweb.backend.dto.MessageResponse;
 import com.cancerweb.backend.dto.MessageStatusRequest;
+import com.cancerweb.backend.dto.AdminReplyRequest;
 import com.cancerweb.backend.dto.ResetRequestResponse;
+import com.cancerweb.backend.dto.SendPasswordRequest;
 import com.cancerweb.backend.dto.ResetRequestStatusRequest;
 import com.cancerweb.backend.dto.SiteSettingsRequest;
 import com.cancerweb.backend.dto.SiteSettingsResponse;
@@ -86,6 +89,21 @@ public class AdminConsoleController {
     public ResetRequestResponse setPasswordRequestStatus(@PathVariable String id,
             @Valid @RequestBody ResetRequestStatusRequest request, @AuthenticationPrincipal CurrentUser admin) {
         return ResetRequestResponse.from(passwordHelp.setStatus(id, request.status(), admin.email()));
+    }
+
+    /** A message for the visitor, shown on the request's status page. */
+    @PatchMapping("/password-requests/{id}/reply")
+    public ResetRequestResponse replyToPasswordRequest(@PathVariable String id, @Valid @RequestBody AdminReplyRequest request,
+            @AuthenticationPrincipal CurrentUser admin) {
+        return ResetRequestResponse.from(passwordHelp.reply(id, request.message(), admin.email()));
+    }
+
+    /** Resets the password and shows the temporary one, once, on this request's status page. */
+    @PostMapping("/password-requests/{id}/send-password")
+    public ResetRequestResponse sendTemporaryPassword(@PathVariable String id, @Valid @RequestBody SendPasswordRequest request,
+            @AuthenticationPrincipal CurrentUser admin) {
+        return ResetRequestResponse.from(passwordHelp.sendTemporaryPassword(admin.id(), admin.email(), id, request.message(),
+                request.identityConfirmed()));
     }
 
     @GetMapping("/site-settings")

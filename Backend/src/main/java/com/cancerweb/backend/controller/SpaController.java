@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SpaController {
 
     @GetMapping({ "/{path:[^.]+}", "/reports/{id:[^.]+}", "/breast-surgeons/{id:[^.]+}", "/breast-surgeons/{id:[^.]+}/book",
-            "/appointments/{id:[^.]+}/confirmation" })
+            "/appointments/{id:[^.]+}/confirmation", "/forgot-password/status" })
     public String forwardToIndex() {
         return "forward:/index.html";
     }

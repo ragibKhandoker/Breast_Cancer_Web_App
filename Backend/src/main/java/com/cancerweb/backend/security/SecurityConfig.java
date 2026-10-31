@@ -64,13 +64,15 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .requestCache(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/logout",
-                                "/api/auth/password-help").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/logout", "/api/auth/fork",
+                                "/api/auth/password-help", "/api/auth/password-help/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/site-settings").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/model").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // A patient's or doctor's own conversation with the administrators.
+                        .requestMatchers("/api/messages", "/api/messages/**").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/doctors").hasRole("PATIENT")
                         // Breast Surgeons: /profile is the signed-in doctor's own; approved surgeons, their
                         // calendars and pictures are public. The literal /profile rule must come first.
@@ -159,7 +161,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
-        config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN"));
+        config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", AuthCookies.SLOT_HEADER, AuthCookies.FROM_SLOT_HEADER));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);

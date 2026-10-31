@@ -9,6 +9,7 @@ import AdminUsersPanel from '../components/admin/AdminUsersPanel.vue'
 import AdminMessagesPanel from '../components/admin/AdminMessagesPanel.vue'
 import AdminSettingsPanel from '../components/admin/AdminSettingsPanel.vue'
 import AdminSurgeonPanel from '../components/admin/AdminSurgeonPanel.vue'
+import AdminInboxPanel from '../components/admin/AdminInboxPanel.vue'
 import { authState } from '../auth/authStore'
 import { getOverview, listMessages, listSurgeonProfiles } from '../services/adminService'
 import { APP_ROUTES } from '../config/appRoutes'
@@ -24,6 +25,8 @@ const TABS = [
     title: 'Password help', subtitle: 'Reset passwords for users who are locked out.' },
   { id: 'surgeons', label: 'Breast surgeons', icon: 'heart', component: AdminSurgeonPanel, group: 'Doctors', count: 'surgeons',
     title: 'Breast Surgeon verification', subtitle: 'Check credentials before a Breast Surgeon is listed and can take appointments.' },
+  { id: 'inbox', label: 'Inbox', icon: 'message', component: AdminInboxPanel, group: 'Accounts',
+    title: 'Inbox', subtitle: 'Messages with patients and doctors. Confirm password resets, answer questions.' },
   { id: 'users', label: 'Users & roles', icon: 'users', component: AdminUsersPanel, group: 'Accounts',
     title: 'Users & roles', subtitle: 'Create accounts, change roles, disable or reset access.' },
   { id: 'messages', label: 'Messages', icon: 'mail', component: AdminMessagesPanel, group: 'Website', count: 'unread',

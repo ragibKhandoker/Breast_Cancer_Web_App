@@ -1,4 +1,5 @@
 import { http } from './http'
+import { withSlot } from '../auth/tabSession'
 
 // Administrator-only calls to /api/admin. The backend refuses them for any other role.
 
@@ -78,6 +79,18 @@ export async function listPasswordRequests(status) {
   return data
 }
 
+/** A message shown on the request's status page. */
+export async function replyToPasswordRequest(id, message) {
+  const { data } = await http.patch(`/api/admin/password-requests/${encodeURIComponent(id)}/reply`, { message })
+  return data
+}
+
+/** Resets the password and shows the temporary one once on this request's status page (not to the admin). */
+export async function sendPasswordToRequest(id, { message, identityConfirmed }) {
+  const { data } = await http.post(`/api/admin/password-requests/${encodeURIComponent(id)}/send-password`, { message, identityConfirmed })
+  return data
+}
+
 export async function setPasswordRequestStatus(id, status) {
   const { data } = await http.patch(`/api/admin/password-requests/${encodeURIComponent(id)}`, { status })
   return data
@@ -96,7 +109,7 @@ export async function reviewSurgeon(profileId, status, note = '') {
 }
 
 export function surgeonDocumentUrl(profileId, fileId) {
-  return `${http.defaults.baseURL}/api/admin/breast-surgeons/${encodeURIComponent(profileId)}/documents/${encodeURIComponent(fileId)}`
+  return withSlot(`${http.defaults.baseURL}/api/admin/breast-surgeons/${encodeURIComponent(profileId)}/documents/${encodeURIComponent(fileId)}`)
 }
 
 /** The site owner's own account and activity. Every other administrator gets 403. */

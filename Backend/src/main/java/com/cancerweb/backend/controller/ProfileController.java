@@ -55,7 +55,7 @@ public class ProfileController {
             @AuthenticationPrincipal CurrentUser me, HttpServletRequest httpRequest) {
         PasswordChange change = profiles.changePassword(me.id(), request, cookies.read(httpRequest));
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookies.create(change.token().value(), change.token().expiresAt()).toString())
+                .header(HttpHeaders.SET_COOKIE, cookies.create(change.token().value(), change.token().expiresAt(), httpRequest).toString())
                 .body(ProfileResponse.from(change.user()));
     }
 }

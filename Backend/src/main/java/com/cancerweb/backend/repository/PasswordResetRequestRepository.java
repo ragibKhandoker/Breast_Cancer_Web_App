@@ -14,6 +14,8 @@ public interface PasswordResetRequestRepository extends MongoRepository<Password
 
     Optional<PasswordResetRequest> findFirstByUserIdAndStatusOrderByCreatedAtDesc(String userId, ResetRequestStatus status);
 
+    Optional<PasswordResetRequest> findBySecretHash(String secretHash);
+
     List<PasswordResetRequest> findAllByOrderByCreatedAtDesc();
 
     List<PasswordResetRequest> findAllByStatusOrderByCreatedAtDesc(ResetRequestStatus status);

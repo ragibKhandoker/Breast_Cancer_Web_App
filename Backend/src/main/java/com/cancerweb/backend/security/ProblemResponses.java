@@ -33,7 +33,7 @@ public class ProblemResponses implements AuthenticationEntryPoint, AccessDeniedH
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e)
             throws IOException {
         if (cookies.read(request) != null) {
-            response.addHeader(HttpHeaders.SET_COOKIE, cookies.clear().toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, cookies.clear(request).toString());
         }
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer realm=\"breastcare\"");
         String detail = e instanceof InvalidBearerTokenException

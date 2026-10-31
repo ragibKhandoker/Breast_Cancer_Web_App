@@ -2,11 +2,13 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import AppIcon from '../common/AppIcon.vue'
 import TempPasswordNotice from './TempPasswordNotice.vue'
-import { listPasswordRequests, setPasswordRequestStatus, resetPassword } from '../../services/adminService'
-import { errorMessage } from '../../services/http'
+import { listPasswordRequests, setPasswordRequestStatus, resetPassword, replyToPasswordRequest, sendPasswordToRequest } from '../../services/adminService'
+import { errorMessage, fieldErrors } from '../../services/http'
 
-// "Forgot password?" requests from the Login page. The site sends no email, so the administrator resets the
-// password here and passes the temporary one on to the user.
+// "Forgot password?" requests from the Login page. The site sends no email. The visitor has a secret request code
+// that opens a status page; here the administrator replies to it and, after checking who the person is (for
+// example by phone, matching the reference), sends a temporary password that the status page shows once.
+// "Reset & tell by phone" is still there for requests without a status page.
 const emit = defineEmits(['counts-changed'])
 
 const FILTERS = [
@@ -62,6 +64,52 @@ async function doReset(req) {
   }
 }
 
+// One open form per request: 'reply' or 'send'.
+const form = reactive({ id: '', mode: '', message: '', confirmed: false, error: '' })
+function openForm(req, mode) {
+  Object.assign(form, { id: req.id, mode, message: mode === 'reply' ? req.reply ?? '' : '', confirmed: false, error: '' })
+}
+function closeForm() {
+  Object.assign(form, { id: '', mode: '', message: '', confirmed: false, error: '' })
+}
+
+async function sendReply(req) {
+  form.error = ''
+  if (!form.message.trim()) {
+    form.error = 'Write a message for the user.'
+    return
+  }
+  busyId.value = req.id
+  try {
+    Object.assign(req, await replyToPasswordRequest(req.id, form.message.trim()))
+    closeForm()
+  } catch (err) {
+    form.error = fieldErrors(err).message || errorMessage(err)
+  } finally {
+    busyId.value = ''
+  }
+}
+
+async function sendPassword(req) {
+  form.error = ''
+  if (!form.confirmed) {
+    form.error = 'Tick the box once you have confirmed who this is.'
+    return
+  }
+  busyId.value = req.id
+  try {
+    Object.assign(req, await sendPasswordToRequest(req.id, { message: form.message.trim(), identityConfirmed: true }))
+    closeForm()
+    emit('counts-changed')
+  } catch (err) {
+    form.error = fieldErrors(err).identityConfirmed || fieldErrors(err).message || errorMessage(err)
+  } finally {
+    busyId.value = ''
+  }
+}
+
+const fmt = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '')
+
 async function setStatus(req, status) {
   busyId.value = req.id
   rowError[req.id] = ''
@@ -105,6 +153,7 @@ onMounted(load)
             <div class="min0">
               <strong>{{ req.fullName }}</strong>
               <span class="email">{{ req.email }}</span>
+              <span v-if="req.reference" class="ref" title="The visitor sees this too: ask them to read it out">Reference {{ req.reference }}</span>
               <p v-if="req.message" class="msg">“{{ req.message }}”</p>
               <span class="meta">
                 Requested {{ ago(req.createdAt) }}
@@ -116,12 +165,47 @@ onMounted(load)
             <span class="pill" :data-status="req.status">{{ req.status.charAt(0) + req.status.slice(1).toLowerCase() }}</span>
           </div>
 
-          <div v-if="req.status === 'OPEN'" class="actions">
-            <button type="button" class="btn btn-primary btn-sm" :disabled="busyId === req.id" @click="doReset(req)">
-              {{ busyId === req.id ? 'Working…' : 'Reset password' }}
-            </button>
-            <button type="button" class="btn btn-outline btn-sm" :disabled="busyId === req.id" @click="setStatus(req, 'DISMISSED')">Dismiss</button>
+          <div v-if="req.reply" class="reply">
+            <span><AppIcon name="message" :size="14" /> Your reply · {{ fmt(req.repliedAt) }}<template v-if="req.repliedBy"> · {{ req.repliedBy }}</template></span>
+            <p>{{ req.reply }}</p>
           </div>
+          <p v-if="req.passwordSent" class="delivery" :class="{ shown: req.passwordShownAt }">
+            <AppIcon :name="req.passwordShownAt ? 'check-circle' : 'refresh'" :size="15" />
+            {{ req.passwordShownAt ? `Temporary password seen by the user on ${fmt(req.passwordShownAt)}` : 'Temporary password sent to the status page; waiting for the user to open it' }}
+          </p>
+
+          <div v-if="req.status === 'OPEN'" class="actions">
+            <template v-if="req.hasStatusPage">
+              <button type="button" class="btn btn-primary btn-sm" :disabled="busyId === req.id" @click="openForm(req, 'send')">
+                <AppIcon name="send" :size="15" /> Send temporary password
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" :disabled="busyId === req.id" @click="openForm(req, 'reply')">
+                <AppIcon name="message" :size="15" /> {{ req.reply ? 'Edit reply' : 'Reply' }}
+              </button>
+            </template>
+            <button type="button" class="btn btn-outline btn-sm" :disabled="busyId === req.id" @click="doReset(req)">
+              {{ busyId === req.id ? 'Working…' : req.hasStatusPage ? 'Reset & tell by phone' : 'Reset password' }}
+            </button>
+            <button type="button" class="link" :disabled="busyId === req.id" @click="setStatus(req, 'DISMISSED')">Dismiss</button>
+          </div>
+
+          <form v-if="form.id === req.id" class="req-form" novalidate @submit.prevent="form.mode === 'send' ? sendPassword(req) : sendReply(req)">
+            <label :for="`req-msg-${req.id}`">{{ form.mode === 'send' ? 'Message with the password (optional)' : 'Message for the user' }}</label>
+            <textarea :id="`req-msg-${req.id}`" v-model="form.message" rows="3" maxlength="1000"
+              :placeholder="form.mode === 'send' ? 'e.g. Confirmed by phone. Log in and choose your own password.' : 'e.g. We will call you on the number on your profile within an hour.'"></textarea>
+            <label v-if="form.mode === 'send'" class="confirm">
+              <input v-model="form.confirmed" type="checkbox" />
+              <span>I confirmed this is really <strong>{{ req.fullName }}</strong> (for example by phone) and they read out reference <strong>{{ req.reference }}</strong>.</span>
+            </label>
+            <p v-if="form.mode === 'send'" class="muted small">The password is reset now and shown once on this request's status page. You will not see it.</p>
+            <p v-if="form.error" class="error">{{ form.error }}</p>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-sm" :disabled="busyId === req.id">
+                {{ busyId === req.id ? 'Sending…' : form.mode === 'send' ? 'Reset & send password' : 'Send reply' }}
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" @click="closeForm">Cancel</button>
+            </div>
+          </form>
           <div v-else-if="req.status === 'DISMISSED'" class="actions">
             <button type="button" class="link" :disabled="busyId === req.id" @click="setStatus(req, 'OPEN')">Reopen</button>
           </div>
@@ -134,10 +218,11 @@ onMounted(load)
     <aside class="card guide">
       <h3>How it works</h3>
       <ol>
-        <li><strong>The user asks.</strong> They enter their email on “Forgot password?”.</li>
-        <li><strong>You check it is really them</strong>, for example by calling the phone number on their profile.</li>
-        <li><strong>Reset the password.</strong> You get a one-time temporary password to give them.</li>
-        <li><strong>They choose their own.</strong> After logging in with it, they are taken to set a new password.</li>
+        <li><strong>The user asks.</strong> They get a secret request code and a reference, and a status page.</li>
+        <li><strong>Reply</strong> to tell them what happens next; it appears on their status page.</li>
+        <li><strong>Check it is really them</strong>, for example by calling the phone number on their profile and asking for the reference.</li>
+        <li><strong>Send a temporary password.</strong> It goes only to that request's status page and is shown once; you never see it.</li>
+        <li><strong>They choose their own.</strong> After logging in with it, they must set a new password before anything else.</li>
       </ol>
       <p class="muted small">Requests from emails without an account are never stored, so the form cannot reveal who is registered.</p>
       <p v-if="filter === 'OPEN' && openCount" class="waiting">{{ openCount }} waiting</p>
@@ -168,6 +253,19 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .pill { flex: none; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.74rem; font-weight: 600; background: #fff4e5; color: #9a3412; }
 .pill[data-status='RESOLVED'] { background: #e8f5e9; color: #1b5e20; }
 .pill[data-status='DISMISSED'] { background: #f1f1f4; color: #55536b; }
+.ref { display: inline-block; margin-top: 0.3rem; padding: 0.1rem 0.5rem; border-radius: 6px; background: var(--pink-50); color: var(--pink-600); font: 700 0.78rem ui-monospace, Consolas, monospace; }
+.reply { margin: 0.6rem 0 0 calc(40px + 0.8rem); padding: 0.55rem 0.75rem; border-radius: 10px; background: #f7f3fb; font-size: 0.86rem; }
+.reply span { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.74rem; font-weight: 600; color: var(--purple-900); }
+.reply p { margin: 0.25rem 0 0; white-space: pre-line; }
+.delivery { display: flex; align-items: center; gap: 0.4rem; margin: 0.5rem 0 0 calc(40px + 0.8rem); font-size: 0.82rem; color: #9a3412; }
+.delivery.shown { color: var(--low); }
+.req-form { display: grid; gap: 0.45rem; margin: 0.8rem 0 0 calc(40px + 0.8rem); padding: 0.85rem; border-radius: 14px; background: #fbf8fd; border: 1px solid var(--border); }
+.req-form label { font-weight: 600; font-size: 0.85rem; color: var(--purple-900); }
+.req-form textarea { width: 100%; padding: 0.6rem 0.75rem; border: 1.5px solid var(--border); border-radius: 10px; font: 400 0.9rem 'Poppins', sans-serif; resize: vertical; }
+.req-form textarea:focus { outline: none; border-color: var(--pink-600); }
+.confirm { display: flex; gap: 0.55rem; align-items: flex-start; font-weight: 400 !important; line-height: 1.45; cursor: pointer; }
+.confirm input { margin-top: 0.2rem; accent-color: var(--pink-600); }
+.form-actions { display: flex; gap: 0.5rem; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 0 calc(40px + 0.8rem); }
 .link { padding: 0; border: 0; background: none; color: var(--pink-600); font: 600 0.85rem 'Poppins', sans-serif; cursor: pointer; text-decoration: underline; }
 .empty { display: grid; justify-items: center; padding: 2.5rem 1rem; color: var(--muted); text-align: center; }
@@ -179,5 +277,5 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .waiting { margin: 0.5rem 0 0; display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; background: var(--pink-600); color: #fff; font-weight: 600; font-size: 0.82rem; }
 
 @media (max-width: 1000px) { .pw-layout { grid-template-columns: 1fr; } }
-@media (max-width: 520px) { .actions { margin-left: 0; } }
+@media (max-width: 520px) { .actions, .reply, .delivery, .req-form { margin-left: 0; } }
 </style>

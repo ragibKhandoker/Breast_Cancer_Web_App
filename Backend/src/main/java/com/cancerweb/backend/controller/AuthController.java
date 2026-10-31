@@ -3,6 +3,8 @@ package com.cancerweb.backend.controller;
 import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cancerweb.backend.dto.LoginRequest;
 import com.cancerweb.backend.dto.PasswordHelpRequest;
+import com.cancerweb.backend.dto.PasswordHelpStatusRequest;
 import com.cancerweb.backend.dto.RegisterRequest;
 import com.cancerweb.backend.dto.UserResponse;
 import com.cancerweb.backend.security.AuthCookies;
@@ -63,10 +66,10 @@ public class AuthController {
 
     /** On success the token is set as an HttpOnly cookie; the body is the user's profile, without the token. */
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
         Login login = authService.login(request);
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookies.create(login.token().value(), login.token().expiresAt()).toString())
+                .header(HttpHeaders.SET_COOKIE, cookies.create(login.token().value(), login.token().expiresAt(), http).toString())
                 .body(userService.toResponse(login.user()));
     }
 
@@ -77,14 +80,40 @@ public class AuthController {
     @PostMapping("/password-help")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public Map<String, String> passwordHelp(@Valid @RequestBody PasswordHelpRequest request) {
-        passwordHelp.submit(request);
-        return Map.of("message", "If this email has an account, an administrator will reset the password and contact you.");
+        PasswordHelpService.Submitted submitted = passwordHelp.submit(request);
+        return Map.of("message", "If this email has an account, an administrator will reset the password and contact you.",
+                "code", submitted.code(), "reference", submitted.reference());
+    }
+
+    /** The status page of a "Forgot password?" request, by its secret code (POST so the code stays out of URLs). */
+    @PostMapping("/password-help/status")
+    public PasswordHelpService.Status passwordHelpStatus(@Valid @RequestBody PasswordHelpStatusRequest request) {
+        return passwordHelp.status(request.code());
+    }
+
+    /**
+     * A new browser tab copies the login of the tab it came from ({@code X-Auth-From-Slot}) into its own slot
+     * ({@code X-Auth-Slot}), as a separate login with its own cookie. 401 when there is nothing valid to copy;
+     * the tab then simply shows as signed out.
+     */
+    @PostMapping("/fork")
+    public ResponseEntity<?> fork(HttpServletRequest http) {
+        Login login;
+        try {
+            login = authService.fork(cookies.readFromSlot(http));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "There is no login to continue in this tab."));
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookies.create(login.token().value(), login.token().expiresAt(), http).toString())
+                .body(userService.toResponse(login.user()));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         authService.logout(cookies.read(request));
-        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookies.clear().toString()).build();
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookies.clear(request).toString()).build();
     }
 
     @GetMapping("/me")

@@ -1,8 +1,9 @@
 import { http } from './http'
+import { withSlot } from '../auth/tabSession'
 
 export { errorMessage } from './http'
 
-export const imageUrl = (id) => `${http.defaults.baseURL}/api/predictions/${id}/image`
+export const imageUrl = (id) => withSlot(`${http.defaults.baseURL}/api/predictions/${id}/image`)
 
 // Uploading 50 MB on a slow line and then running the model can take longer than the usual 30 s.
 const UPLOAD_TIMEOUT_MS = 5 * 60 * 1000

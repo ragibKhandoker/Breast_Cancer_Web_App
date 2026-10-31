@@ -50,6 +50,10 @@ onMounted(load)
         <strong>My doctor profile</strong>
         <span class="muted">Photo, fees, languages, hospital and schedule: the profile patients book you through</span>
       </RouterLink>
+      <RouterLink :to="APP_ROUTES.messages" class="card surgeon-link">
+        <strong>Messages</strong>
+        <span class="muted">Talk to the BreastCare administrators</span>
+      </RouterLink>
     </div>
 
     <h2 class="shared-title">Shared reports</h2>

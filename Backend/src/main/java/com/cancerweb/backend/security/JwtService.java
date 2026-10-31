@@ -28,8 +28,16 @@ public class JwtService {
 
     /** The token's {@code jti} is random, so a single login can be revoked on logout. */
     public IssuedToken issue(User user) {
+        return issue(user, null);
+    }
+
+    /** As above, but expiring no later than {@code notAfter} (null: the usual lifetime). */
+    public IssuedToken issue(User user, Instant notAfter) {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(properties.tokenTtl());
+        if (notAfter != null && notAfter.isBefore(expiresAt)) {
+            expiresAt = notAfter;
+        }
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(properties.issuer())
                 .subject(user.id())

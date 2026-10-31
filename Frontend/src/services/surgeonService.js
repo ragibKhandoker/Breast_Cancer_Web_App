@@ -1,4 +1,5 @@
 import { http } from './http'
+import { withSlot } from '../auth/tabSession'
 
 // Breast Surgeons (/api/doctors/breast-surgeons). Browsing approved surgeons needs no login; the /profile calls
 // are the signed-in doctor's own Breast Surgeon profile.
@@ -71,7 +72,7 @@ export async function removeDocument(fileId) {
 
 /** Download link for one of the signed-in surgeon's own documents (the login cookie goes with it). */
 export function documentUrl(fileId) {
-  return `${http.defaults.baseURL}${BASE}/profile/documents/${encodeURIComponent(fileId)}`
+  return withSlot(`${http.defaults.baseURL}${BASE}/profile/documents/${encodeURIComponent(fileId)}`)
 }
 
 /** A photoUrl from the API, made absolute when the API is on another host (VITE_API_URL). */

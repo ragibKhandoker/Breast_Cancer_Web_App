@@ -177,6 +177,7 @@ async function submit() {
             </button>
           </form>
 
+          <p class="tab-note"><AppIcon name="users" :size="14" /> Each browser tab keeps its own login: you can use a different account in another tab.</p>
           <p v-if="asAdmin" class="switch">Administrator accounts are created by the site owner.</p>
           <template v-else>
             <div class="divider"><span>New to BreastCare?</span></div>
@@ -307,6 +308,8 @@ async function submit() {
 .submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(216, 27, 106, 0.36); }
 .submit:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 3px; }
 .admin .submit { background: linear-gradient(120deg, var(--purple-900), #6b3fb5); box-shadow: 0 10px 24px rgba(42, 22, 80, 0.3); }
+
+.tab-note { display: flex; align-items: center; gap: 0.35rem; margin: 0.9rem 0 0; font-size: 0.78rem; color: var(--muted); }
 
 /* New here */
 .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.6rem 0 0.2rem; color: var(--muted); font-size: 0.85rem; }

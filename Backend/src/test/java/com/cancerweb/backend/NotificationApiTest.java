@@ -83,29 +83,31 @@ class NotificationApiTest extends IntegrationTest {
                 .andExpect(jsonPath("$.items[0].message").value(org.hamcrest.Matchers.containsString("bilkis@gmail.com")))
                 .andExpect(jsonPath("$.items[0].message").value(org.hamcrest.Matchers.containsString("please help")));
 
-        // Asking again while it is open: no second request, and no new notification within 15 minutes...
+        // Asking again soon after: a second request (with its own code) is stored, but the admin is not told twice...
         mvc.perform(withJson(post("/api/auth/password-help"), help)).andExpect(status().isAccepted());
         mvc.perform(get("/api/notifications").cookie(admin)).andExpect(jsonPath("$.items.length()").value(1));
-        // ...but after that the admin is reminded.
+        // ...after 15 minutes the admin is told again.
         mongo.updateMulti(new org.springframework.data.mongodb.core.query.Query(),
-                org.springframework.data.mongodb.core.query.Update.update("createdAt", Instant.now().minusSeconds(20 * 60)), Notification.class);
+                org.springframework.data.mongodb.core.query.Update.update("createdAt", Instant.now().minusSeconds(20 * 60)),
+                com.cancerweb.backend.model.PasswordResetRequest.class);
         mvc.perform(withJson(post("/api/auth/password-help"), help)).andExpect(status().isAccepted());
-        mvc.perform(get("/api/notifications").cookie(admin))
-                .andExpect(jsonPath("$.items.length()").value(2))
-                .andExpect(jsonPath("$.items[0].title").value("Password help requested again"));
+        mvc.perform(get("/api/notifications").cookie(admin)).andExpect(jsonPath("$.items.length()").value(2));
+        // At most three open requests per account are kept; the visitor still gets a code.
+        mvc.perform(withJson(post("/api/auth/password-help"), help))
+                .andExpect(status().isAccepted()).andExpect(jsonPath("$.code").exists());
         org.assertj.core.api.Assertions.assertThat(mongo.count(new org.springframework.data.mongodb.core.query.Query(),
-                com.cancerweb.backend.model.PasswordResetRequest.class)).isEqualTo(1);
+                com.cancerweb.backend.model.PasswordResetRequest.class)).isEqualTo(3);
 
-        // A request made before notifications existed gets one at startup, dated when it was made; only once.
+        // Requests made before notifications existed get one at startup, dated when they were made; only once.
         notifications.deleteAll();
         passwordHelp.notifyAboutOpenRequestsWithoutNotification();
         passwordHelp.notifyAboutOpenRequestsWithoutNotification();
-        Instant requestedAt = mongo.findAll(com.cancerweb.backend.model.PasswordResetRequest.class).getFirst().createdAt();
         mvc.perform(get("/api/notifications").cookie(admin))
-                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items.length()").value(3))
                 .andExpect(jsonPath("$.items[0].type").value("PASSWORD_HELP"));
-        org.assertj.core.api.Assertions.assertThat(notifications.findAll().getFirst().createdAt().toEpochMilli())
-                .isEqualTo(requestedAt.toEpochMilli());
+        java.util.Set<Long> requestTimes = new java.util.HashSet<>();
+        mongo.findAll(com.cancerweb.backend.model.PasswordResetRequest.class).forEach(r -> requestTimes.add(r.createdAt().toEpochMilli()));
+        notifications.findAll().forEach(n -> org.assertj.core.api.Assertions.assertThat(requestTimes).contains(n.createdAt().toEpochMilli()));
     }
 
     @Test

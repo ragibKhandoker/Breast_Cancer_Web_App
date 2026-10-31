@@ -126,10 +126,13 @@ class AdminPortalTest extends IntegrationTest {
         String known = mvc.perform(withJson(post("/api/auth/password-help"),
                         "{\"email\":\" Rahima@Example.com \",\"message\":\"I forgot it after my holiday.\"}"))
                 .andExpect(status().isAccepted()).andReturn().getResponse().getContentAsString();
-        assertThat(known).isEqualTo(unknown);
+        // Same message, and a request code of the same form either way; only the random code differs.
+        assertThat((String) JsonPath.read(known, "$.message")).isEqualTo(JsonPath.read(unknown, "$.message"));
+        assertThat((String) JsonPath.read(known, "$.code")).matches("[A-Z2-9]{5}(-[A-Z2-9]{5}){3}");
+        assertThat((String) JsonPath.read(unknown, "$.code")).matches("[A-Z2-9]{5}(-[A-Z2-9]{5}){3}");
+        assertThat((String) JsonPath.read(known, "$.code")).isNotEqualTo(JsonPath.read(unknown, "$.code"));
 
-        // A second request while one is open is not stored again.
-        mvc.perform(withJson(post("/api/auth/password-help"), "{\"email\":\"rahima@example.com\"}")).andExpect(status().isAccepted());
+        // Only the request for the real account is stored.
         assertThat(resetRequests.findAll()).singleElement().satisfies(r -> {
             assertThat(r.email()).isEqualTo("rahima@example.com");
             assertThat(r.message()).isEqualTo("I forgot it after my holiday.");

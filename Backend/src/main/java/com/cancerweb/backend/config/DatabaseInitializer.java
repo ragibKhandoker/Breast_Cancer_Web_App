@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
 import com.cancerweb.backend.model.Appointment;
 import com.cancerweb.backend.model.BreastSurgeonProfile;
 import com.cancerweb.backend.model.ContactMessage;
+import com.cancerweb.backend.model.Message;
 import com.cancerweb.backend.model.Notification;
+import com.cancerweb.backend.model.PasswordResetRequest;
 import com.cancerweb.backend.model.Prediction;
 import com.cancerweb.backend.model.RevokedToken;
 import com.cancerweb.backend.model.User;
@@ -77,6 +79,11 @@ public class DatabaseInitializer implements ApplicationRunner {
                 new Index().on("userId", Direction.ASC).on("read", Direction.ASC).named("user_read"));
         mongo.indexOps(Notification.class).createIndex(
                 new Index().on("type", Direction.ASC).on("ref", Direction.ASC).on("createdAt", Direction.DESC).named("type_ref_createdAt"));
+        // Conversations with the administrators, and the "Forgot password?" status page lookup.
+        mongo.indexOps(Message.class).createIndex(
+                new Index().on("userId", Direction.ASC).on("createdAt", Direction.DESC).named("user_createdAt"));
+        mongo.indexOps(PasswordResetRequest.class).createIndex(new Index().on("secretHash", Direction.ASC).unique()
+                .partial(PartialIndexFilter.of(Criteria.where("secretHash").exists(true))).named("secretHash_unique"));
         mongo.indexOps(ContactMessage.class).createIndex(
                 new Index().on("status", Direction.ASC).on("createdAt", Direction.DESC).named("status_createdAt"));
         // Breast Surgeons: one profile per account, one per registration number, and the listing's lookup.

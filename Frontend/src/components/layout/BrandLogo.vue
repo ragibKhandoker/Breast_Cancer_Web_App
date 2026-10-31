@@ -18,7 +18,7 @@ defineProps({ dark: { type: Boolean, default: false } })
 .brand { display: flex; align-items: center; gap: 0.6rem; }
 .name { display: block; font-size: 1.35rem; font-weight: 700; color: var(--purple-900); line-height: 1.25; }
 .accent { color: var(--pink-600); }
-.tagline { display: block; font-size: 0.72rem; color: var(--muted); }
+.tagline { display: block; font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
 .dark .name { color: #fff; }
 .dark .accent { color: var(--pink-500); }
 .dark .tagline { color: #cfc6e6; }

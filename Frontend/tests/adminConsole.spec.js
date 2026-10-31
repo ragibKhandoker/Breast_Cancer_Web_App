@@ -26,6 +26,8 @@ vi.mock('../src/services/adminService', () => ({
   resetPassword: vi.fn(),
   listPasswordRequests: vi.fn(),
   setPasswordRequestStatus: vi.fn(),
+  replyToPasswordRequest: vi.fn(),
+  sendPasswordToRequest: vi.fn(),
   getAdminAccount: vi.fn(),
   listSurgeonProfiles: vi.fn().mockResolvedValue([]),
   reviewSurgeon: vi.fn(),
@@ -200,7 +202,9 @@ describe('Admin portal: verification and password help', () => {
     gender: 'FEMALE', address: '', specialization: null, hospital: null, verificationNote: null, verifiedBy: null, verifiedAt: null, predictionCount: 3,
   }
 
-  async function mountPortal(tab, users = PATIENTS) {
+  const REQUEST = { id: 'r1', userId: 'p1', email: 'rahima@example.com', fullName: 'Rahima Begum', message: 'Locked out', status: 'OPEN', createdAt: new Date().toISOString(), handledAt: null, handledBy: null }
+
+  async function mountPortal(tab, users = PATIENTS, requests = [REQUEST]) {
     vi.resetModules()
     const authService = await import('../src/services/authService')
     authService.fetchCurrentUser.mockResolvedValue(ADMIN)
@@ -208,9 +212,7 @@ describe('Admin portal: verification and password help', () => {
     admin.getOverview.mockResolvedValue({ ...structuredClone(OVERVIEW), support: { pendingVerification: 1, verified: 1, rejected: 0, openPasswordRequests: 2 } })
     admin.listUsers.mockResolvedValue(structuredClone(users))
     admin.listMessages.mockResolvedValue([])
-    admin.listPasswordRequests.mockResolvedValue([
-      { id: 'r1', userId: 'p1', email: 'rahima@example.com', fullName: 'Rahima Begum', message: 'Locked out', status: 'OPEN', createdAt: new Date().toISOString(), handledAt: null, handledBy: null },
-    ])
+    admin.listPasswordRequests.mockResolvedValue(structuredClone(requests))
     const { routes } = await import('../src/router')
     const { installAuthGuard } = await import('../src/auth/guard')
     const router = createRouter({ history: createMemoryHistory(), routes })
@@ -287,11 +289,40 @@ describe('Admin portal: verification and password help', () => {
     expect(wrapper.text()).toContain('Locked out')
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     admin.resetPassword.mockResolvedValue({ user: { ...PATIENTS[0], mustChangePassword: true }, temporaryPassword: 'Ab3defGh7kLm' })
-    await wrapper.find('.request .btn-primary').trigger('click')
+    await wrapper.findAll('.request button').find((b) => b.text() === 'Reset password').trigger('click')
     await flushPromises()
     expect(admin.resetPassword).toHaveBeenCalledWith('p1')
     expect(wrapper.find('.temp code').text()).toBe('Ab3defGh7kLm')
     expect(wrapper.find('.request .pill').text()).toBe('Resolved')
+  })
+
+  it('replies and sends a temporary password to the status page only after the identity check', async () => {
+    const request = { ...REQUEST, reference: 'PH-7KQ2M9', hasStatusPage: true }
+    const listed = [request]
+    const { wrapper: w, admin: a } = await mountPortal('passwords', PATIENTS, listed)
+    expect(w.text()).toContain('Reference PH-7KQ2M9')
+    const button = (label) => w.findAll('.request button').find((b) => b.text().includes(label))
+
+    a.replyToPasswordRequest.mockResolvedValue({ ...listed[0], reply: 'We will call you within an hour.', repliedAt: new Date().toISOString() })
+    await button('Reply').trigger('click')
+    await w.find('.req-form textarea').setValue('We will call you within an hour.')
+    await w.find('.req-form').trigger('submit')
+    await flushPromises()
+    expect(a.replyToPasswordRequest).toHaveBeenCalledWith('r1', 'We will call you within an hour.')
+    expect(w.find('.reply').text()).toContain('We will call you within an hour.')
+
+    await button('Send temporary password').trigger('click')
+    await w.find('.req-form').trigger('submit')
+    expect(a.sendPasswordToRequest).not.toHaveBeenCalled()
+    expect(w.text()).toContain('Tick the box once you have confirmed who this is.')
+    a.sendPasswordToRequest.mockResolvedValue({ ...listed[0], status: 'RESOLVED', passwordSent: true, passwordShownAt: null })
+    await w.find('.req-form .confirm input').setValue(true)
+    await w.find('.req-form').trigger('submit')
+    await flushPromises()
+    expect(a.sendPasswordToRequest).toHaveBeenCalledWith('r1', { message: '', identityConfirmed: true })
+    expect(w.text()).toContain('waiting for the user to open it')
+    // The administrator is never shown the password in this flow.
+    expect(w.find('.temp').exists()).toBe(false)
   })
 })
 

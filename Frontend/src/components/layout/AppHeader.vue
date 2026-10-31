@@ -4,19 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../common/AppIcon.vue'
 import BrandLogo from './BrandLogo.vue'
 import NotificationBell from './NotificationBell.vue'
+import UserMenu from './UserMenu.vue'
 import { APP_ROUTES } from '../../config/appRoutes'
-import { authState, signOut } from '../../auth/authStore'
+import { authState, signOut, useAnotherAccount } from '../../auth/authStore'
 import { homeFor, ROLES } from '../../auth/roles'
 
 const user = computed(() => authState.user)
-const initials = computed(() =>
-  (user.value?.fullName ?? '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join(''),
-)
 
 // Shown to every visitor. Browsing Breast Surgeons is public; uploading a mammogram is for patient accounts,
 // so for doctors and administrators the link says so (the route guard sends them to Access Denied).
@@ -40,6 +33,12 @@ const router = useRouter()
 watch(() => route.path, () => (menuOpen.value = false))
 
 const loggingOut = ref(false)
+// Signs this tab in as someone else; the other tabs keep their own login.
+function anotherAccount() {
+  useAnotherAccount()
+  router.push(APP_ROUTES.login)
+}
+
 async function logout() {
   loggingOut.value = true
   try {
@@ -67,6 +66,7 @@ async function logout() {
             <RouterLink :to="homeFor(user.role)" class="btn btn-primary">Dashboard</RouterLink>
             <RouterLink :to="user.owner ? APP_ROUTES.adminAccount : APP_ROUTES.profile" class="btn btn-outline">Profile</RouterLink>
             <button type="button" class="btn btn-outline" :disabled="loggingOut" @click="logout">Logout</button>
+            <button type="button" class="btn btn-outline" @click="anotherAccount">Use another account</button>
           </template>
           <template v-else>
             <RouterLink :to="APP_ROUTES.login" class="btn btn-outline">Login</RouterLink>
@@ -76,17 +76,22 @@ async function logout() {
       </nav>
 
       <div class="actions">
+        <RouterLink
+          v-if="user"
+          :to="user.role === ROLES.ADMIN ? { path: APP_ROUTES.adminDashboard, query: { tab: 'inbox' } } : APP_ROUTES.messages"
+          class="msg-btn"
+          :title="user.role === ROLES.ADMIN ? 'Inbox' : 'Messages'"
+          :aria-label="user.role === ROLES.ADMIN ? 'Inbox' : 'Messages'"
+        >
+          <AppIcon name="message" :size="20" />
+        </RouterLink>
         <NotificationBell v-if="user" />
         <template v-if="user">
           <RouterLink :to="homeFor(user.role)" class="btn btn-primary auth" :title="`Signed in as ${user.email}`">
             Dashboard
           </RouterLink>
-          <button type="button" class="btn btn-outline auth" :disabled="loggingOut" @click="logout">
-            {{ loggingOut ? 'Logging out…' : 'Logout' }}
-          </button>
-          <RouterLink :to="user.owner ? APP_ROUTES.adminAccount : APP_ROUTES.profile" class="avatar" :title="`My profile (${user.email})`" aria-label="My profile">
-            {{ initials }}
-          </RouterLink>
+          <!-- Profile, "Use another account" and Logout live in the avatar's menu, keeping the header on one line. -->
+          <UserMenu class="auth-menu" :logging-out="loggingOut" @logout="logout" @another-account="anotherAccount" />
         </template>
         <template v-else>
           <RouterLink :to="APP_ROUTES.login" class="btn btn-outline auth">Login</RouterLink>
@@ -109,11 +114,13 @@ async function logout() {
 
 <style scoped>
 .header { position: sticky; top: 0; z-index: 10; background: rgba(255, 244, 249, 0.92); backdrop-filter: blur(8px); }
-.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 76px; }
+/* A little wider than page content: logo, seven links and the account buttons need about 1180px. */
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 76px; max-width: 1280px; }
+.header-inner > :first-child { flex: none; }
 
-.nav { display: flex; gap: 0.2rem; }
+.nav { display: flex; gap: 0.1rem; min-width: 0; }
 .nav-link {
-  padding: 0.4rem 0.85rem; border-radius: 999px; border: 2px solid transparent; white-space: nowrap;
+  padding: 0.4rem 0.7rem; border-radius: 999px; border: 2px solid transparent; white-space: nowrap;
   color: var(--purple-900); font-weight: 500; font-size: 0.93rem;
 }
 .nav-link:hover { color: var(--pink-600); }
@@ -121,20 +128,25 @@ async function logout() {
 .nav-link.router-link-exact-active { border-color: var(--pink-600); color: var(--pink-600); background: #fff; }
 .menu-auth { display: none; }
 
-.actions { display: flex; align-items: center; gap: 0.6rem; }
+.actions { flex: none; display: flex; align-items: center; gap: 0.5rem; }
 .icon-btn { background: none; border: 0; border-radius: 8px; color: var(--purple-900); cursor: pointer; padding: 6px; }
 .auth { padding: 0.5rem 1.2rem; font-size: 0.92rem; }
 .menu-btn { display: none; }
-.avatar {
-  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--pink-600), #b5179e); color: #fff; font-weight: 700; font-size: 0.95rem;
-  box-shadow: 0 4px 12px rgba(216, 27, 106, 0.3); transition: transform 0.15s;
+.msg-btn {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: #fff; color: var(--purple-900); transition: border-color 0.15s, color 0.15s;
 }
-.avatar:hover { transform: scale(1.06); }
-.avatar.router-link-active { outline: 3px solid var(--pink-300); outline-offset: 2px; }
-.avatar:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }
+.msg-btn:hover, .msg-btn.router-link-active { border-color: var(--pink-300); color: var(--pink-600); }
+.msg-btn:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }
 
-@media (max-width: 1100px) {
+/* Narrower desktops: tighter links so everything stays on one line. */
+@media (max-width: 1320px) and (min-width: 1201px) {
+  .header-inner { gap: 0.75rem; }
+  .nav-link { padding: 0.4rem 0.55rem; font-size: 0.9rem; }
+  .auth { padding: 0.5rem 1rem; }
+}
+/* Below that the links move into the menu button. */
+@media (max-width: 1200px) {
   .menu-btn { display: block; }
   .nav {
     display: none; position: absolute; top: 76px; left: 0; right: 0;
@@ -144,7 +156,7 @@ async function logout() {
   .nav-link { padding: 0.65rem 1rem; }
 }
 @media (max-width: 560px) {
-  .auth, .avatar { display: none; }
+  .auth, .auth-menu { display: none; }
   .menu-auth { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
   .menu-auth .btn { flex: 1; justify-content: center; }
 }

@@ -96,6 +96,30 @@ public class AuthService {
     }
 
     /**
+     * A new tab's own login for the same user, copied from another tab's login ({@code rawToken}, read from that
+     * tab's cookie). The new token has its own id, so logging out in either tab leaves the other signed in, and
+     * it expires no later than the original, so copying cannot extend a login. Anything wrong with the original
+     * (expired, revoked, disabled account, older than the last password change) gives BadCredentialsException.
+     */
+    public Login fork(String rawToken) {
+        if (rawToken == null) {
+            throw new BadCredentialsException("No login to copy");
+        }
+        Jwt jwt;
+        try {
+            jwt = jwtDecoder.decode(rawToken);
+        } catch (JwtException e) {
+            throw new BadCredentialsException("No login to copy");
+        }
+        User user = users.findById(jwt.getSubject()).orElseThrow(() -> new BadCredentialsException("No login to copy"));
+        boolean stale = user.passwordChangedAt() != null && (jwt.getIssuedAt() == null || jwt.getIssuedAt().isBefore(user.passwordChangedAt()));
+        if (user.isDisabled() || stale || user.isTemporaryPasswordExpired(Instant.now())) {
+            throw new BadCredentialsException("No login to copy");
+        }
+        return new Login(user, jwtService.issue(user, jwt.getExpiresAt()));
+    }
+
+    /**
      * Revokes the token so it stops working at once, even if a copy of it exists elsewhere. A token that is
      * already invalid, expired or revoked needs nothing more, so logout always succeeds.
      */
