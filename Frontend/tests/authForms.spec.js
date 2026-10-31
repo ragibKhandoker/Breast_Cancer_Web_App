@@ -152,13 +152,32 @@ describe('Register page', () => {
     authService.register.mockResolvedValue({ id: 'd', fullName: 'Ayesha Rahman', email: 'ayesha@example.com', role: 'DOCTOR' })
     await wrapper.find('input[name="account-type"][value="DOCTOR"]').setValue(true)
     expect(wrapper.find('.account-type.on').text()).toContain('Register as a Doctor')
-    expect(wrapper.text()).toContain('Doctor accounts are checked by an administrator')
+    expect(wrapper.find('.doctor-note').exists()).toBe(false) // shown after registering, not before
     expect(wrapper.find('button[type="submit"]').text()).toContain('Create Doctor Account')
+    // Only breast surgeons and breast specialists: both are the only choices, and must be picked and confirmed.
+    const options = wrapper.findAll('#register-specialty option').filter((o) => o.attributes('value'))
+    expect(options.map((o) => o.text())).toEqual(['Breast Surgeon', 'Breast Specialist'])
     await fill(wrapper)
     await wrapper.find('form').trigger('submit')
     await flushPromises()
-    expect(authService.register).toHaveBeenCalledWith(expect.objectContaining({ accountType: 'DOCTOR' }))
+    expect(authService.register).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Choose your specialty.')
+    expect(wrapper.text()).toContain('Please confirm this.')
+
+    await wrapper.find('#register-specialty').setValue('BREAST_SURGEON')
+    await wrapper.find('.confirm-doctor input').setValue(true)
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(authService.register).toHaveBeenCalledWith(expect.objectContaining({
+      accountType: 'DOCTOR', doctorSpecialty: 'BREAST_SURGEON', confirmBreastSpecialist: true,
+    }))
     expect(router.currentRoute.value.query.registered).toBe('doctor')
+  })
+
+  it('does not ask patients for a specialty', async () => {
+    const { wrapper } = await mountAt('/register')
+    expect(wrapper.find('#register-specialty').exists()).toBe(false)
+    expect(wrapper.find('.confirm-doctor').exists()).toBe(false)
   })
 
   it('opens with Doctor chosen from a Join as a doctor link', async () => {
@@ -220,6 +239,13 @@ describe('Forgot password', () => {
     await flushPromises()
     expect(router.currentRoute.value.path).toBe('/profile')
     expect(router.currentRoute.value.hash).toBe('#change-password')
+  })
+
+  it('tells a new doctor to wait for approval, after registering', async () => {
+    document.body.querySelectorAll('.toast').forEach((el) => el.remove())
+    const { wrapper } = await mountAt('/login?registered=doctor')
+    expect(document.body.querySelector('.toast').textContent).toContain('Please wait until an admin approves your account.')
+    wrapper.unmount()
   })
 
   it('shows "account created" as a notification outside the form, which can be closed', async () => {

@@ -3,8 +3,11 @@ import { http } from './http'
 // Calls to /api/auth. Each resolves with the user's safe profile: { id, fullName, email, role, createdAt }.
 
 /** `accountType` is 'PATIENT' or 'DOCTOR'; a new doctor account waits for an administrator's verification. */
-export async function register({ fullName, email, password, accountType = 'PATIENT' }) {
-  const { data } = await http.post('/api/auth/register', { fullName, email, password, accountType })
+export async function register({ fullName, email, password, accountType = 'PATIENT', doctorSpecialty, confirmBreastSpecialist }) {
+  const body = { fullName, email, password, accountType }
+  // Doctors must be breast surgeons or breast specialists (the server checks this too).
+  if (accountType === 'DOCTOR') Object.assign(body, { doctorSpecialty, confirmBreastSpecialist })
+  const { data } = await http.post('/api/auth/register', body)
   return data
 }
 

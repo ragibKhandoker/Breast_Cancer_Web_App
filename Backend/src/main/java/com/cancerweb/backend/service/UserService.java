@@ -261,6 +261,11 @@ public class UserService {
         return mongo.updateFirst(query, new Update().set("temporaryPasswordUsedAt", Instant.now()), User.class).getModifiedCount() == 1;
     }
 
+    /** Sets the doctor's specialization on their profile (shown to administrators when they verify). */
+    public User setSpecialization(String userId, String specialization) {
+        return modify(userId, new Update().set("profile.specialization", specialization).set("updatedAt", Instant.now()));
+    }
+
     /** Called after a successful login, for the administrator's user list. */
     public void recordLogin(String userId) {
         mongo.updateFirst(byId(userId), new Update().set("lastLoginAt", Instant.now()), User.class);

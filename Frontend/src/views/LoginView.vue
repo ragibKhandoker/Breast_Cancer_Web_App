@@ -40,7 +40,7 @@ function adminHome(user) {
 // Why the user is here, shown as a notification over the page (not inside the form).
 const notice = computed(() => {
   if (route.query.registered === 'doctor') {
-    return { tone: 'success', title: 'Account created', text: 'Your doctor account has been created. Log in to set up your doctor profile.' }
+    return { tone: 'success', title: 'Account created', text: 'Please wait until an admin approves your account.' }
   }
   if (route.query.registered) return { tone: 'success', title: 'Account created', text: 'Your account has been created. Please log in.' }
   if (route.query.expired) return { tone: 'warning', title: 'Session ended', text: 'Your session has ended. Please log in again.' }

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.cancerweb.backend.dto.LoginRequest;
 import com.cancerweb.backend.dto.RegisterRequest;
+import com.cancerweb.backend.exception.FieldValidationException;
 import com.cancerweb.backend.exception.TemporaryPasswordUsedException;
 import com.cancerweb.backend.model.RevokedToken;
 import com.cancerweb.backend.model.Role;
@@ -60,13 +61,27 @@ public class AuthService {
      * administrator verifies the account (or approves their Breast Surgeon profile).
      */
     public User register(RegisterRequest request) {
+        String specialty = null;
+        if (request.role() == Role.DOCTOR) {
+            // This site is for breast care: only breast surgeons and breast specialists may register as doctors.
+            specialty = request.doctorSpecialty() == null ? null : RegisterRequest.DOCTOR_SPECIALTIES.get(request.doctorSpecialty());
+            if (specialty == null) {
+                throw new FieldValidationException("doctorSpecialty", "Only breast surgeons and breast specialists can register as doctors.");
+            }
+            if (!Boolean.TRUE.equals(request.confirmBreastSpecialist())) {
+                throw new FieldValidationException("confirmBreastSpecialist", "Please confirm you are a breast surgeon or breast specialist.");
+            }
+        }
         Verification verification = request.role() == Role.DOCTOR
                 ? new Verification(VerificationStatus.PENDING, null, null, null)
                 : null;
         User user = userService.createAccount(request.fullName(), request.email(), request.password(), request.role(), verification);
+        if (specialty != null) {
+            user = userService.setSpecialization(user.id(), specialty);
+        }
         boolean doctor = user.role() == Role.DOCTOR;
         notifications.notifyAdmins(doctor ? "NEW_DOCTOR" : "NEW_PATIENT", doctor ? "New doctor registered" : "New patient registered",
-                user.fullName() + " (" + user.email() + ") " + (doctor ? "registered as a doctor and is waiting for verification."
+                user.fullName() + " (" + user.email() + ") " + (doctor ? "registered as a doctor (" + specialty + ") and is waiting for verification."
                         : "created a patient account."),
                 "/admin?tab=verification", null);
         return user;

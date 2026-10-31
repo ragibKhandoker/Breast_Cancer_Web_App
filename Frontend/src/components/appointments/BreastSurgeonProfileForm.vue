@@ -559,9 +559,10 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
 .dropzone :deep(svg) { color: var(--pink-600); flex: none; }
 .dropzone.invalid { border-color: var(--high); }
 .dropzone:has(input:focus-visible) { outline: 3px solid var(--pink-300); outline-offset: 2px; }
-.doc-list { list-style: none; margin: 0.7rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
-.doc-list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: #f8f6fa; font-size: 0.88rem; }
+.doc-list { list-style: none; margin: 0.7rem 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+.doc-list li { min-width: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: #f8f6fa; font-size: 0.88rem; }
 .doc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-list .muted, .doc-list .remove { flex: none; white-space: nowrap; }
 .remove { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
 .remove:hover { background: #fdecea; color: var(--high); }
 

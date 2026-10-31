@@ -135,7 +135,8 @@ class NotificationApiTest extends IntegrationTest {
 
         // A new doctor registration and a password-help request also reach them.
         mvc.perform(withJson(post("/api/auth/register"), "{\"fullName\":\"Dr. Nasrin\",\"email\":\"n@example.com\",\"password\":\""
-                + PASSWORD + "\",\"accountType\":\"DOCTOR\"}")).andExpect(status().isCreated());
+                + PASSWORD + "\",\"accountType\":\"DOCTOR\",\"doctorSpecialty\":\"BREAST_SURGEON\",\"confirmBreastSpecialist\":true}"))
+                .andExpect(status().isCreated());
         mvc.perform(withJson(post("/api/auth/password-help"), "{\"email\":\"p@example.com\"}")).andExpect(status().isAccepted());
         mvc.perform(get("/api/notifications").cookie(admin))
                 .andExpect(jsonPath("$.items[0].type").value("PASSWORD_HELP"))

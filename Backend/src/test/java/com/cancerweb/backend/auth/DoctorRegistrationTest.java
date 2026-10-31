@@ -45,9 +45,36 @@ class DoctorRegistrationTest extends IntegrationTest {
     @Autowired
     private GridFsTemplate gridFs;
 
+    /** Doctors register as breast surgeons, with the confirmation ticked. */
     private static String registration(String name, String email, String accountType) {
+        boolean doctor = "DOCTOR".equalsIgnoreCase(accountType);
         return "{\"fullName\":\"" + name + "\",\"email\":\"" + email + "\",\"password\":\"" + PASSWORD + "\""
-                + (accountType == null ? "" : ",\"accountType\":\"" + accountType + "\"") + "}";
+                + (accountType == null ? "" : ",\"accountType\":\"" + accountType + "\"")
+                + (doctor ? ",\"doctorSpecialty\":\"BREAST_SURGEON\",\"confirmBreastSpecialist\":true" : "") + "}";
+    }
+
+    @Test
+    void onlyBreastSurgeonsAndBreastSpecialistsCanRegisterAsDoctors() throws Exception {
+        String base = "{\"fullName\":\"Dr. Karim\",\"email\":\"karim@example.com\",\"password\":\"" + PASSWORD + "\",\"accountType\":\"DOCTOR\"";
+        // Another specialty, or none, is refused, and no account is made.
+        mvc.perform(withJson(post("/api/auth/register"), base + ",\"doctorSpecialty\":\"CARDIOLOGIST\",\"confirmBreastSpecialist\":true}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.doctorSpecialty").value("Only breast surgeons and breast specialists can register as doctors."));
+        mvc.perform(withJson(post("/api/auth/register"), base + ",\"confirmBreastSpecialist\":true}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.doctorSpecialty").exists());
+        // The confirmation must be ticked.
+        mvc.perform(withJson(post("/api/auth/register"), base + ",\"doctorSpecialty\":\"BREAST_SPECIALIST\"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.confirmBreastSpecialist").exists());
+        org.assertj.core.api.Assertions.assertThat(users.findByEmail("karim@example.com")).isEmpty();
+
+        // A breast specialist registers, and the specialty is on their profile for the administrator to check.
+        mvc.perform(withJson(post("/api/auth/register"), base + ",\"doctorSpecialty\":\"breast_specialist\",\"confirmBreastSpecialist\":true}"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.role").value("DOCTOR"));
+        org.assertj.core.api.Assertions.assertThat(users.findByEmail("karim@example.com").orElseThrow().profile().specialization())
+                .isEqualTo("Breast Specialist");
+        // Patients never need a specialty.
+        mvc.perform(withJson(post("/api/auth/register"), registration("Ayesha", "ayesha@example.com", "PATIENT")))
+                .andExpect(status().isCreated());
     }
 
     private String register(String name, String email, String accountType) throws Exception {

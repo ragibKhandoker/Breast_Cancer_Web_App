@@ -26,8 +26,19 @@ const ACCOUNT_TYPES = [
 const accountType = ref(route.query.as === 'doctor' ? 'DOCTOR' : 'PATIENT')
 const isDoctor = computed(() => accountType.value === 'DOCTOR')
 
-const fields = reactive({ fullName: '', email: '', password: '', confirm: '' })
-const errors = reactive({ fullName: '', email: '', password: '', confirm: '' })
+const fields = reactive({ fullName: '', email: '', password: '', confirm: '', doctorSpecialty: '', confirmBreastSpecialist: false })
+const errors = reactive({ fullName: '', email: '', password: '', confirm: '', doctorSpecialty: '', confirmBreastSpecialist: '' })
+
+// Only breast surgeons and breast specialists can register as doctors.
+const DOCTOR_SPECIALTIES = [
+  { value: 'BREAST_SURGEON', label: 'Breast Surgeon' },
+  { value: 'BREAST_SPECIALIST', label: 'Breast Specialist' },
+]
+function checkDoctor() {
+  errors.doctorSpecialty = isDoctor.value && !fields.doctorSpecialty ? 'Choose your specialty.' : ''
+  errors.confirmBreastSpecialist = isDoctor.value && !fields.confirmBreastSpecialist ? 'Please confirm this.' : ''
+  return !errors.doctorSpecialty && !errors.confirmBreastSpecialist
+}
 const touched = reactive({ fullName: false, email: false, password: false, confirm: false })
 const status = ref('idle') // idle | submitting | success | error
 const failure = ref('')
@@ -77,7 +88,7 @@ function onInput(name) {
 async function submit() {
   if (submitting.value) return
   Object.keys(touched).forEach((key) => (touched[key] = true))
-  const valid = Object.keys(validators).map(check).every(Boolean)
+  const valid = [...Object.keys(validators).map(check), checkDoctor()].every(Boolean)
   if (!valid) {
     await nextTick()
     formEl.value?.querySelector('[aria-invalid="true"]')?.focus()
@@ -89,6 +100,7 @@ async function submit() {
   try {
     const user = await register({
       fullName: fields.fullName.trim(), email: fields.email.trim(), password: fields.password, accountType: accountType.value,
+      ...(isDoctor.value ? { doctorSpecialty: fields.doctorSpecialty, confirmBreastSpecialist: fields.confirmBreastSpecialist } : {}),
     })
     status.value = 'success'
     await router.push({ path: APP_ROUTES.login, query: { registered: isDoctor.value ? 'doctor' : '1' }, state: { email: user.email } })
@@ -145,10 +157,6 @@ async function submit() {
               </span>
             </label>
           </div>
-          <p v-if="isDoctor" class="alert info doctor-note">
-            Doctor accounts are checked by an administrator. After you log in, set up your doctor profile; patients
-            can share reports with you and book you once you are verified.
-          </p>
 
           <form ref="formEl" class="form-stack" novalidate @submit.prevent="submit">
             <div class="form-field">
@@ -219,6 +227,23 @@ async function submit() {
               @blur="onBlur('confirm')"
               @update:model-value="onInput('confirm')"
             />
+
+            <template v-if="isDoctor">
+              <div class="form-field">
+                <label for="register-specialty">Specialty</label>
+                <select id="register-specialty" v-model="fields.doctorSpecialty" :aria-invalid="!!errors.doctorSpecialty"
+                  aria-describedby="register-specialty-error" @change="errors.doctorSpecialty = ''">
+                  <option value="" disabled>Choose your specialty</option>
+                  <option v-for="s in DOCTOR_SPECIALTIES" :key="s.value" :value="s.value">{{ s.label }}</option>
+                </select>
+                <p id="register-specialty-error" class="field-error" aria-live="polite">{{ errors.doctorSpecialty }}</p>
+              </div>
+              <label class="confirm-doctor" :class="{ invalid: errors.confirmBreastSpecialist }">
+                <input v-model="fields.confirmBreastSpecialist" type="checkbox" @change="errors.confirmBreastSpecialist = ''" />
+                <span>I confirm I am a breast surgeon or breast specialist.</span>
+              </label>
+              <p class="field-error" aria-live="polite">{{ errors.confirmBreastSpecialist }}</p>
+            </template>
 
             <div v-if="status === 'success'" class="alert success" role="status">Account created. Taking you to login…</div>
             <div v-else-if="failure" class="alert error" role="alert">{{ failure }}</div>
@@ -317,7 +342,12 @@ async function submit() {
 .type-text { display: grid; gap: 0.15rem; }
 .type-text strong { color: var(--purple-900); font-size: 0.92rem; }
 .type-text span { color: var(--muted); font-size: 0.78rem; line-height: 1.4; }
-.doctor-note { margin: -0.2rem 0 1rem; font-size: 0.85rem; }
+
+
+/* Doctors: specialty and confirmation */
+.confirm-doctor { display: flex; gap: 0.55rem; align-items: flex-start; font-size: 0.88rem; color: var(--purple-900); cursor: pointer; line-height: 1.4; }
+.confirm-doctor input { margin-top: 0.15rem; width: 17px; height: 17px; accent-color: var(--pink-600); flex: none; }
+.confirm-doctor.invalid span { color: var(--high); }
 
 /* Form side */
 .form-side { padding: 2.5rem 2.5rem 2rem; }
