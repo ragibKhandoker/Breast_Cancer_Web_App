@@ -118,7 +118,7 @@ class PasswordHelpStatusTest extends IntegrationTest {
         Cookie fresh = login("bilkis@gmail.com", "MyOwnPass9");
         mvc.perform(get("/api/messages").cookie(fresh))
                 .andExpect(jsonPath("$.messages[0].senderName").value("BreastCare team"))
-                .andExpect(jsonPath("$.messages[0].body").value(org.hamcrest.Matchers.containsString(mine.reference())));
+                .andExpect(jsonPath("$.messages[0].body").value(org.hamcrest.Matchers.containsString("Forgot password?")));
         assertThat(userId).isNotNull();
     }
 

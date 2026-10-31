@@ -84,6 +84,15 @@ public class ApiExceptionHandler {
         return problem;
     }
 
+    /** The administrator's temporary password was right but has already been used once. */
+    @ExceptionHandler(TemporaryPasswordUsedException.class)
+    public ProblemDetail temporaryPasswordUsed(TemporaryPasswordUsedException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED,
+                "This temporary password has already been used and works only once. Use \"Forgot password?\" to ask an administrator for a new one.");
+        problem.setProperty("code", "temporary_password_used");
+        return problem;
+    }
+
     /** The password was right but an administrator has disabled the account. */
     @ExceptionHandler(DisabledException.class)
     public ProblemDetail disabled(DisabledException e) {

@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PasswordField from '../components/auth/PasswordField.vue'
 import PinkRibbon from '../components/common/PinkRibbon.vue'
@@ -10,6 +10,8 @@ import { ROLES, safeRedirect, passwordPageFor } from '../auth/roles'
 import { validateEmail } from '../auth/validation'
 import { errorMessage, fieldErrors } from '../services/http'
 import { APP_ROUTES } from '../config/appRoutes'
+import { checkPasswordHelpStatus } from '../services/authService'
+import { rememberedHelpCode, keepShownPassword, shownPassword, forgetHelpCode } from '../auth/passwordHelpCodes'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,6 +68,59 @@ function validate() {
   return !errors.email && !errors.password
 }
 
+// ---- A "Forgot password?" request sent from this browser ----
+// The Login page checks it by itself: while it waits, a small note says so; once an administrator approves it,
+// the temporary password appears here (only on this browser) and fills the form, so the user just logs in.
+const reset = reactive({ state: '', password: '', copied: false })
+let resetTimer = null
+
+async function checkReset() {
+  const saved = rememberedHelpCode()
+  if (!saved) return
+  const kept = shownPassword()
+  if (kept) return showResetPassword(kept, saved.email)
+  try {
+    const result = await checkPasswordHelpStatus(saved.code)
+    if (result.temporaryPassword) {
+      keepShownPassword(result.temporaryPassword)
+      showResetPassword(result.temporaryPassword, saved.email)
+    } else if (result.state === 'WAITING' || result.state === 'REPLIED') {
+      reset.state = 'waiting'
+    } else {
+      // Shown before, expired, or closed: nothing more to show here.
+      reset.state = result.state === 'PASSWORD_SHOWN' ? 'shown' : 'closed'
+      forgetHelpCode()
+    }
+  } catch {
+    // Server unreachable: try again on the next check.
+  }
+}
+
+function showResetPassword(password, email) {
+  reset.state = 'ready'
+  reset.password = password
+  if (email && !fields.email) fields.email = email
+  fields.password = password
+  clearInterval(resetTimer)
+}
+
+async function copyResetPassword() {
+  try {
+    await navigator.clipboard.writeText(reset.password)
+    reset.copied = true
+    setTimeout(() => (reset.copied = false), 2000)
+  } catch {
+    // It is on screen.
+  }
+}
+
+onMounted(() => {
+  checkReset()
+  // While waiting, look again every 20 seconds so the password appears without a reload.
+  resetTimer = setInterval(() => reset.state === 'waiting' && checkReset(), 20000)
+})
+onBeforeUnmount(() => clearInterval(resetTimer))
+
 async function submit() {
   if (submitting.value) return
   failure.value = ''
@@ -73,6 +128,7 @@ async function submit() {
   submitting.value = true
   try {
     const user = await signIn({ email: fields.email.trim(), password: fields.password })
+    if (reset.state === 'ready') forgetHelpCode()
     if (asAdmin.value && user.role !== ROLES.ADMIN) {
       await signOut()
       fields.password = ''
@@ -86,8 +142,15 @@ async function submit() {
   } catch (err) {
     fields.password = ''
     const status = err.response?.status
-    if (err.response?.data?.code === 'temporary_password_expired') failure.value = errorMessage(err)
-    else if (status === 401) failure.value = 'Invalid email or password.'
+    const code = err.response?.data?.code
+    if (code === 'temporary_password_expired' || code === 'temporary_password_used') {
+      failure.value = errorMessage(err)
+      // That temporary password is finished: stop offering it, and point to a new request.
+      if (reset.state === 'ready') {
+        forgetHelpCode()
+        Object.assign(reset, { state: 'shown', password: '' })
+      }
+    } else if (status === 401) failure.value = 'Invalid email or password.'
     else if (status === 400) Object.assign(errors, fieldErrors(err))
     else failure.value = errorMessage(err)
   } finally {
@@ -129,6 +192,27 @@ async function submit() {
               {{ asAdmin ? 'For site administrators. You will go straight to the admin pages.' : 'Log in to see your reports, appointments and profile.' }}
             </p>
           </header>
+
+          <!-- A password reset requested from this browser -->
+          <div v-if="reset.state === 'ready'" class="reset-card ready" role="status">
+            <p class="reset-title"><AppIcon name="check-circle" :size="18" /> Your password reset was approved</p>
+            <p class="reset-text">Your temporary password (shown only once, keep it until you have logged in):</p>
+            <div class="reset-pw">
+              <code>{{ reset.password }}</code>
+              <button type="button" class="btn btn-outline btn-sm" @click="copyResetPassword"><AppIcon name="copy" :size="14" /> {{ reset.copied ? 'Copied' : 'Copy' }}</button>
+            </div>
+            <p class="reset-text">It is already filled in below. Press <strong>Log In</strong>, then choose your own password.</p>
+          </div>
+          <div v-else-if="reset.state === 'waiting'" class="reset-card waiting" role="status">
+            <p class="reset-title"><AppIcon name="refresh" :size="17" /> Password reset requested</p>
+            <p class="reset-text">Waiting for an administrator to approve it. Your temporary password will appear right here; this page checks by itself.</p>
+          </div>
+          <div v-else-if="reset.state === 'shown'" class="reset-card closed" role="status">
+            <p class="reset-text">A temporary password works only once, and yours has already been shown or used. Need to log in again without your password? <RouterLink :to="APP_ROUTES.forgotPassword">Ask the administrator again</RouterLink>.</p>
+          </div>
+          <div v-else-if="reset.state === 'closed'" class="reset-card closed" role="status">
+            <p class="reset-text">Your earlier password request is closed. Still locked out? <RouterLink :to="APP_ROUTES.forgotPassword">Ask again</RouterLink>.</p>
+          </div>
 
 
           <form class="form-stack" novalidate @submit.prevent="submit">
@@ -200,6 +284,21 @@ async function submit() {
 </template>
 
 <style scoped>
+/* Password reset card */
+.reset-card { margin: -0.4rem 0 1.1rem; padding: 0.9rem 1rem; border-radius: 16px; border: 1px solid var(--border); background: #fff; }
+.reset-card.ready { background: #ecfdf3; border-color: #a7f3d0; }
+.reset-card.waiting { background: var(--pink-50); border-color: var(--pink-300); }
+.reset-card.closed { background: #f7f5fa; }
+.reset-title { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.3rem; font-weight: 700; color: var(--purple-900); font-size: 0.92rem; }
+.ready .reset-title { color: #14532d; }
+.waiting .reset-title :deep(svg) { color: var(--pink-600); animation: spin-slow 2.4s linear infinite; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.reset-text { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--text); }
+.reset-text a { color: var(--pink-600); font-weight: 600; }
+.reset-pw { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.5rem 0; }
+.reset-pw code { padding: 0.45rem 0.75rem; border-radius: 10px; background: #fff; border: 1px solid #a7f3d0; color: #14532d; font: 700 1.1rem ui-monospace, Consolas, monospace; letter-spacing: 0.05em; }
+@media (prefers-reduced-motion: reduce) { .waiting .reset-title :deep(svg) { animation: none; } }
+
 /* Page background: the photo, softened and washed in pink (purple for the admin login). */
 .login-page { position: relative; isolation: isolate; padding: 3rem 0 4rem; min-height: calc(100vh - 76px); }
 .login-page::before {

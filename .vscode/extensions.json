@@ -1,0 +1,4 @@
+{
+  // VS Code suggests these when the project is opened. "Vue - Official" colours and checks the .vue files.
+  "recommendations": ["Vue.volar"]
+}

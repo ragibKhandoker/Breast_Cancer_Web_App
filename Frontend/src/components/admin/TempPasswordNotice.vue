@@ -30,7 +30,7 @@ async function copy() {
     </div>
     <p class="hint">
       Give this temporary password to the user (for example by phone). It is shown only now and is not stored, only
-      its secure hash. It works for 24 hours. Their other logins have been signed out, and after logging in they must
+      its secure hash. It works for one login only, within 24 hours. Their other logins have been signed out, and after logging in they must
       choose their own password before they can do anything else.
     </p>
     <button type="button" class="done" @click="$emit('close')">Done</button>

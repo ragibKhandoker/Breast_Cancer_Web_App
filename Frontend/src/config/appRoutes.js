@@ -11,7 +11,6 @@ export const APP_ROUTES = {
   profile: '/profile', // the signed-in user's own profile: the doctor profile for doctors, account details for others
   accountSettings: '/account-settings', // a doctor's account details: name, email and password
   forgotPassword: '/forgot-password',
-  passwordHelpStatus: '/forgot-password/status', // a "Forgot password?" request's status, by its secret code
   messages: '/messages', // a patient's or doctor's conversation with the administrators
   adminAccount: '/admin-account', // the site owner's own admin profile
   surgeons: '/breast-surgeons', // Find a Breast Surgeon (public)

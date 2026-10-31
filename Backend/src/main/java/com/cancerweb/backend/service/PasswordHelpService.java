@@ -228,8 +228,8 @@ public class PasswordHelpService {
                 .set("deliveryExpiresAt", now.plus(UserService.TEMPORARY_PASSWORD_TTL))
                 .set("reply", text).set("repliedAt", now).set("repliedBy", adminEmail)
                 .set("status", ResetRequestStatus.RESOLVED).set("handledAt", now).set("handledBy", adminEmail));
-        messages.sendFromTeam(r.userId(), "An administrator reset your password after your \"Forgot password?\" request ("
-                + r.reference() + "). If this was not you, reply here straight away.");
+        messages.sendFromTeam(r.userId(), "An administrator approved your \"Forgot password?\" request and reset your password."
+                + " If this was not you, reply here straight away.");
         return updated;
     }
 

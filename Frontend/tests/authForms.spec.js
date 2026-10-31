@@ -258,6 +258,17 @@ describe('Forgot password', () => {
     await flushPromises()
     expect(wrapper.find('[role="alert"]').text()).toBe(detail)
   })
+
+  it('explains that a temporary password works only once', async () => {
+    const { wrapper, authService } = await mountAt('/login')
+    const detail = 'This temporary password has already been used and works only once. Use "Forgot password?" to ask an administrator for a new one.'
+    authService.login.mockRejectedValue(httpError(401, { detail, code: 'temporary_password_used' }))
+    await wrapper.find('#login-email').setValue('r@example.com')
+    await wrapper.find('#login-password').setValue('Temp2345abcd')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.find('[role="alert"]').text()).toBe(detail)
+  })
 })
 
 describe('Admin login option', () => {

@@ -103,7 +103,7 @@ public class UserService {
         }
         Instant now = Instant.now();
         User user = new User(null, fullName.strip(), normalizedEmail, passwordEncoder.encode(password), role, now, now,
-                null, null, null, null, verification, null, null);
+                null, null, null, null, verification, null, null, null);
         try {
             return users.insert(user);
         } catch (DuplicateKeyException e) {
@@ -218,6 +218,7 @@ public class UserService {
                 .set("passwordChangedAt", now)
                 .set("mustChangePassword", true)
                 .set("temporaryPasswordExpiresAt", now.plus(TEMPORARY_PASSWORD_TTL))
+                .unset("temporaryPasswordUsedAt")
                 .set("updatedAt", now));
         mongo.updateMulti(
                 Query.query(Criteria.where("userId").is(userId).and("status").is(ResetRequestStatus.OPEN)),
@@ -248,6 +249,16 @@ public class UserService {
     }
 
     public record PasswordReset(User user, String temporaryPassword) {
+    }
+
+    /**
+     * Marks the administrator's temporary password as used, in one step so two logins at the same moment cannot
+     * both use it. Returns false when it was already used.
+     */
+    public boolean useTemporaryPassword(String userId) {
+        Query query = Query.query(Criteria.where("id").is(userId).and("mustChangePassword").is(true)
+                .and("temporaryPasswordUsedAt").exists(false));
+        return mongo.updateFirst(query, new Update().set("temporaryPasswordUsedAt", Instant.now()), User.class).getModifiedCount() == 1;
     }
 
     /** Called after a successful login, for the administrator's user list. */

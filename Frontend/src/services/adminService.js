@@ -79,13 +79,7 @@ export async function listPasswordRequests(status) {
   return data
 }
 
-/** A message shown on the request's status page. */
-export async function replyToPasswordRequest(id, message) {
-  const { data } = await http.patch(`/api/admin/password-requests/${encodeURIComponent(id)}/reply`, { message })
-  return data
-}
-
-/** Resets the password and shows the temporary one once on this request's status page (not to the admin). */
+/** Approves a request: resets the password and shows the temporary one once on the requester's Login page (not to the admin). */
 export async function sendPasswordToRequest(id, { message, identityConfirmed }) {
   const { data } = await http.post(`/api/admin/password-requests/${encodeURIComponent(id)}/send-password`, { message, identityConfirmed })
   return data

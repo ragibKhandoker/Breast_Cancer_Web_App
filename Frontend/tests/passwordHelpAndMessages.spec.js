@@ -15,6 +15,13 @@ vi.mock('../src/services/authService', () => ({
   requestPasswordHelp: vi.fn(),
   checkPasswordHelpStatus: vi.fn(),
 }))
+// After logging in with a temporary password the app opens the profile page.
+vi.mock('../src/services/profileService', () => ({
+  getProfile: vi.fn().mockResolvedValue({ id: 'p1', fullName: 'Bilkis', email: 'bilkis@gmail.com', role: 'PATIENT', mustChangePassword: true, createdAt: '2026-01-01T00:00:00Z' }),
+  updateProfile: vi.fn(),
+  changeEmail: vi.fn(),
+  changePassword: vi.fn(),
+}))
 vi.mock('../src/services/messageService', () => ({
   getMyMessages: vi.fn(),
   sendMyMessage: vi.fn(),
@@ -43,56 +50,88 @@ async function mountAt(path, user = null, setup = () => {}) {
   return { wrapper, router, authService, messages }
 }
 
-describe('Forgot password: request code and status page', () => {
+describe('Forgot password: approved on the Login page', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    sessionStorage.clear()
   })
 
-  it('gives the visitor a request code and reference, and remembers it on this browser', async () => {
+  it('sends the request without showing any code, and remembers it on this browser', async () => {
     const { wrapper, authService } = await mountAt('/forgot-password', null, ({ authService }) =>
       authService.requestPasswordHelp.mockResolvedValue({ message: 'ok', code: CODE, reference: 'PH-7KQ2M9' }))
     await wrapper.find('#forgot-email').setValue('bilkis@gmail.com')
     await wrapper.find('form').trigger('submit')
     await flushPromises()
     expect(authService.requestPasswordHelp).toHaveBeenCalled()
-    expect(wrapper.find('.code').text()).toBe(CODE)
-    expect(wrapper.text()).toContain('PH-7KQ2M9')
-    expect(wrapper.find('a[href="/forgot-password/status"]').exists()).toBe(true)
-    expect(JSON.parse(localStorage.getItem('bc_password_help')).code).toBe(CODE)
+    expect(wrapper.text()).toContain('Request sent')
+    expect(wrapper.text()).not.toContain(CODE)
+    expect(wrapper.text()).not.toContain('PH-7KQ2M9')
+    expect(wrapper.text()).toContain('on this browser')
+    expect(wrapper.find('a[href="/login"]').exists()).toBe(true)
+    expect(JSON.parse(localStorage.getItem('bc_password_help'))).toMatchObject({ code: CODE, email: 'bilkis@gmail.com' })
   })
 
-  it('opens the remembered code, shows the reply, and keeps the one-time password on screen', async () => {
-    localStorage.setItem('bc_password_help', JSON.stringify({ code: CODE, reference: 'PH-7KQ2M9' }))
-    const { wrapper, authService } = await mountAt('/forgot-password/status', null, ({ authService }) =>
-      authService.checkPasswordHelpStatus.mockResolvedValue({ reference: 'PH-7KQ2M9', state: 'REPLIED', reply: 'We will call you.', repliedAt: new Date().toISOString() }))
+  it('shows on the Login page that the request is waiting', async () => {
+    localStorage.setItem('bc_password_help', JSON.stringify({ code: CODE, email: 'bilkis@gmail.com' }))
+    const { wrapper, authService } = await mountAt('/login', null, ({ authService }) =>
+      authService.checkPasswordHelpStatus.mockResolvedValue({ reference: 'PH-7KQ2M9', state: 'WAITING' }))
     expect(authService.checkPasswordHelpStatus).toHaveBeenCalledWith(CODE)
-    expect(wrapper.text()).toContain('The administrator replied')
-    expect(wrapper.find('.reply').text()).toContain('We will call you.')
-    expect(wrapper.find('.password').exists()).toBe(false)
-
-    authService.checkPasswordHelpStatus.mockResolvedValueOnce({
-      reference: 'PH-7KQ2M9', state: 'PASSWORD_READY', reply: 'Confirmed by phone.', repliedAt: new Date().toISOString(),
-      temporaryPassword: 'Ab3defGh7kLm', passwordExpiresAt: new Date(Date.now() + 86400000).toISOString(),
-    })
-    await wrapper.find('.code-form').trigger('submit')
-    await flushPromises()
-    expect(wrapper.find('.password code').text()).toBe('Ab3defGh7kLm')
-    expect(wrapper.text()).toContain('shown only once')
-    expect(wrapper.find('.password a[href="/login"]').exists()).toBe(true)
-
-    // A later check says it was shown, but the page keeps it until the visitor leaves.
-    authService.checkPasswordHelpStatus.mockResolvedValueOnce({ reference: 'PH-7KQ2M9', state: 'PASSWORD_SHOWN' })
-    await wrapper.find('.code-form').trigger('submit')
-    await flushPromises()
-    expect(wrapper.find('.password code').text()).toBe('Ab3defGh7kLm')
+    expect(wrapper.find('.reset-card.waiting').text()).toContain('Waiting for an administrator')
   })
 
-  it('asks for a code when none is entered', async () => {
-    const { wrapper, authService } = await mountAt('/forgot-password/status')
-    await wrapper.find('.code-form').trigger('submit')
+  it('shows the approved temporary password once, fills the form, and forgets it after logging in', async () => {
+    localStorage.setItem('bc_password_help', JSON.stringify({ code: CODE, email: 'bilkis@gmail.com' }))
+    const { wrapper, authService } = await mountAt('/login', null, ({ authService }) => {
+      authService.checkPasswordHelpStatus.mockResolvedValue({ reference: 'PH-7KQ2M9', state: 'PASSWORD_READY', temporaryPassword: 'Ab3defGh7kLm' })
+      authService.login.mockResolvedValue({ id: 'p1', fullName: 'Bilkis', email: 'bilkis@gmail.com', role: 'PATIENT', mustChangePassword: true })
+    })
+    expect(wrapper.find('.reset-card.ready code').text()).toBe('Ab3defGh7kLm')
+    expect(wrapper.find('#login-email').element.value).toBe('bilkis@gmail.com')
+    expect(wrapper.find('#login-password').element.value).toBe('Ab3defGh7kLm')
+
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(authService.login).toHaveBeenCalledWith({ email: 'bilkis@gmail.com', password: 'Ab3defGh7kLm' })
+    expect(localStorage.getItem('bc_password_help')).toBeNull()
+  })
+
+  it('stops offering a temporary password the server says was already used', async () => {
+    localStorage.setItem('bc_password_help', JSON.stringify({ code: CODE, email: 'bilkis@gmail.com' }))
+    sessionStorage.setItem('bc_password_help_shown', 'Ab3defGh7kLm')
+    const detail = 'This temporary password has already been used and works only once. Use "Forgot password?" to ask an administrator for a new one.'
+    const { wrapper } = await mountAt('/login', null, ({ authService }) =>
+      authService.login.mockRejectedValue(Object.assign(new Error('401'), { response: { status: 401, data: { detail, code: 'temporary_password_used' } } })))
+    expect(wrapper.find('.reset-card.ready').exists()).toBe(true)
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.find('[role="alert"]').text()).toBe(detail)
+    expect(wrapper.find('.reset-card.ready').exists()).toBe(false)
+    expect(wrapper.find('.reset-card.closed').text()).toContain('works only once')
+    expect(wrapper.find('.reset-card.closed a[href="/forgot-password"]').exists()).toBe(true)
+    expect(localStorage.getItem('bc_password_help')).toBeNull()
+    expect(sessionStorage.getItem('bc_password_help_shown')).toBeNull()
+  })
+
+  it('keeps the shown password across a reload of the Login page', async () => {
+    localStorage.setItem('bc_password_help', JSON.stringify({ code: CODE, email: 'bilkis@gmail.com' }))
+    sessionStorage.setItem('bc_password_help_shown', 'Ab3defGh7kLm')
+    const { wrapper, authService } = await mountAt('/login', null)
     expect(authService.checkPasswordHelpStatus).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('Enter the request code you were given.')
+    expect(wrapper.find('.reset-card.ready code').text()).toBe('Ab3defGh7kLm')
+  })
+
+  it('says when an old request is closed and forgets it', async () => {
+    localStorage.setItem('bc_password_help', JSON.stringify({ code: CODE, email: 'bilkis@gmail.com' }))
+    const { wrapper } = await mountAt('/login', null, ({ authService }) =>
+      authService.checkPasswordHelpStatus.mockResolvedValue({ reference: 'PH-7KQ2M9', state: 'CLOSED' }))
+    expect(wrapper.find('.reset-card.closed').text()).toContain('closed')
+    expect(localStorage.getItem('bc_password_help')).toBeNull()
+  })
+
+  it('sends old status-page links to Login', async () => {
+    const { router } = await mountAt('/forgot-password/status')
+    expect(router.currentRoute.value.path).toBe('/login')
   })
 })
 

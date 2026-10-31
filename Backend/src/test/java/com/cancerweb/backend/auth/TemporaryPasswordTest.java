@@ -109,6 +109,39 @@ class TemporaryPasswordTest extends IntegrationTest {
     }
 
     @Test
+    void aTemporaryPasswordWorksForOneLoginOnly() throws Exception {
+        Cookie admin = signedIn(Role.ADMIN, "a@example.com");
+        String patientId = createUser("Rahima Begum", "rahima@example.com", Role.PATIENT).id();
+        String temporary = reset(admin, patientId);
+
+        // The first login works...
+        Cookie first = login("rahima@example.com", temporary);
+        mvc.perform(get("/api/auth/me").cookie(first)).andExpect(jsonPath("$.mustChangePassword").value(true));
+        // ...a second one with the same temporary password does not, even before it expires.
+        mvc.perform(withJson(post("/api/auth/login"), loginBody("rahima@example.com", temporary)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("temporary_password_used"))
+                .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("Forgot password?")));
+        // A wrong password still gets the usual answer, so "already used" is only told to the right password.
+        mvc.perform(withJson(post("/api/auth/login"), loginBody("rahima@example.com", "Wrong12345")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.detail").value("Invalid email or password."));
+
+        // The user forgets again without changing it: only a new reset from the administrator helps.
+        String again = reset(admin, patientId);
+        assertThat(again).isNotEqualTo(temporary);
+        mvc.perform(withJson(post("/api/auth/login"), loginBody("rahima@example.com", temporary))).andExpect(status().isUnauthorized());
+        Cookie second = login("rahima@example.com", again);
+
+        // Choosing an own password clears the mark; the own password then works as often as needed.
+        mvc.perform(withJson(put("/api/profile/password"), "{\"currentPassword\":\"" + again + "\",\"newPassword\":\"MyOwnPass9\"}")
+                .cookie(second)).andExpect(status().isOk());
+        assertThat(users.findById(patientId).orElseThrow().temporaryPasswordUsedAt()).isNull();
+        login("rahima@example.com", "MyOwnPass9");
+        login("rahima@example.com", "MyOwnPass9");
+    }
+
+    @Test
     void anExpiredTemporaryPasswordNoLongerLogsIn() throws Exception {
         Cookie admin = signedIn(Role.ADMIN, "a@example.com");
         String patientId = createUser("Rahima Begum", "rahima@example.com", Role.PATIENT).id();

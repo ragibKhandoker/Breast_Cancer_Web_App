@@ -20,7 +20,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * {@code mustChangePassword} is set when an administrator resets the password to a temporary one, and cleared
  * when the user chooses their own. Until then the account can do nothing but change its password
  * (PasswordChangeRequiredFilter), and {@code temporaryPasswordExpiresAt} is when the temporary password stops
- * working at all. Passwords are only ever stored as BCrypt hashes ({@code passwordHash}).
+ * working at all. It works for one login only: {@code temporaryPasswordUsedAt} is set by that login, and later
+ * logins with it are refused. Passwords are only ever stored as BCrypt hashes ({@code passwordHash}).
  */
 @Document("users")
 public record User(
@@ -37,7 +38,8 @@ public record User(
         Instant lastLoginAt,
         Verification verification,
         Boolean mustChangePassword,
-        Instant temporaryPasswordExpiresAt) {
+        Instant temporaryPasswordExpiresAt,
+        Instant temporaryPasswordUsedAt) {
 
     public UserProfile profile() {
         return profile == null ? UserProfile.EMPTY : profile;

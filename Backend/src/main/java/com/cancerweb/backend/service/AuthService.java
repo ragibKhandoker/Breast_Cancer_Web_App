@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.cancerweb.backend.dto.LoginRequest;
 import com.cancerweb.backend.dto.RegisterRequest;
+import com.cancerweb.backend.exception.TemporaryPasswordUsedException;
 import com.cancerweb.backend.model.RevokedToken;
 import com.cancerweb.backend.model.Role;
 import com.cancerweb.backend.model.User;
@@ -90,6 +91,10 @@ public class AuthService {
         // Also only after the password matched: an administrator's temporary password works for a limited time.
         if (user.isTemporaryPasswordExpired(Instant.now())) {
             throw new CredentialsExpiredException("Temporary password expired");
+        }
+        // A temporary password works for one login only; after that the user must ask an administrator again.
+        if (user.isPasswordChangeRequired() && !userService.useTemporaryPassword(user.id())) {
+            throw new TemporaryPasswordUsedException();
         }
         userService.recordLogin(user.id());
         return new Login(user, jwtService.issue(user));

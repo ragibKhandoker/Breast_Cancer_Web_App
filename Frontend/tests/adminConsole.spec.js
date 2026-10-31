@@ -26,7 +26,6 @@ vi.mock('../src/services/adminService', () => ({
   resetPassword: vi.fn(),
   listPasswordRequests: vi.fn(),
   setPasswordRequestStatus: vi.fn(),
-  replyToPasswordRequest: vi.fn(),
   sendPasswordToRequest: vi.fn(),
   getAdminAccount: vi.fn(),
   listSurgeonProfiles: vi.fn().mockResolvedValue([]),
@@ -296,32 +295,23 @@ describe('Admin portal: verification and password help', () => {
     expect(wrapper.find('.request .pill').text()).toBe('Resolved')
   })
 
-  it('replies and sends a temporary password to the status page only after the identity check', async () => {
-    const request = { ...REQUEST, reference: 'PH-7KQ2M9', hasStatusPage: true }
-    const listed = [request]
+  it('approves a request with one button, after a confirmation, without showing the password', async () => {
+    const listed = [{ ...REQUEST, reference: 'PH-7KQ2M9', hasStatusPage: true }]
     const { wrapper: w, admin: a } = await mountPortal('passwords', PATIENTS, listed)
-    expect(w.text()).toContain('Reference PH-7KQ2M9')
-    const button = (label) => w.findAll('.request button').find((b) => b.text().includes(label))
+    const approve = () => w.findAll('.request button').find((b) => b.text().includes('Approve & send temporary password'))
+    expect(approve().exists()).toBe(true)
 
-    a.replyToPasswordRequest.mockResolvedValue({ ...listed[0], reply: 'We will call you within an hour.', repliedAt: new Date().toISOString() })
-    await button('Reply').trigger('click')
-    await w.find('.req-form textarea').setValue('We will call you within an hour.')
-    await w.find('.req-form').trigger('submit')
-    await flushPromises()
-    expect(a.replyToPasswordRequest).toHaveBeenCalledWith('r1', 'We will call you within an hour.')
-    expect(w.find('.reply').text()).toContain('We will call you within an hour.')
-
-    await button('Send temporary password').trigger('click')
-    await w.find('.req-form').trigger('submit')
+    const ask = vi.spyOn(window, 'confirm').mockReturnValueOnce(false)
+    await approve().trigger('click')
+    expect(ask).toHaveBeenCalled()
     expect(a.sendPasswordToRequest).not.toHaveBeenCalled()
-    expect(w.text()).toContain('Tick the box once you have confirmed who this is.')
+
+    ask.mockReturnValueOnce(true)
     a.sendPasswordToRequest.mockResolvedValue({ ...listed[0], status: 'RESOLVED', passwordSent: true, passwordShownAt: null })
-    await w.find('.req-form .confirm input').setValue(true)
-    await w.find('.req-form').trigger('submit')
+    await approve().trigger('click')
     await flushPromises()
     expect(a.sendPasswordToRequest).toHaveBeenCalledWith('r1', { message: '', identityConfirmed: true })
-    expect(w.text()).toContain('waiting for the user to open it')
-    // The administrator is never shown the password in this flow.
+    expect(w.text()).toContain('appears when the user opens the Login page')
     expect(w.find('.temp').exists()).toBe(false)
   })
 })

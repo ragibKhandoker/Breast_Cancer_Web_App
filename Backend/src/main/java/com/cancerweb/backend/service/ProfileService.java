@@ -134,6 +134,7 @@ public class ProfileService {
                 .set("passwordChangedAt", now)
                 .unset("mustChangePassword")
                 .unset("temporaryPasswordExpiresAt")
+                .unset("temporaryPasswordUsedAt")
                 .set("updatedAt", now));
         authService.logout(currentToken);
         notifications.notify(userId, "PASSWORD_CHANGED", "Password changed",
