@@ -18,17 +18,24 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cancerweb.backend.dto.AdminOverview;
 import com.cancerweb.backend.dto.MessageResponse;
 import com.cancerweb.backend.dto.MessageStatusRequest;
+import com.cancerweb.backend.dto.ResetRequestResponse;
+import com.cancerweb.backend.dto.ResetRequestStatusRequest;
 import com.cancerweb.backend.dto.SiteSettingsRequest;
 import com.cancerweb.backend.dto.SiteSettingsResponse;
 import com.cancerweb.backend.model.MessageStatus;
+import com.cancerweb.backend.model.ResetRequestStatus;
 import com.cancerweb.backend.security.CurrentUser;
 import com.cancerweb.backend.service.AdminOverviewService;
 import com.cancerweb.backend.service.ContactService;
+import com.cancerweb.backend.service.PasswordHelpService;
 import com.cancerweb.backend.service.SiteSettingsService;
 
 import jakarta.validation.Valid;
 
-/** The administrator's console: site overview, Contact inbox and website settings. SecurityConfig: ADMIN only. */
+/**
+ * The administrator's console: site overview, Contact inbox, "Forgot password?" requests and website settings.
+ * SecurityConfig: ADMIN only.
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class AdminConsoleController {
@@ -36,11 +43,14 @@ public class AdminConsoleController {
     private final AdminOverviewService overview;
     private final ContactService contact;
     private final SiteSettingsService settings;
+    private final PasswordHelpService passwordHelp;
 
-    public AdminConsoleController(AdminOverviewService overview, ContactService contact, SiteSettingsService settings) {
+    public AdminConsoleController(AdminOverviewService overview, ContactService contact, SiteSettingsService settings,
+            PasswordHelpService passwordHelp) {
         this.overview = overview;
         this.contact = contact;
         this.settings = settings;
+        this.passwordHelp = passwordHelp;
     }
 
     @GetMapping("/overview")
@@ -63,6 +73,19 @@ public class AdminConsoleController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMessage(@PathVariable String id) {
         contact.delete(id);
+    }
+
+    /** {@code status}: OPEN, RESOLVED, DISMISSED, or leave out for all. */
+    @GetMapping("/password-requests")
+    public List<ResetRequestResponse> passwordRequests(@RequestParam(required = false) ResetRequestStatus status) {
+        return passwordHelp.list(status).stream().map(ResetRequestResponse::from).toList();
+    }
+
+    /** Dismiss a request, or reopen it. Resetting the password (on the user) resolves it. */
+    @PatchMapping("/password-requests/{id}")
+    public ResetRequestResponse setPasswordRequestStatus(@PathVariable String id,
+            @Valid @RequestBody ResetRequestStatusRequest request, @AuthenticationPrincipal CurrentUser admin) {
+        return ResetRequestResponse.from(passwordHelp.setStatus(id, request.status(), admin.email()));
     }
 
     @GetMapping("/site-settings")

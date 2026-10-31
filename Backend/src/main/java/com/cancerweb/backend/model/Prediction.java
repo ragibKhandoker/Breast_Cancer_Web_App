@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * before these fields existed have them null / false.
  * {@code heatmap} is the picture for the report page (see {@link Heatmap}), made on first request at
  * /api/predictions/{id}/heatmap and served only there. It plays no part in the score.
+ * {@code reportFileId} is the GridFS id of the PDF report made on the first download (GET /api/scans/{id}/report).
  */
 @Document("predictions")
 public record Prediction(
@@ -40,7 +41,8 @@ public record Prediction(
         String view,
         Double threshold,
         boolean lowConfidence,
-        @JsonIgnore Heatmap heatmap) {
+        @JsonIgnore Heatmap heatmap,
+        @JsonIgnore String reportFileId) {
 
     public List<String> sharedWithDoctorIds() {
         return sharedWithDoctorIds == null ? List.of() : sharedWithDoctorIds;

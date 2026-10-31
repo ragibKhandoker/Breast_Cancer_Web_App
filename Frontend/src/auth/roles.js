@@ -9,6 +9,11 @@ export function homeFor(role) {
   return HOME_BY_ROLE[role] ?? '/'
 }
 
+/** The page with the Change password form: Account Settings for doctors (their /profile is the doctor profile). */
+export function passwordPageFor(role) {
+  return role === ROLES.DOCTOR ? '/account-settings' : '/profile'
+}
+
 /**
  * Where to go after login: the page the user was sent away from, if it is a path on this site that their role
  * may open, otherwise their dashboard. Rejects absolute and protocol-relative URLs (open-redirect protection).

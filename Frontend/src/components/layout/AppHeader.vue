@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../common/AppIcon.vue'
 import BrandLogo from './BrandLogo.vue'
+import NotificationBell from './NotificationBell.vue'
 import { APP_ROUTES } from '../../config/appRoutes'
 import { authState, signOut } from '../../auth/authStore'
 import { homeFor, ROLES } from '../../auth/roles'
@@ -17,10 +18,16 @@ const initials = computed(() =>
     .join(''),
 )
 
-// Prediction is a patient tool; doctors and administrators reach their pages through Dashboard.
+// Shown to every visitor. Browsing Breast Surgeons is public; uploading a mammogram is for patient accounts,
+// so for doctors and administrators the link says so (the route guard sends them to Access Denied).
 const links = computed(() => [
   { to: '/', label: 'Home' },
-  ...(!user.value || user.value.role === ROLES.PATIENT ? [{ to: APP_ROUTES.analysis, label: 'Prediction' }] : []),
+  {
+    to: APP_ROUTES.analysis,
+    label: 'Prediction',
+    title: user.value && user.value.role !== ROLES.PATIENT ? 'Prediction is for patient accounts' : undefined,
+  },
+  { to: APP_ROUTES.surgeons, label: 'Find a Surgeon' },
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },
@@ -52,13 +59,13 @@ async function logout() {
       <BrandLogo />
 
       <nav id="main-nav" class="nav" :class="{ open: menuOpen }" aria-label="Main">
-        <RouterLink v-for="link in links" :key="link.to" :to="link.to" class="nav-link">
+        <RouterLink v-for="link in links" :key="link.to" :to="link.to" :title="link.title" class="nav-link">
           {{ link.label }}
         </RouterLink>
         <div class="menu-auth">
           <template v-if="user">
             <RouterLink :to="homeFor(user.role)" class="btn btn-primary">Dashboard</RouterLink>
-            <RouterLink :to="APP_ROUTES.profile" class="btn btn-outline">Profile</RouterLink>
+            <RouterLink :to="user.owner ? APP_ROUTES.adminAccount : APP_ROUTES.profile" class="btn btn-outline">Profile</RouterLink>
             <button type="button" class="btn btn-outline" :disabled="loggingOut" @click="logout">Logout</button>
           </template>
           <template v-else>
@@ -69,6 +76,7 @@ async function logout() {
       </nav>
 
       <div class="actions">
+        <NotificationBell v-if="user" />
         <template v-if="user">
           <RouterLink :to="homeFor(user.role)" class="btn btn-primary auth" :title="`Signed in as ${user.email}`">
             Dashboard
@@ -76,7 +84,7 @@ async function logout() {
           <button type="button" class="btn btn-outline auth" :disabled="loggingOut" @click="logout">
             {{ loggingOut ? 'Logging out…' : 'Logout' }}
           </button>
-          <RouterLink :to="APP_ROUTES.profile" class="avatar" :title="`My profile (${user.email})`" aria-label="My profile">
+          <RouterLink :to="user.owner ? APP_ROUTES.adminAccount : APP_ROUTES.profile" class="avatar" :title="`My profile (${user.email})`" aria-label="My profile">
             {{ initials }}
           </RouterLink>
         </template>

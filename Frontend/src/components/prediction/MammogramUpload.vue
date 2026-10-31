@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import AppIcon from '../common/AppIcon.vue'
 import UploadPrivacyNotice from './UploadPrivacyNotice.vue'
+import ScanOverlay from './ScanOverlay.vue'
 import { analyzeImage, uploadFailure } from '../../services/predictionService'
 import {
   ACCEPT,
@@ -251,8 +252,12 @@ onBeforeUnmount(() => {
         </div>
 
         <div v-else class="selected card" :class="{ dragging }">
-          <div class="preview-frame">
-            <img :src="previewUrl" :alt="`Preview of the selected mammogram ${file.name}`" @error="onPreviewError" />
+          <div class="preview-frame" :class="{ scanning: busy }">
+            <!-- The overlay sits exactly on the image, not on the dark space around it. -->
+            <div class="scan-target">
+              <img :src="previewUrl" :alt="`Preview of the selected mammogram ${file.name}`" @error="onPreviewError" />
+              <ScanOverlay :state="busy ? 'scanning' : status === 'success' ? 'done' : 'ready'" />
+            </div>
           </div>
           <div class="file-meta">
             <p class="file-state">
@@ -402,7 +407,10 @@ onBeforeUnmount(() => {
   display: grid; place-items: center; min-height: 220px; max-height: 360px; overflow: hidden;
   border-radius: 12px; background: #1d1530;
 }
-.preview-frame img { max-width: 100%; max-height: 360px; object-fit: contain; }
+.preview-frame img { display: block; max-width: 100%; max-height: 360px; object-fit: contain; }
+.scan-target { position: relative; display: inline-block; max-width: 100%; line-height: 0; }
+.preview-frame { transition: box-shadow 0.3s; }
+.preview-frame.scanning { box-shadow: inset 0 0 0 2px rgba(255, 79, 154, 0.55), 0 0 24px rgba(216, 27, 106, 0.25); }
 .file-meta { min-width: 0; }
 .file-meta p { margin: 0; }
 .file-state { display: flex; align-items: center; gap: 0.35rem; color: var(--low); font-weight: 600; font-size: 0.9rem; }

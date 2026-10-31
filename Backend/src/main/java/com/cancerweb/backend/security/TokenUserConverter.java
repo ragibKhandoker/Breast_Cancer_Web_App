@@ -1,5 +1,7 @@
 package com.cancerweb.backend.security;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
@@ -39,8 +41,16 @@ public class TokenUserConverter implements Converter<Jwt, AbstractAuthentication
                 && (jwt.getIssuedAt() == null || jwt.getIssuedAt().isBefore(user.passwordChangedAt()))) {
             throw new InvalidBearerTokenException("Token was issued before the last password change");
         }
+        if (user.isTemporaryPasswordExpired(Instant.now())) {
+            throw new InvalidBearerTokenException("The temporary password has expired");
+        }
         CurrentUser principal = new CurrentUser(user.id(), user.email(), user.fullName(), user.role());
-        return UsernamePasswordAuthenticationToken.authenticated(principal, null,
-                List.of(new SimpleGrantedAuthority(user.role().authority())));
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>(List.of(new SimpleGrantedAuthority(user.role().authority())));
+        // Signed in with an administrator's temporary password: PasswordChangeRequiredFilter allows only
+        // choosing a new password until then.
+        if (user.isPasswordChangeRequired()) {
+            authorities.add(new SimpleGrantedAuthority(PasswordChangeRequiredFilter.AUTHORITY));
+        }
+        return UsernamePasswordAuthenticationToken.authenticated(principal, null, authorities);
     }
 }

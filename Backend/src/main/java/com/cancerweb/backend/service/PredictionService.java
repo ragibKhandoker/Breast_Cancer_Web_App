@@ -66,9 +66,11 @@ public class PredictionService {
     private final MammogramGate gate;
     private final UserRepository users;
     private final HeatmapModel heatmapModel;
+    private final NotificationService notifications;
 
     public PredictionService(PredictionRepository repository, MongoTemplate mongo, GridFsTemplate gridFs,
-            CancerModel predictor, MammogramGate gate, UserRepository users, HeatmapModel heatmapModel) {
+            CancerModel predictor, MammogramGate gate, UserRepository users, HeatmapModel heatmapModel,
+            NotificationService notifications) {
         this.repository = repository;
         this.mongo = mongo;
         this.gridFs = gridFs;
@@ -76,6 +78,7 @@ public class PredictionService {
         this.gate = gate;
         this.users = users;
         this.heatmapModel = heatmapModel;
+        this.notifications = notifications;
     }
 
     /**
@@ -119,7 +122,7 @@ public class PredictionService {
                 imageId.toHexString(), result.label(), result.malignantProbability(),
                 result.benignProbability(), result.modelVersion(), result.demoMode(), Instant.now(),
                 owner.id(), List.of(), uploadId, view == null || view.isBlank() ? null : view, result.threshold(),
-                result.lowConfidence(), null);
+                result.lowConfidence(), null, null);
         try {
             return repository.save(prediction);
         } catch (DuplicateKeyException e) {
@@ -204,6 +207,9 @@ public class PredictionService {
     public void delete(String id, CurrentUser owner) {
         Prediction prediction = findOwned(id, owner);
         gridFs.delete(byFileId(prediction.imageFileId()));
+        if (prediction.reportFileId() != null) {
+            gridFs.delete(byFileId(prediction.reportFileId()));
+        }
         repository.delete(prediction);
     }
 
@@ -217,11 +223,17 @@ public class PredictionService {
     }
 
     public List<UserSummary> share(String id, String doctorId, CurrentUser owner) {
-        boolean isDoctor = users.findById(doctorId).map(user -> user.role() == Role.DOCTOR).orElse(false);
+        // Only a verified doctor: a self-registered account cannot receive reports before an administrator checks it.
+        boolean isDoctor = users.findById(doctorId).map(User::isTrustedDoctor).orElse(false);
         if (!isDoctor) {
             throw new UserNotFoundException("Doctor not found");
         }
+        Prediction before = findOwned(id, owner);
         updateOwned(id, owner, new Update().addToSet(SHARED_WITH, doctorId));
+        if (!before.sharedWithDoctorIds().contains(doctorId)) {
+            notifications.notify(doctorId, "REPORT_SHARED", "A patient shared a report",
+                    owner.fullName() + " shared a mammogram report with you.", "/reports/" + id);
+        }
         return listShares(id, owner);
     }
 

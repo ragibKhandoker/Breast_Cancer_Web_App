@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
+// The bell in the header and the admin account page load notifications; no server here.
+vi.mock('../src/services/notificationService', async (importOriginal) => ({
+  ...(await importOriginal()),
+  listNotifications: vi.fn().mockResolvedValue({ items: [], unread: 0 }),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}))
 vi.mock('../src/services/authService', () => ({ fetchCurrentUser: vi.fn(), login: vi.fn(), logout: vi.fn() }))
 vi.mock('../src/services/adminService', () => ({
   getOverview: vi.fn(),
@@ -14,6 +21,15 @@ vi.mock('../src/services/adminService', () => ({
   deleteMessage: vi.fn(),
   getSiteSettings: vi.fn(),
   saveSiteSettings: vi.fn(),
+  getUserDetail: vi.fn(),
+  setVerification: vi.fn(),
+  resetPassword: vi.fn(),
+  listPasswordRequests: vi.fn(),
+  setPasswordRequestStatus: vi.fn(),
+  getAdminAccount: vi.fn(),
+  listSurgeonProfiles: vi.fn().mockResolvedValue([]),
+  reviewSurgeon: vi.fn(),
+  surgeonDocumentUrl: vi.fn(() => '#'),
 }))
 
 const ADMIN = { id: 'a1', fullName: 'Nusrat Jahan', email: 'admin@example.com', role: 'ADMIN' }
@@ -168,6 +184,169 @@ describe('Admin console', () => {
       await router.push('/admin?tab=users')
       expect(router.currentRoute.value.path).toBe('/forbidden')
     }
+  })
+})
+
+describe('Admin portal: verification and password help', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  const PATIENTS = [
+    { id: 'p1', fullName: 'Rahima Begum', email: 'rahima@example.com', role: 'PATIENT', createdAt: '2026-10-02T00:00:00Z', disabled: false, lastLoginAt: null, verificationStatus: 'PENDING' },
+    { id: 'p2', fullName: 'Salma Akter', email: 'salma@example.com', role: 'PATIENT', createdAt: '2026-10-03T00:00:00Z', disabled: false, lastLoginAt: null, verificationStatus: 'VERIFIED' },
+    { id: 'd1', fullName: 'Dr. Karim', email: 'karim@clinic.org', role: 'DOCTOR', createdAt: '2026-10-03T00:00:00Z', disabled: false, lastLoginAt: null, verificationStatus: null },
+  ]
+  const DETAIL = {
+    ...PATIENTS[0], updatedAt: '2026-10-02T00:00:00Z', mustChangePassword: false, phone: '+8801712345678', dateOfBirth: '1990-05-01',
+    gender: 'FEMALE', address: '', specialization: null, hospital: null, verificationNote: null, verifiedBy: null, verifiedAt: null, predictionCount: 3,
+  }
+
+  async function mountPortal(tab, users = PATIENTS) {
+    vi.resetModules()
+    const authService = await import('../src/services/authService')
+    authService.fetchCurrentUser.mockResolvedValue(ADMIN)
+    const admin = await import('../src/services/adminService')
+    admin.getOverview.mockResolvedValue({ ...structuredClone(OVERVIEW), support: { pendingVerification: 1, verified: 1, rejected: 0, openPasswordRequests: 2 } })
+    admin.listUsers.mockResolvedValue(structuredClone(users))
+    admin.listMessages.mockResolvedValue([])
+    admin.listPasswordRequests.mockResolvedValue([
+      { id: 'r1', userId: 'p1', email: 'rahima@example.com', fullName: 'Rahima Begum', message: 'Locked out', status: 'OPEN', createdAt: new Date().toISOString(), handledAt: null, handledBy: null },
+    ])
+    const { routes } = await import('../src/router')
+    const { installAuthGuard } = await import('../src/auth/guard')
+    const router = createRouter({ history: createMemoryHistory(), routes })
+    installAuthGuard(router)
+    await router.push(`/admin?tab=${tab}`)
+    const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router], directives: { reveal: { mounted() {} } } } })
+    await flushPromises()
+    return { wrapper, admin }
+  }
+
+  it('shows waiting counts in the sidebar and on the overview', async () => {
+    const { wrapper } = await mountPortal('overview')
+    expect(wrapper.find('#tab-verification .badge-count').text()).toBe('1')
+    expect(wrapper.find('#tab-passwords .badge-count').text()).toBe('2')
+    expect(wrapper.text()).toContain('Needs your attention')
+  })
+
+  it('lists pending patients, shows details, needs a note to reject, and verifies', async () => {
+    const { wrapper, admin } = await mountPortal('verification')
+    // Pending patients by default; doctors have their own queue.
+    expect(wrapper.findAll('.person')).toHaveLength(1)
+    expect(wrapper.text()).not.toContain('Dr. Karim')
+
+    admin.getUserDetail.mockResolvedValue(structuredClone(DETAIL))
+    await wrapper.find('.person').trigger('click')
+    await flushPromises()
+    expect(admin.getUserDetail).toHaveBeenCalledWith('p1')
+    expect(wrapper.text()).toContain('+8801712345678')
+    expect(wrapper.text()).toContain('Missing: address')
+
+    await wrapper.find('.reject').trigger('click')
+    expect(wrapper.text()).toContain('Tell the patient what needs to be corrected.')
+    expect(admin.setVerification).not.toHaveBeenCalled()
+
+    admin.setVerification.mockResolvedValue({ ...DETAIL, verificationStatus: 'VERIFIED', verifiedBy: 'admin@example.com', verifiedAt: new Date().toISOString() })
+    await wrapper.find('.approve').trigger('click')
+    await flushPromises()
+    expect(admin.setVerification).toHaveBeenCalledWith('p1', 'VERIFIED', '')
+    expect(wrapper.text()).toContain('Patient verified.')
+    expect(wrapper.find('.chip.on').text()).toContain('0') // nobody left pending
+  })
+
+  it('verifies a self-registered doctor from the Doctors queue', async () => {
+    const pendingDoctor = { id: 'd2', fullName: 'Dr. Nasrin Akter', email: 'nasrin@example.com', role: 'DOCTOR', createdAt: '2026-10-30T00:00:00Z', disabled: false, lastLoginAt: null, verificationStatus: 'PENDING' }
+    const { wrapper, admin } = await mountPortal('verification', [...PATIENTS, pendingDoctor])
+    expect(wrapper.find('.queue-tab.on').text()).toContain('Patients')
+    const doctorsTab = wrapper.findAll('.queue-tab').find((t) => t.text().startsWith('Doctors'))
+    expect(doctorsTab.find('.n').text()).toBe('1') // one doctor waiting
+
+    await doctorsTab.trigger('click')
+    // Pending doctors only; the admin-made Dr. Karim is already verified.
+    expect(wrapper.findAll('.person')).toHaveLength(1)
+    expect(wrapper.find('.person').text()).toContain('Dr. Nasrin Akter')
+
+    admin.getUserDetail.mockResolvedValue({ ...pendingDoctor, updatedAt: pendingDoctor.createdAt, mustChangePassword: false, phone: '+8801712345678',
+      dateOfBirth: null, gender: null, address: null, specialization: 'Breast Surgery', hospital: 'Dhaka Breast Centre',
+      verificationNote: null, verifiedBy: null, verifiedAt: null, predictionCount: 0 })
+    await wrapper.find('.person').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Dhaka Breast Centre')
+    expect(wrapper.find('label[for="verify-note"]').text()).toContain('Note to the doctor')
+
+    await wrapper.find('.reject').trigger('click')
+    expect(wrapper.text()).toContain('Tell the doctor what needs to be corrected.')
+    admin.setVerification.mockResolvedValue({ ...pendingDoctor, verificationStatus: 'VERIFIED' })
+    await wrapper.find('.approve').trigger('click')
+    await flushPromises()
+    expect(admin.setVerification).toHaveBeenCalledWith('d2', 'VERIFIED', '')
+    expect(wrapper.text()).toContain('Doctor verified. Patients can now share reports with them.')
+  })
+
+  it('resets a password from a request and shows the temporary password once', async () => {
+    const { wrapper, admin } = await mountPortal('passwords')
+    expect(wrapper.text()).toContain('Locked out')
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    admin.resetPassword.mockResolvedValue({ user: { ...PATIENTS[0], mustChangePassword: true }, temporaryPassword: 'Ab3defGh7kLm' })
+    await wrapper.find('.request .btn-primary').trigger('click')
+    await flushPromises()
+    expect(admin.resetPassword).toHaveBeenCalledWith('p1')
+    expect(wrapper.find('.temp code').text()).toBe('Ab3defGh7kLm')
+    expect(wrapper.find('.request .pill').text()).toBe('Resolved')
+  })
+})
+
+describe('Admin account (site owner only)', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  const OWNER = { id: 'o1', fullName: 'Khandoker Md. Ragib Ahsan', email: 'ragibahsan999@admin.com', role: 'ADMIN', owner: true }
+  const ACCOUNT = {
+    profile: { ...OWNER, createdAt: '2026-10-01T00:00:00Z', updatedAt: '2026-10-01T00:00:00Z', phone: null, dateOfBirth: null, gender: null, address: null, specialization: null, hospital: null, verificationStatus: null, mustChangePassword: false },
+    lastLoginAt: '2026-10-30T10:00:00Z',
+    passwordChangedAt: null,
+    activity: { patientsVerified: 7, patientsRejected: 2, passwordRequestsResolved: 3, passwordRequestsDismissed: 1 },
+    team: { administrators: 2, doctors: 4, patients: 30, disabled: 1 },
+  }
+
+  async function mountAs(user, path) {
+    vi.resetModules()
+    const authService = await import('../src/services/authService')
+    authService.fetchCurrentUser.mockResolvedValue(user)
+    const admin = await import('../src/services/adminService')
+    admin.getAdminAccount.mockResolvedValue(structuredClone(ACCOUNT))
+    admin.getOverview.mockResolvedValue(structuredClone(OVERVIEW))
+    admin.listMessages.mockResolvedValue([])
+    admin.listUsers.mockResolvedValue([{ ...USERS[0], id: 'o1', fullName: OWNER.fullName, email: OWNER.email, owner: true }, ...structuredClone(USERS).slice(1)])
+    const { routes } = await import('../src/router')
+    const { installAuthGuard } = await import('../src/auth/guard')
+    const router = createRouter({ history: createMemoryHistory(), routes })
+    installAuthGuard(router)
+    await router.push(path)
+    const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router], directives: { reveal: { mounted() {} } } } })
+    await flushPromises()
+    return { wrapper, router, admin }
+  }
+
+  it('shows the owner their private account page with their activity', async () => {
+    const { wrapper, admin } = await mountAs(OWNER, '/admin-account')
+    expect(admin.getAdminAccount).toHaveBeenCalled()
+    expect(wrapper.find('h1').text()).toBe('Khandoker Md. Ragib Ahsan')
+    expect(wrapper.text()).toContain('Site owner')
+    expect(wrapper.findAll('.stat').map((t) => t.text())[0]).toContain('7')
+    expect(wrapper.find('#acct-email').attributes('readonly')).toBeDefined()
+  })
+
+  it('refuses every other administrator without asking the server', async () => {
+    const { wrapper, admin } = await mountAs(ADMIN, '/admin-account')
+    expect(admin.getAdminAccount).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Owner only')
+  })
+
+  it('shows the owner as read-only in the users list for other administrators', async () => {
+    const { wrapper } = await mountAs({ ...ADMIN, id: 'a2' }, '/admin?tab=users')
+    const ownerRow = wrapper.findAll('tbody tr')[0]
+    expect(ownerRow.text()).toContain('owner')
+    expect(ownerRow.find('select').exists()).toBe(false)
+    expect(ownerRow.find('.link-btn').exists()).toBe(false)
   })
 })
 

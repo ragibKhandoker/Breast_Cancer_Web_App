@@ -3,10 +3,22 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { validateDateOfBirth, validatePhone, localIsoDate } from '../src/auth/validation'
 
+// The bell in the header and the admin account page load notifications; no server here.
+vi.mock('../src/services/notificationService', async (importOriginal) => ({
+  ...(await importOriginal()),
+  listNotifications: vi.fn().mockResolvedValue({ items: [], unread: 0 }),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}))
 vi.mock('../src/services/authService', () => ({
   fetchCurrentUser: vi.fn(),
   login: vi.fn(),
   logout: vi.fn(),
+}))
+// A doctor's /profile is the doctor profile page, which loads this.
+vi.mock('../src/services/surgeonService', () => ({
+  getMyProfile: vi.fn().mockRejectedValue(Object.assign(new Error('HTTP 404'), { response: { status: 404 } })),
+  photoSrc: vi.fn(() => ''),
 }))
 vi.mock('../src/services/profileService', () => ({
   getProfile: vi.fn(),
@@ -25,15 +37,15 @@ function httpError(status, data) {
   return Object.assign(new Error(`HTTP ${status}`), { response: { status, data } })
 }
 
-async function mountProfile(profile = base) {
+async function mountProfile(profile = base, path = '/profile') {
   vi.resetModules()
   const profileService = await import('../src/services/profileService')
   profileService.getProfile.mockResolvedValue(profile)
-  return mountProfileWithoutReset(profile)
+  return mountProfileWithoutReset(profile, path)
 }
 
-/** Mounts /profile using whatever the profileService mock currently returns. */
-async function mountProfileWithoutReset(profile = base) {
+/** Mounts /profile (or `path`) using whatever the profileService mock currently returns. */
+async function mountProfileWithoutReset(profile = base, path = '/profile') {
   const authService = await import('../src/services/authService')
   authService.fetchCurrentUser.mockResolvedValue({ id: profile.id, fullName: profile.fullName, email: profile.email, role: profile.role })
   const profileService = await import('../src/services/profileService')
@@ -42,7 +54,7 @@ async function mountProfileWithoutReset(profile = base) {
   const store = await import('../src/auth/authStore')
   const router = createRouter({ history: createMemoryHistory(), routes })
   installAuthGuard(router)
-  await router.push('/profile')
+  await router.push(path)
   const wrapper = mount({ template: '<RouterView />' }, { global: { plugins: [router], directives: { reveal: { mounted() {} } } } })
   await flushPromises()
   return { wrapper, router, store, profileService }
@@ -78,6 +90,42 @@ describe('Profile page', () => {
       const { router } = await mountProfile({ ...base, role })
       expect(router.currentRoute.value.path).toBe('/profile')
     }
+  }, 15000) // three full app loads; give a busy machine time
+
+  it('on a temporary password shows only the Change password form, then everything again', async () => {
+    const onTemporary = { ...base, mustChangePassword: true }
+    const { wrapper, store, profileService } = await mountProfile(onTemporary)
+    expect(wrapper.text()).toContain('You are signed in with a temporary password')
+    expect(wrapper.find('#profile-name').exists()).toBe(false)
+    expect(wrapper.find('#profile-new-email').exists()).toBe(false)
+    expect(wrapper.find('#change-password').exists()).toBe(true)
+
+    profileService.changePassword.mockResolvedValue({ ...base, mustChangePassword: false })
+    await wrapper.find('#profile-current-password').setValue('Temp2345abcd')
+    await wrapper.find('#profile-new-password').setValue('MyOwnPass9')
+    await wrapper.find('#profile-confirm-password').setValue('MyOwnPass9')
+    await wrapper.find('#change-password').trigger('submit')
+    await flushPromises()
+    expect(profileService.changePassword).toHaveBeenCalledWith({ currentPassword: 'Temp2345abcd', newPassword: 'MyOwnPass9' })
+    expect(store.authState.user.mustChangePassword).toBe(false)
+    expect(wrapper.find('#profile-name').exists()).toBe(true)
+  })
+
+  it('gives doctors the doctor profile at /profile and their account details at /account-settings', async () => {
+    const doctor = { ...base, role: 'DOCTOR' }
+    const { wrapper } = await mountProfile(doctor)
+    expect(wrapper.find('h1').text()).toBe('Doctor Profile')
+    expect(wrapper.find('.step-tab.active').text()).toContain('Basic Information')
+    expect(wrapper.find('a[href="/account-settings"]').exists()).toBe(true)
+
+    const settings = await mountProfile(doctor, '/account-settings')
+    expect(settings.wrapper.find('h1').text()).toBe('Ayesha Rahman')
+    expect(settings.wrapper.find('#profile-current-password').exists()).toBe(true)
+    // Patients keep their own profile page and cannot open Account Settings.
+    const patient = await mountProfile(base)
+    expect(patient.wrapper.find('h1').text()).toBe('Ayesha Rahman')
+    const blocked = await mountProfile(base, '/account-settings')
+    expect(blocked.router.currentRoute.value.path).toBe('/forbidden')
   })
 
   it('explains an outdated backend and can retry', async () => {
@@ -101,7 +149,8 @@ describe('Profile page', () => {
     expect(wrapper.text()).toContain('0%')
     expect(wrapper.find('#profile-specialization').exists()).toBe(false)
 
-    const doctor = await mountProfile({ ...base, role: 'DOCTOR', phone: '+8801712345678', specialization: 'Radiology' })
+    // Doctors keep these account details under Account Settings; their /profile is the doctor profile.
+    const doctor = await mountProfile({ ...base, role: 'DOCTOR', phone: '+8801712345678', specialization: 'Radiology' }, '/account-settings')
     expect(doctor.wrapper.find('#profile-specialization').element.value).toBe('Radiology')
     expect(doctor.wrapper.text()).toContain('33%')
   })

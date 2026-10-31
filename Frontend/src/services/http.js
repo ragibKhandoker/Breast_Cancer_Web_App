@@ -38,6 +38,12 @@ export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler
 }
 
+// Called when the server answers 403 password_change_required: the user is on a temporary password.
+let onPasswordChangeRequired = () => {}
+export function setPasswordChangeRequiredHandler(handler) {
+  onPasswordChangeRequired = handler
+}
+
 http.interceptors.response.use(undefined, async (err) => {
   const { config, response } = err
   // A stale CSRF token: get a fresh one and try once more.
@@ -45,6 +51,9 @@ http.interceptors.response.use(undefined, async (err) => {
     config._csrfRetried = true
     await ensureCsrfToken()
     return http.request(config)
+  }
+  if (response?.status === 403 && response.data?.code === 'password_change_required') {
+    onPasswordChangeRequired()
   }
   // The auth endpoints report their own 401s (wrong password, not signed in yet).
   if (response?.status === 401 && !config?.url?.startsWith('/api/auth/')) {

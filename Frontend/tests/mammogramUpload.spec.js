@@ -229,6 +229,30 @@ describe('MammogramUpload', () => {
     expect(wrapper.text()).toContain('Upload complete')
   })
 
+  it('draws a scanning overlay on the preview while the image is analysed', async () => {
+    let finish
+    analyzeImage.mockImplementation(() => new Promise((resolve) => (finish = () => resolve(report))))
+    mountUpload()
+    await choose(pngFile())
+    expect(wrapper.find('.scan').classes()).toContain('ready')
+    expect(wrapper.find('.scan .tag').text()).toBe('Ready to scan')
+    expect(wrapper.find('.scan').attributes('aria-hidden')).toBe('true')
+
+    await consent()
+    await uploadButton().trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.scan').classes()).toContain('scanning')
+    expect(wrapper.find('.preview-frame').classes()).toContain('scanning')
+    expect(wrapper.find('.scan .beam').exists()).toBe(true)
+    expect(wrapper.find('.scan .label').text()).toContain('AI scanning')
+
+    finish()
+    await flushPromises()
+    expect(wrapper.find('.scan').classes()).toContain('done')
+    expect(wrapper.find('.scan .beam').exists()).toBe(false)
+    expect(wrapper.find('.scan .tag').text()).toBe('Scan complete')
+  })
+
   it('keeps the file after a network failure and retries with the same upload id', async () => {
     analyzeImage.mockRejectedValueOnce(networkError()).mockResolvedValueOnce(report)
     mountUpload()

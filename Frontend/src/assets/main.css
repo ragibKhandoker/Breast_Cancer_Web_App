@@ -83,16 +83,19 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
     url('./images/prediction-mammogram-bg.webp') center 30% / cover no-repeat;
 }
 
-/* Contact page: pink-ribbon awareness photo, washed evenly in pink so the header text and cards stay readable. */
-.photo-bg--contact::before {
+/* Profile page: radiologist reviewing mammograms. The photo is busy, so it gets a soft blur and a pink-to-purple
+   wash; the frosted cards on top stay easy to read. */
+.photo-bg--profile::before {
+  inset: -24px;
+  filter: blur(3px) saturate(1.05);
   background:
-    linear-gradient(rgba(255, 246, 250, 0.55), rgba(255, 246, 250, 0.55)),
-    url('./images/contact-bg.jpg') center 35% / cover no-repeat;
+    linear-gradient(160deg, rgba(255, 246, 250, 0.8) 0%, rgba(255, 240, 248, 0.62) 45%, rgba(238, 228, 255, 0.72) 100%),
+    url('./images/profile-radiologist-bg.jpg') center 35% / cover no-repeat;
 }
 
 /* Single-column layouts centre the text over the faces in the photo, so wash the whole photo evenly there. */
 @media (max-width: 860px) {
-  .photo-bg:not(.photo-bg--prediction):not(.photo-bg--contact)::before {
+  .photo-bg:not(.photo-bg--prediction):not(.photo-bg--profile)::before {
     background:
       linear-gradient(rgba(255, 246, 250, 0.72), rgba(255, 246, 250, 0.72)),
       url('./images/doctor-patient-bg.jpg') center 30% / cover no-repeat;

@@ -35,8 +35,17 @@ export async function signIn(credentials) {
 }
 
 /** Keeps the header and dashboards in step after the user edits their own name or email. */
-export function updateCurrentUser({ id, fullName, email, role, createdAt }) {
-  if (state.user && state.user.id === id) state.user = { id, fullName, email, role, createdAt }
+export function updateCurrentUser({ id, fullName, email, role, createdAt, mustChangePassword }) {
+  // Keeps the fields a profile does not carry, such as `owner`.
+  if (state.user && state.user.id === id) {
+    state.user = { ...state.user, fullName, email, role, createdAt }
+    if (mustChangePassword !== undefined) state.user.mustChangePassword = mustChangePassword
+  }
+}
+
+/** The server says this login is on a temporary password: nothing but changing it is allowed. */
+export function markPasswordChangeRequired() {
+  if (state.user) state.user = { ...state.user, mustChangePassword: true }
 }
 
 /** Revokes the token on the server; local state is cleared even if that call fails. */

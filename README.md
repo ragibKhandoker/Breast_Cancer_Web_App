@@ -266,6 +266,27 @@ Prediction JSON is the same as before, plus `ownerId`, `view` (CC/MLO), `thresho
 - **Status**: [`ReportStatus.vue`](Frontend/src/components/report/ReportStatus.vue) shows the scan status (analysis complete, low confidence, or demo model) and the doctor review status: *Not shared with a doctor*, *Awaiting doctor review* (with the doctors' names) for the owner, or *Shared with you for review* for a doctor. The site has no "reviewed" step yet, so a report cannot be marked as reviewed.
 - **Disclaimer**: [`MedicalDisclaimer.vue`](Frontend/src/components/report/MedicalDisclaimer.vue) stays stuck to the bottom of the screen on the report page, including when the report cannot be opened, and cannot be closed.
 
+## Downloadable scan report (F10)
+
+`GET /api/scans/{id}/report` returns the scan's report as a PDF (`Content-Disposition: attachment`). A "scan" is the same record as `/api/predictions/{id}`. The report page has a *Download report* button.
+
+- **Contents**: report ID (the scan id), file name, view, patient name, scan date and report date (UTC). Also the verdict, malignant/benign percentages, AI risk category, model version and decision threshold. The original scan and the heatmap overlay are side by side, followed by the medical disclaimer. Layout: [`ScanReportPdf.java`](Backend/src/main/java/com/cancerweb/backend/service/ScanReportPdf.java) (Apache PDFBox).
+- **Nothing is re-analysed**: the report prints the score saved at upload. The heatmap comes from `heatmap.onnx` as on the report page. If the scan image cannot be read, or there is no heatmap, the PDF says so in place of the picture.
+- **Stored**: the first download makes the PDF and keeps it in GridFS (`reportFileId` on the scan, not sent to the browser). Later downloads, by the patient or a doctor, return that same document. Deleting the scan deletes its report. A report made while `heatmap.onnx` was missing stays without a heatmap.
+- **Access**: the patient who owns the scan, or a doctor it is shared with. Other patients, other doctors and unknown ids get `404` (so ids cannot be probed), administrators `403`, and signed-out visitors `401`. See [`ScanReportService.java`](Backend/src/main/java/com/cancerweb/backend/service/ScanReportService.java).
+- **Limits**: the PDF uses the built-in Helvetica font. Characters outside Latin-1 (for example a Bangla name) are printed as `?`.
+
+## Breast health chatbot
+
+A chat button in the bottom-right corner of every page opens the *BreastCare Assistant* ([`components/chat/ChatWidget.vue`](Frontend/src/components/chat/ChatWidget.vue)). It answers questions about breast cancer, breast health and using BreastCare. Anything else gets a fixed "I can only help with breast cancer and breast health" reply.
+
+- **Setup**: set `ANTHROPIC_API_KEY` (from the Claude Console) in the backend's environment and restart it. The key stays on the server; the browser never sees it. Optional: `CHAT_MODEL` (default `claude-opus-5-5`). Without a key the rest of the site works and the chatbot says it is not set up (`503`).
+- **API**: `POST /api/chat` with `{ "messages": [{ "role": "user", "content": "..." }, ...] }` (alternating, ending with the user's question) returns `{ "reply", "onTopic" }`. It is for signed-in users of any role, and each user may send 20 questions per 10 minutes (counted in memory). Messages are limited to 2000 characters and conversations to 20 messages; the widget drops the oldest messages to stay within that.
+- **How the topic rule works**: [`BreastHealthAssistant.java`](Backend/src/main/java/com/cancerweb/backend/service/BreastHealthAssistant.java) sends the conversation to Claude with a system prompt that defines the allowed topics. It asks for a JSON answer (structured output): `{ onTopic, answer }`. When `onTopic` is false, [`ChatService.java`](Backend/src/main/java/com/cancerweb/backend/service/ChatService.java) replies with its own fixed message, so an off-topic answer can never reach the user. The prompt also tells Claude not to diagnose, to send warning signs to a doctor, and to answer in the user's language (English, Bangla or Banglish).
+- **Safety refusals**: requests use `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`), so if Claude's safety classifier declines, Anthropic retries on its recommended fallback model. If it is still declined, the user gets a short "can't help with that" reply.
+- **Privacy**: conversations are not saved on the server or in the browser, and are not logged. The widget forgets them on sign-out. The text is sent to Anthropic's API to get the answer.
+- **Cost**: every question is one Claude API call, billed to the key's account. The per-user limit above caps it.
+
 ## Pages
 
 Public: `/` Home · `/about` · `/how-it-works` · `/faq` · `/contact` · `/login` · `/register`, plus Not Found and Access Denied pages.
@@ -276,7 +297,7 @@ Paths live in `Frontend/src/config/appRoutes.js` and `Frontend/src/router/index.
 
 ```powershell
 cd Backend
-.\mvnw.cmd test        # auth, tokens, roles, record ownership, MongoDB setup, prediction flow
+.\mvnw.cmd test        # auth, tokens, roles, record ownership, MongoDB setup, prediction flow, scan reports
 
 cd ..\Frontend
 npm test               # validation, route guards, session state, API client, login/register forms, mammogram upload, result page

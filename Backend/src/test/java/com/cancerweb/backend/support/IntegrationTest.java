@@ -53,10 +53,13 @@ public abstract class IntegrationTest {
     public static final String JWT_SECRET = "test-only-secret-that-is-long-enough-for-hs256-signing";
     public static final String ISSUER = "breastcare-backend";
     public static final String PASSWORD = "Secret123";
+    /** The site owner's email; no account has it until a test creates one. */
+    public static final String OWNER_EMAIL = "owner@example.com";
 
     private static final TransitionWalker.ReachedState<RunningMongodProcess> MONGOD = startMongod();
     private static final List<String> COLLECTIONS =
-            List.of("users", "predictions", "revoked_tokens", "contact_messages", "site_settings", "fs.files", "fs.chunks");
+            List.of("users", "predictions", "revoked_tokens", "contact_messages", "site_settings", "password_reset_requests",
+                    "breast_surgeon_profiles", "appointments", "notifications", "fs.files", "fs.chunks");
 
     @Autowired
     protected MockMvc mvc;
@@ -86,7 +89,7 @@ public abstract class IntegrationTest {
         registry.add("spring.mongodb.uri", IntegrationTest::testMongoUri);
         registry.add("app.auth.jwt-secret", () -> JWT_SECRET);
         registry.add("app.auth.token-ttl", () -> "PT1H");
-        registry.add("app.admin.email", () -> "");
+        registry.add("app.admin.email", () -> OWNER_EMAIL);
         registry.add("app.admin.password", () -> "");
     }
 

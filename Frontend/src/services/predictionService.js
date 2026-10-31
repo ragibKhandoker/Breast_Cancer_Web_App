@@ -78,6 +78,35 @@ export async function getHeatmap(id) {
   return status === 204 || !data ? null : data
 }
 
+/**
+ * Downloads the scan's PDF report (GET /api/scans/{id}/report) and saves it as a file. The first download makes
+ * the report on the server, so it can take a few seconds. Errors keep the axios shape (err.response.status).
+ */
+export async function downloadReport(id) {
+  const { data } = await http.get(`/api/scans/${encodeURIComponent(id)}/report`, {
+    responseType: 'blob',
+    timeout: 2 * 60 * 1000,
+  })
+  const url = URL.createObjectURL(data)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `breastcare-report-${id}.pdf`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  // Give the browser a moment to start the download before the file's address is released.
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+/** A message for a failed report download; the error body is a Blob, so it is not read. */
+export function reportDownloadError(err) {
+  const status = err.response?.status
+  if (!err.response) return 'Could not reach the server. Check your connection and try again.'
+  if (status === 404) return 'This report does not exist or you do not have access to it.'
+  if (status === 403) return 'Your account is not allowed to download this report.'
+  return 'The report could not be created. Please try again.'
+}
+
 export async function deletePrediction(id) {
   await http.delete(`/api/predictions/${encodeURIComponent(id)}`)
 }

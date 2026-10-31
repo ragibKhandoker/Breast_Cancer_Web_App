@@ -25,6 +25,7 @@ import com.cancerweb.backend.model.User;
 import com.cancerweb.backend.model.UserProfile;
 import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.JwtService;
+import com.cancerweb.backend.security.SiteOwner;
 import com.cancerweb.backend.security.JwtService.IssuedToken;
 
 /**
@@ -42,14 +43,18 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
     private final JwtService jwtService;
+    private final SiteOwner owner;
+    private final NotificationService notifications;
 
     public ProfileService(UserRepository users, MongoTemplate mongo, PasswordEncoder passwordEncoder,
-            AuthService authService, JwtService jwtService) {
+            AuthService authService, JwtService jwtService, SiteOwner owner, NotificationService notifications) {
         this.users = users;
         this.mongo = mongo;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
         this.jwtService = jwtService;
+        this.owner = owner;
+        this.notifications = notifications;
     }
 
     public User get(String userId) {
@@ -70,13 +75,27 @@ public class ProfileService {
                 .set("fullName", request.fullName())
                 .set("profile", profile)
                 .set("updatedAt", Instant.now());
-        return modify(userId, update);
+        // A patient who changes details an administrator already reviewed goes back into the review queue.
+        boolean changed = !request.fullName().equals(user.fullName()) || !profile.equals(user.profile());
+        if (user.role() == Role.PATIENT && changed && user.verification() != null) {
+            update.unset("verification");
+        }
+        User updated = modify(userId, update);
+        if (changed) {
+            notifications.notify(userId, "PROFILE_UPDATED", "Profile updated",
+                    "Your profile details were saved.", NotificationService.accountLink(user.role()));
+        }
+        return updated;
     }
 
     /** Needs the current password. The new address must not belong to another account. */
     public User changeEmail(String userId, ChangeEmailRequest request) {
         User user = get(userId);
         requireCurrentPassword(user, request.currentPassword());
+        // The owner is recognised by ADMIN_EMAIL, so a new address would quietly end their owner access.
+        if (owner.is(user)) {
+            throw new FieldValidationException("email", "The site owner's email is set by ADMIN_EMAIL in Backend/.env");
+        }
         String email = UserService.normalizeEmail(request.email());
         if (email.equals(user.email())) {
             return user;
@@ -84,11 +103,15 @@ public class ProfileService {
         if (users.existsByEmail(email)) {
             throw new EmailAlreadyUsedException();
         }
+        User updated;
         try {
-            return modify(userId, new Update().set("email", email).set("updatedAt", Instant.now()));
+            updated = modify(userId, new Update().set("email", email).set("updatedAt", Instant.now()));
         } catch (DuplicateKeyException e) {
             throw new EmailAlreadyUsedException();
         }
+        notifications.notify(userId, "EMAIL_CHANGED", "Email address changed",
+                "You now log in with " + email + ".", NotificationService.accountLink(user.role()));
+        return updated;
     }
 
     /**
@@ -109,8 +132,13 @@ public class ProfileService {
         User updated = modify(userId, new Update()
                 .set("passwordHash", passwordEncoder.encode(request.newPassword()))
                 .set("passwordChangedAt", now)
+                .unset("mustChangePassword")
+                .unset("temporaryPasswordExpiresAt")
                 .set("updatedAt", now));
         authService.logout(currentToken);
+        notifications.notify(userId, "PASSWORD_CHANGED", "Password changed",
+                "Your password was changed and your other devices were signed out. If this was not you, ask an administrator for help.",
+                NotificationService.accountLink(user.role()));
         return new PasswordChange(updated, jwtService.issue(updated));
     }
 

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,6 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.List;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +67,7 @@ class RecordOwnershipTest extends IntegrationTest {
     private Prediction store(String ownerId) {
         ObjectId imageId = gridFs.store(new ByteArrayInputStream(IMAGE), "scan.png", "image/png");
         return predictions.save(new Prediction(null, "scan.png", "image/png", IMAGE.length, imageId.toHexString(),
-                "benign", 0.2, 0.8, "test", false, Instant.now(), ownerId, List.of(), null, "MLO", 0.5, false, null));
+                "benign", 0.2, 0.8, "test", false, Instant.now(), ownerId, List.of(), null, "MLO", 0.5, false, null, null));
     }
 
     private String path(String suffix) {
@@ -123,6 +126,49 @@ class RecordOwnershipTest extends IntegrationTest {
         mvc.perform(get(path("")).cookie(otherDoctor)).andExpect(status().isNotFound());
         mvc.perform(get(path("/heatmap")).cookie(otherDoctor)).andExpect(status().isNotFound());
         mvc.perform(delete(path("")).cookie(doctor).with(csrf())).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void ownerDownloadsTheScanReportAndOthersCannot() throws Exception {
+        String report = "/api/scans/" + aliceScan.id() + "/report";
+        byte[] pdf = mvc.perform(get(report).cookie(alice))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(header().string("Content-Disposition",
+                        "attachment; filename=\"breastcare-report-" + aliceScan.id() + ".pdf\""))
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andReturn().getResponse().getContentAsByteArray();
+        String text;
+        try (var doc = Loader.loadPDF(pdf)) {
+            text = new PDFTextStripper().getText(doc);
+        }
+        assertThat(text).contains(aliceScan.id(), "scan.png", "MLO (mediolateral oblique)", "Patient User",
+                "Benign", "20.0%", "80.0%", "Low risk", "test", "Not a medical diagnosis",
+                "The scan image could not be read.");
+
+        // Stored: the next download is the same document.
+        String reportFileId = predictions.findById(aliceScan.id()).orElseThrow().reportFileId();
+        assertThat(reportFileId).isNotNull();
+        mvc.perform(get(report).cookie(alice)).andExpect(content().bytes(pdf));
+
+        mvc.perform(get(report).cookie(bob)).andExpect(status().isNotFound());
+        mvc.perform(get(report).cookie(doctor)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/scans/000000000000000000000000/report").cookie(alice)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/scans/{id}/report", "{\"$ne\":null}").cookie(alice)).andExpect(status().isNotFound());
+
+        // A doctor the scan is shared with gets the same report; another doctor still does not.
+        mvc.perform(withJson(post(path("/shares")), "{\"doctorId\":\"" + doctorId + "\"}").cookie(alice));
+        mvc.perform(get(report).cookie(doctor)).andExpect(status().isOk()).andExpect(content().bytes(pdf));
+        mvc.perform(get(report).cookie(otherDoctor)).andExpect(status().isNotFound());
+        // Administrators manage accounts but do not read medical records.
+        mvc.perform(get(report).cookie(signedIn(Role.ADMIN, "admin@example.com"))).andExpect(status().isForbidden());
+
+        // Deleting the scan deletes its report too.
+        mvc.perform(delete(path("")).cookie(alice).with(csrf())).andExpect(status().isNoContent());
+        assertThat(gridFs.findOne(org.springframework.data.mongodb.core.query.Query.query(
+                org.springframework.data.mongodb.core.query.Criteria.where("_id").is(new ObjectId(reportFileId)))))
+                .isNull();
+        mvc.perform(get(report).cookie(alice)).andExpect(status().isNotFound());
     }
 
     @Test

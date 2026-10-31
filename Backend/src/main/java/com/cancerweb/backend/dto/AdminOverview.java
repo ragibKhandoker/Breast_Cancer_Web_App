@@ -11,6 +11,7 @@ public record AdminOverview(
         Users users,
         Predictions predictions,
         Messages messages,
+        Support support,
         SystemInfo system,
         List<DailyCount> uploadsLast14Days) {
 
@@ -23,6 +24,10 @@ public record AdminOverview(
     }
 
     public record Messages(long total, long unread) {
+    }
+
+    /** Patients by verification status (disabled accounts left out) and open "Forgot password?" requests. */
+    public record Support(long pendingVerification, long verified, long rejected, long openPasswordRequests) {
     }
 
     public record SystemInfo(String databaseName, long databaseLatencyMs, String model, String springBootVersion,

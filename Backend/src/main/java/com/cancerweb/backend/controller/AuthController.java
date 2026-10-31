@@ -1,5 +1,7 @@
 package com.cancerweb.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +15,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cancerweb.backend.dto.LoginRequest;
+import com.cancerweb.backend.dto.PasswordHelpRequest;
 import com.cancerweb.backend.dto.RegisterRequest;
 import com.cancerweb.backend.dto.UserResponse;
 import com.cancerweb.backend.security.AuthCookies;
 import com.cancerweb.backend.security.CurrentUser;
 import com.cancerweb.backend.service.AuthService;
 import com.cancerweb.backend.service.AuthService.Login;
+import com.cancerweb.backend.service.PasswordHelpService;
 import com.cancerweb.backend.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,11 +35,14 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService;
     private final AuthCookies cookies;
+    private final PasswordHelpService passwordHelp;
 
-    public AuthController(AuthService authService, UserService userService, AuthCookies cookies) {
+    public AuthController(AuthService authService, UserService userService, AuthCookies cookies,
+            PasswordHelpService passwordHelp) {
         this.authService = authService;
         this.userService = userService;
         this.cookies = cookies;
+        this.passwordHelp = passwordHelp;
     }
 
     /**
@@ -60,7 +67,18 @@ public class AuthController {
         Login login = authService.login(request);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookies.create(login.token().value(), login.token().expiresAt()).toString())
-                .body(UserResponse.from(login.user()));
+                .body(userService.toResponse(login.user()));
+    }
+
+    /**
+     * "Forgot password?": asks an administrator to reset the password. Always 202 with the same text, whether
+     * or not the email has an account.
+     */
+    @PostMapping("/password-help")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public Map<String, String> passwordHelp(@Valid @RequestBody PasswordHelpRequest request) {
+        passwordHelp.submit(request);
+        return Map.of("message", "If this email has an account, an administrator will reset the password and contact you.");
     }
 
     @PostMapping("/logout")
@@ -71,6 +89,6 @@ public class AuthController {
 
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal CurrentUser me) {
-        return UserResponse.from(userService.get(me.id()));
+        return userService.toResponse(userService.get(me.id()));
     }
 }

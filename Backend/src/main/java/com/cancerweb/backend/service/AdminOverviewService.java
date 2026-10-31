@@ -23,9 +23,12 @@ import com.cancerweb.backend.dto.AdminOverview;
 import com.cancerweb.backend.dto.AdminOverview.DailyCount;
 import com.cancerweb.backend.model.ContactMessage;
 import com.cancerweb.backend.model.MessageStatus;
+import com.cancerweb.backend.model.PasswordResetRequest;
 import com.cancerweb.backend.model.Prediction;
+import com.cancerweb.backend.model.ResetRequestStatus;
 import com.cancerweb.backend.model.Role;
 import com.cancerweb.backend.model.User;
+import com.cancerweb.backend.model.VerificationStatus;
 
 /** Counts and status for the administrator's overview. Only totals: no patient names, scans or results. */
 @Service
@@ -43,7 +46,7 @@ public class AdminOverviewService {
 
     public AdminOverview overview() {
         Instant now = Instant.now();
-        return new AdminOverview(users(now), predictions(now), messages(), system(now), uploadsPerDay(now));
+        return new AdminOverview(users(now), predictions(now), messages(), support(), system(now), uploadsPerDay(now));
     }
 
     private AdminOverview.Users users(Instant now) {
@@ -73,6 +76,21 @@ public class AdminOverviewService {
                 count(new Query(), ContactMessage.class),
                 // Messages saved before "status" existed have none and count as unread.
                 count(where("status").ne(MessageStatus.READ), ContactMessage.class));
+    }
+
+    private AdminOverview.Support support() {
+        // Patients without a verification field have not been reviewed yet and count as pending.
+        Criteria pending = new Criteria().orOperator(where("verification").is(null),
+                where("verification.status").is(VerificationStatus.PENDING));
+        return new AdminOverview.Support(
+                count(activePatients().andOperator(pending), User.class),
+                count(activePatients().and("verification.status").is(VerificationStatus.VERIFIED), User.class),
+                count(activePatients().and("verification.status").is(VerificationStatus.REJECTED), User.class),
+                count(where("status").is(ResetRequestStatus.OPEN), PasswordResetRequest.class));
+    }
+
+    private static Criteria activePatients() {
+        return where("role").is(Role.PATIENT).and("disabled").ne(true);
     }
 
     private AdminOverview.SystemInfo system(Instant now) {

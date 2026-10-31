@@ -20,6 +20,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -63,19 +64,39 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .requestCache(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/logout",
+                                "/api/auth/password-help").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/site-settings").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/model").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/doctors").hasRole("PATIENT")
+                        // Breast Surgeons: /profile is the signed-in doctor's own; approved surgeons, their
+                        // calendars and pictures are public. The literal /profile rule must come first.
+                        .requestMatchers("/api/doctors/breast-surgeons/profile", "/api/doctors/breast-surgeons/profile/**")
+                                .hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/doctors/breast-surgeons", "/api/doctors/breast-surgeons/*",
+                                "/api/doctors/breast-surgeons/*/slots", "/api/doctors/breast-surgeons/*/photo").permitAll()
+                        // Appointments: patients book and move them, surgeons confirm and complete them, both may
+                        // cancel. Each record is limited to its own patient and surgeon in AppointmentService.
+                        .requestMatchers(HttpMethod.POST, "/api/appointments").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/my").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.PUT, "/api/appointments/*/reschedule").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/doctor").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/appointments/*/confirm", "/api/appointments/*/complete")
+                                .hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/appointments/*/cancel").hasAnyRole("PATIENT", "DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/*").hasAnyRole("PATIENT", "DOCTOR")
+                        .requestMatchers("/api/appointments", "/api/appointments/**").denyAll()
                         .requestMatchers(HttpMethod.GET, "/api/predictions/shared").hasRole("DOCTOR")
                         // Doctors may open a single report, its image and heatmap, but only ones shared with them.
                         .requestMatchers(HttpMethod.GET, "/api/predictions/*", "/api/predictions/*/image",
                                 "/api/predictions/*/heatmap")
                                 .hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/api/predictions", "/api/predictions/**").hasRole("PATIENT")
+                        // PDF report of a scan: the owner, or a doctor it is shared with (checked per record).
+                        .requestMatchers(HttpMethod.GET, "/api/scans/*/report").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
@@ -86,7 +107,9 @@ public class SecurityConfig {
                         .bearerTokenResolver(cookies)
                         .authenticationEntryPoint(problems)
                         .accessDeniedHandler(problems)
-                        .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(tokenUserConverter)));
+                        .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(tokenUserConverter)))
+                // After the login cookie is read: someone on a temporary password may only change it.
+                .addFilterAfter(new PasswordChangeRequiredFilter(problems), BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 

@@ -6,6 +6,13 @@ import { riskCategory, RISK_CATEGORIES } from '../src/prediction/verdict'
 import ScanViewer from '../src/components/report/ScanViewer.vue'
 import ReportStatus from '../src/components/report/ReportStatus.vue'
 
+// The bell in the header and the admin account page load notifications; no server here.
+vi.mock('../src/services/notificationService', async (importOriginal) => ({
+  ...(await importOriginal()),
+  listNotifications: vi.fn().mockResolvedValue({ items: [], unread: 0 }),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}))
 vi.mock('../src/services/authService', () => ({ fetchCurrentUser: vi.fn(), login: vi.fn(), logout: vi.fn() }))
 vi.mock('../src/services/predictionService', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -13,6 +20,7 @@ vi.mock('../src/services/predictionService', async (importOriginal) => ({
   getHeatmap: vi.fn(),
   listShares: vi.fn(),
   listDoctors: vi.fn(),
+  downloadReport: vi.fn(),
 }))
 
 // jsdom has no canvas; the overlay is checked through heatmapPixels instead.
@@ -159,6 +167,25 @@ describe('report page', () => {
     expect(text).toContain('Analysis complete')
     expect(text).toContain('Not shared with a doctor')
     expect(wrapper.find('[role="note"][aria-label="Medical disclaimer"]').text()).toContain('Not a medical diagnosis')
+  })
+
+  it('downloads the PDF report, and explains when it cannot', async () => {
+    const wrapper = await openReport({ heatmap: async () => null })
+    const predictionService = await import('../src/services/predictionService')
+    const button = () => wrapper.find('.download button')
+    expect(button().text()).toBe('Download report')
+
+    predictionService.downloadReport.mockResolvedValueOnce()
+    await button().trigger('click')
+    await flushPromises()
+    expect(predictionService.downloadReport).toHaveBeenCalledWith('r1')
+    expect(wrapper.find('.download [role="alert"]').exists()).toBe(false)
+
+    predictionService.downloadReport.mockRejectedValueOnce(Object.assign(new Error('HTTP 404'), { response: { status: 404 } }))
+    await button().trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.download [role="alert"]').text()).toContain('do not have access')
+    expect(button().attributes('disabled')).toBeUndefined()
   })
 
   it('keeps working without a heatmap and keeps the disclaimer when the report cannot be opened', async () => {

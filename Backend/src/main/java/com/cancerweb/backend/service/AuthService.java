@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,8 @@ import com.cancerweb.backend.dto.RegisterRequest;
 import com.cancerweb.backend.model.RevokedToken;
 import com.cancerweb.backend.model.Role;
 import com.cancerweb.backend.model.User;
+import com.cancerweb.backend.model.Verification;
+import com.cancerweb.backend.model.VerificationStatus;
 import com.cancerweb.backend.repository.RevokedTokenRepository;
 import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.JwtService;
@@ -36,20 +39,36 @@ public class AuthService {
     private final JwtService jwtService;
     private final JwtDecoder jwtDecoder;
     private final RevokedTokenRepository revokedTokens;
+    private final NotificationService notifications;
 
     public AuthService(UserService userService, UserRepository users, AuthenticationManager authenticationManager,
-            JwtService jwtService, JwtDecoder jwtDecoder, RevokedTokenRepository revokedTokens) {
+            JwtService jwtService, JwtDecoder jwtDecoder, RevokedTokenRepository revokedTokens,
+            NotificationService notifications) {
         this.userService = userService;
         this.users = users;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.jwtDecoder = jwtDecoder;
         this.revokedTokens = revokedTokens;
+        this.notifications = notifications;
     }
 
-    /** Public sign-up always creates a PATIENT; doctors and administrators are created by an administrator. */
+    /**
+     * Public sign-up creates a PATIENT or a DOCTOR; administrators are only ever created by an administrator. A
+     * self-registered doctor starts PENDING: patients cannot find them or share reports with them until an
+     * administrator verifies the account (or approves their Breast Surgeon profile).
+     */
     public User register(RegisterRequest request) {
-        return userService.createAccount(request.fullName(), request.email(), request.password(), Role.PATIENT);
+        Verification verification = request.role() == Role.DOCTOR
+                ? new Verification(VerificationStatus.PENDING, null, null, null)
+                : null;
+        User user = userService.createAccount(request.fullName(), request.email(), request.password(), request.role(), verification);
+        boolean doctor = user.role() == Role.DOCTOR;
+        notifications.notifyAdmins(doctor ? "NEW_DOCTOR" : "NEW_PATIENT", doctor ? "New doctor registered" : "New patient registered",
+                user.fullName() + " (" + user.email() + ") " + (doctor ? "registered as a doctor and is waiting for verification."
+                        : "created a patient account."),
+                "/admin?tab=verification", null);
+        return user;
     }
 
     /**
@@ -67,6 +86,10 @@ public class AuthService {
         // Checked only after the password matched, so a disabled account is not revealed to someone guessing.
         if (user.isDisabled()) {
             throw new DisabledException("Account disabled");
+        }
+        // Also only after the password matched: an administrator's temporary password works for a limited time.
+        if (user.isTemporaryPasswordExpired(Instant.now())) {
+            throw new CredentialsExpiredException("Temporary password expired");
         }
         userService.recordLogin(user.id());
         return new Login(user, jwtService.issue(user));

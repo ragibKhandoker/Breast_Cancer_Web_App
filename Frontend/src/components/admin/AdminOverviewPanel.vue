@@ -35,6 +35,17 @@ const tiles = computed(() => {
   ]
 })
 
+// Work waiting for the administrator, each linking to the tab where it is done.
+const todo = computed(() => {
+  const s = data.value?.support
+  if (!s) return []
+  return [
+    { icon: 'users', label: 'Patients to verify', value: s.pendingVerification, note: `${s.verified} verified · ${s.rejected} need correction`, tab: 'verification' },
+    { icon: 'shield-check', label: 'Password requests', value: s.openPasswordRequests, note: 'from “Forgot password?”', tab: 'passwords' },
+    { icon: 'mail', label: 'Unread messages', value: data.value.messages.unread, note: 'from the Contact page', tab: 'messages' },
+  ]
+})
+
 const roleRows = computed(() => {
   if (!data.value) return []
   const { users } = data.value
@@ -89,6 +100,21 @@ onMounted(load)
     <p v-else-if="loading && !data" class="muted">Loading site overview…</p>
 
     <template v-if="data">
+      <section v-if="todo.length" class="attention" aria-labelledby="todo-title">
+        <h3 id="todo-title">Needs your attention</h3>
+        <div class="todo-grid">
+          <button v-for="item in todo" :key="item.tab" type="button" class="todo" :class="{ calm: !item.value }" @click="emit('open-tab', item.tab)">
+            <span class="todo-icon"><AppIcon :name="item.icon" :size="20" /></span>
+            <span class="todo-text">
+              <strong>{{ item.value }}</strong>
+              <span class="todo-label">{{ item.label }}</span>
+              <span class="todo-note">{{ item.note }}</span>
+            </span>
+            <AppIcon name="arrow-right" :size="18" class="todo-go" />
+          </button>
+        </div>
+      </section>
+
       <div class="tiles">
         <component
           :is="tile.tab ? 'button' : 'div'"
@@ -208,6 +234,28 @@ onMounted(load)
 .small { font-size: 0.86rem; }
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
 .toolbar p { margin: 0; }
+
+.attention {
+  margin-bottom: 1rem; padding: 1.25rem; border-radius: 20px; color: #fff;
+  background: radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.18), transparent 45%), linear-gradient(120deg, var(--purple-900), #6b3fb5 60%, #b5179e);
+  box-shadow: 0 16px 36px rgba(42, 22, 80, 0.22);
+}
+.attention h3 { margin: 0 0 0.85rem; font-size: 1rem; color: #fff; letter-spacing: 0.02em; }
+.todo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+.todo {
+  display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1rem; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12); color: #fff; text-align: left; font: inherit; cursor: pointer; transition: background-color 0.15s, transform 0.15s;
+}
+.todo:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+.todo:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.todo-icon { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: #fff; color: var(--pink-600); }
+.todo.calm .todo-icon { color: #16a34a; }
+.todo-text { flex: 1; display: grid; min-width: 0; line-height: 1.25; }
+.todo-text strong { font-size: 1.5rem; }
+.todo-label { font-weight: 600; font-size: 0.9rem; }
+.todo-note { font-size: 0.76rem; opacity: 0.8; }
+.todo-go { flex: none; opacity: 0.7; }
+@media (max-width: 860px) { .todo-grid { grid-template-columns: 1fr; } }
 
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .tile { display: grid; gap: 0.15rem; text-align: left; font: inherit; color: inherit; }

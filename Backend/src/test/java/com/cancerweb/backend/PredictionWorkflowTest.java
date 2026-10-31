@@ -18,6 +18,10 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -110,6 +114,42 @@ class PredictionWorkflowTest extends IntegrationTest {
         mvc.perform(get(heatmap).cookie(patient)).andExpect(status().isOk()).andExpect(content().json(first));
         assertThat(mongo.getCollection("predictions").find(Filters.eq("_id", new ObjectId(id))).first().get("heatmap"))
                 .isNotNull();
+    }
+
+    @Test
+    void scanReportShowsTheSavedResultTheScanAndTheHeatmap() throws Exception {
+        Assumptions.assumeTrue(Files.exists(Path.of(modelPath)), "model.onnx not found; run ML-Service/export_onnx.py");
+        Cookie patient = signedIn(Role.PATIENT, "scan@example.com");
+        String body = mvc.perform(multipart("/api/predictions").param("view", "CC")
+                        .file(new MockMultipartFile("image", "mammo.png", "image/png", samplePng()))
+                        .cookie(patient).with(csrf()))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String id = JsonPath.read(body, "$.id");
+        double malignant = ((Number) JsonPath.read(body, "$.malignantProbability")).doubleValue();
+
+        byte[] pdf = mvc.perform(get("/api/scans/" + id + "/report").cookie(patient))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andReturn().getResponse().getContentAsByteArray();
+        String text;
+        int images = 0;
+        try (PDDocument doc = Loader.loadPDF(pdf)) {
+            text = new PDFTextStripper().getText(doc);
+            for (COSName name : doc.getPage(0).getResources().getXObjectNames()) {
+                images += doc.getPage(0).getResources().isImageXObject(name) ? 1 : 0;
+            }
+        }
+        // The report shows the score saved at upload, unchanged.
+        assertThat(text).contains(id, "mammo.png", "CC (craniocaudal)", (String) JsonPath.read(body, "$.modelVersion"),
+                String.format(java.util.Locale.ENGLISH, "%.1f%%", Math.round(malignant * 1000) / 10.0),
+                "AI risk category", "Not a medical diagnosis", "Original scan", "Heatmap overlay");
+        assertThat(text).doesNotContain("could not be read");
+        boolean heatmap = Files.exists(Path.of(modelPath).resolveSibling("heatmap.onnx"));
+        assertThat(images).isEqualTo(heatmap ? 2 : 1);
+        assertThat(text.contains("Heatmap model")).isEqualTo(heatmap);
+        mvc.perform(get("/api/predictions/" + id).cookie(patient))
+                .andExpect(jsonPath("$.malignantProbability").value(malignant));
     }
 
     @Test

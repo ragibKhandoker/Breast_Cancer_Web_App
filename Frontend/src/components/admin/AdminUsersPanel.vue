@@ -1,10 +1,11 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import PasswordField from '../auth/PasswordField.vue'
+import TempPasswordNotice from './TempPasswordNotice.vue'
 import { authState } from '../../auth/authStore'
 import { ROLES, ROLE_LABELS } from '../../auth/roles'
 import { validateEmail, validateFullName, validatePassword } from '../../auth/validation'
-import { listUsers, createUser, changeRole, setUserDisabled } from '../../services/adminService'
+import { listUsers, createUser, changeRole, setUserDisabled, resetPassword } from '../../services/adminService'
 import { errorMessage, fieldErrors } from '../../services/http'
 
 const users = ref([])
@@ -39,6 +40,8 @@ async function load() {
 }
 
 const isSelf = (user) => user.id === authState.user?.id
+// Only the owner manages the owner's account; for everyone else it is read-only here.
+const isLocked = (user) => isSelf(user) || (user.owner && !authState.user?.owner)
 
 async function updateRole(user, select) {
   const role = select.value
@@ -62,6 +65,23 @@ async function toggleDisabled(user) {
   try {
     Object.assign(user, await setUserDisabled(user.id, disable))
     rowMessage[user.id] = { text: user.disabled ? 'Account disabled' : 'Account enabled', ok: true }
+  } catch (err) {
+    rowMessage[user.id] = { text: errorMessage(err), ok: false }
+  } finally {
+    savingId.value = ''
+  }
+}
+
+const VERIFY_LABELS = { PENDING: 'Pending check', VERIFIED: 'Verified', REJECTED: 'Needs correction' }
+const resetResult = ref(null) // { email, password }
+
+async function doReset(user) {
+  if (!confirm(`Reset the password for ${user.email}? Their current password stops working and they are signed out everywhere.`)) return
+  savingId.value = user.id
+  try {
+    const result = await resetPassword(user.id)
+    Object.assign(user, result.user)
+    resetResult.value = { email: user.email, password: result.temporaryPassword }
   } catch (err) {
     rowMessage[user.id] = { text: errorMessage(err), ok: false }
   } finally {
@@ -128,6 +148,8 @@ onMounted(load)
         </div>
       </header>
 
+      <TempPasswordNotice v-if="resetResult" :email="resetResult.email" :password="resetResult.password" class="reset-notice" @close="resetResult = null" />
+
       <p v-if="loading" class="muted">Loading…</p>
       <p v-else-if="listError" class="error">{{ listError }}</p>
       <p v-else-if="!filtered.length" class="muted">No users match these filters.</p>
@@ -139,11 +161,12 @@ onMounted(load)
           <tbody>
             <tr v-for="user in filtered" :key="user.id" :class="{ off: user.disabled }">
               <td>
-                <strong class="name">{{ user.fullName }}<span v-if="isSelf(user)" class="you">you</span></strong>
+                <strong class="name">{{ user.fullName }}<span v-if="isSelf(user)" class="you">you</span><span v-if="user.owner" class="owner-tag">owner</span></strong>
                 <span class="email">{{ user.email }}</span>
+                <span v-if="user.verificationStatus" class="verify" :data-status="user.verificationStatus">{{ VERIFY_LABELS[user.verificationStatus] }}</span>
               </td>
               <td>
-                <span v-if="isSelf(user)" class="muted">{{ ROLE_LABELS[user.role] }}</span>
+                <span v-if="isLocked(user)" class="muted">{{ ROLE_LABELS[user.role] }}</span>
                 <select
                   v-else
                   :value="user.role"
@@ -160,7 +183,7 @@ onMounted(load)
               <td>
                 <span class="pill" :class="user.disabled ? 'pill-off' : 'pill-on'">{{ user.disabled ? 'Disabled' : 'Active' }}</span>
                 <button
-                  v-if="!isSelf(user)"
+                  v-if="!isLocked(user)"
                   type="button"
                   class="link-btn"
                   :class="{ danger: !user.disabled }"
@@ -168,6 +191,9 @@ onMounted(load)
                   @click="toggleDisabled(user)"
                 >
                   {{ user.disabled ? 'Enable' : 'Disable' }}
+                </button>
+                <button v-if="!isLocked(user)" type="button" class="link-btn reset-btn" :disabled="savingId === user.id" @click="doReset(user)">
+                  Reset password
                 </button>
               </td>
               <td class="meta">{{ lastSeen(user.lastLoginAt) }}</td>
@@ -235,6 +261,12 @@ tr.off td { background: #fbf7f9; }
 .link-btn.danger { color: var(--high); }
 .link-btn:disabled { opacity: 0.5; cursor: wait; }
 .meta { white-space: nowrap; }
+.verify { display: inline-block; margin-top: 0.2rem; padding: 0 0.45rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600; background: #fff4e5; color: #9a3412; }
+.verify[data-status='VERIFIED'] { background: #e8f5e9; color: #1b5e20; }
+.verify[data-status='REJECTED'] { background: #fdecea; color: #8e1c1c; }
+.reset-btn { color: #6b3fb5; }
+.owner-tag { margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 4px; background: #fef3c7; color: #92400e; font-size: 0.72rem; font-weight: 700; }
+.reset-notice { margin: 0 0 0.75rem; }
 .create .btn { justify-content: center; }
 @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
 @media (max-width: 520px) { .filters, .filters input { width: 100%; min-width: 0; } .filters select { flex: 1; } }

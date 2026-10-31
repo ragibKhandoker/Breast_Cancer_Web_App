@@ -54,6 +54,12 @@ public class ProblemResponses implements AuthenticationEntryPoint, AccessDeniedH
         }
     }
 
+    /** For PasswordChangeRequiredFilter: the user must choose a new password first. */
+    public void passwordChangeRequired(HttpServletResponse response) throws IOException {
+        write(response, HttpStatus.FORBIDDEN,
+                "You are signed in with a temporary password. Choose a new password to continue.", "password_change_required");
+    }
+
     private static void write(HttpServletResponse response, HttpStatus status, String detail) throws IOException {
         write(response, status, detail, "unauthorized");
     }

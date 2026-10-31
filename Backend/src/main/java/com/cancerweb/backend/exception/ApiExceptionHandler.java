@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -74,11 +75,25 @@ public class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password.");
     }
 
+    /** The administrator's temporary password was right but is too old to use. */
+    @ExceptionHandler(CredentialsExpiredException.class)
+    public ProblemDetail credentialsExpired(CredentialsExpiredException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED,
+                "Your temporary password has expired. Use \"Forgot password?\" to ask an administrator for a new one.");
+        problem.setProperty("code", "temporary_password_expired");
+        return problem;
+    }
+
     /** The password was right but an administrator has disabled the account. */
     @ExceptionHandler(DisabledException.class)
     public ProblemDetail disabled(DisabledException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN,
                 "This account has been disabled. Please contact the site administrator.");
+    }
+
+    @ExceptionHandler(OwnerOnlyException.class)
+    public ProblemDetail ownerOnly(OwnerOnlyException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
     @ExceptionHandler(MessageNotFoundException.class)
@@ -91,6 +106,22 @@ public class ApiExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    @ExceptionHandler(SurgeonNotFoundException.class)
+    public ProblemDetail surgeonNotFound(SurgeonNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(AppointmentNotFoundException.class)
+    public ProblemDetail appointmentNotFound(AppointmentNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    /** A slot someone else took first, or an appointment that cannot change in its current state. */
+    @ExceptionHandler(BookingConflictException.class)
+    public ProblemDetail bookingConflict(BookingConflictException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ProblemDetail userNotFound(UserNotFoundException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
@@ -101,6 +132,16 @@ public class ApiExceptionHandler {
     public ProblemDetail databaseUnavailable(RuntimeException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
                 "Cannot reach MongoDB. Check MONGODB_URI in Backend/.env and your Atlas IP access list.");
+    }
+
+    @ExceptionHandler(ChatUnavailableException.class)
+    public ProblemDetail chatUnavailable(ChatUnavailableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
+    @ExceptionHandler(ChatRateLimitException.class)
+    public ProblemDetail chatRateLimit(ChatRateLimitException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
     }
 
     @ExceptionHandler(MlServiceException.class)

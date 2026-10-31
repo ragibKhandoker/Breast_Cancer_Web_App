@@ -60,6 +60,18 @@
 			<artifactId>onnxruntime</artifactId>
 			<version>1.31.0</version>
 		</dependency>
+		<!-- Breast health chatbot (POST /api/chat) through the Claude API. -->
+		<dependency>
+			<groupId>com.anthropic</groupId>
+			<artifactId>anthropic-java</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+		<!-- PDF scan reports (GET /api/scans/{id}/report). Apache-2.0. -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.5</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
+import { flushPromises } from '@vue/test-utils'
 
 // The store and guard keep module state, so each test loads fresh copies with its own signed-in user.
 vi.mock('../src/services/authService', () => ({
@@ -26,6 +27,39 @@ const admin = { id: 'a1', fullName: 'Ada', email: 'a@example.com', role: 'ADMIN'
 
 describe('route guard', () => {
   beforeEach(() => vi.clearAllMocks())
+
+  it('keeps a user on a temporary password on the Change password page', async () => {
+    const { router } = await setup({ ...patient, mustChangePassword: true })
+    for (const path of ['/dashboard', '/prediction', '/', '/breast-surgeons']) {
+      await router.push(path)
+      expect(router.currentRoute.value.path).toBe('/profile')
+      expect(router.currentRoute.value.hash).toBe('#change-password')
+    }
+    const asDoctor = await setup({ ...doctor, mustChangePassword: true })
+    await asDoctor.router.push('/doctor')
+    expect(asDoctor.router.currentRoute.value.path).toBe('/account-settings')
+    await asDoctor.router.push('/profile')
+    expect(asDoctor.router.currentRoute.value.path).toBe('/account-settings')
+  })
+
+  it('lets the user go once the password is changed', async () => {
+    const { router, store } = await setup({ ...patient, mustChangePassword: true })
+    await router.push('/dashboard')
+    expect(router.currentRoute.value.path).toBe('/profile')
+    store.updateCurrentUser({ ...patient, mustChangePassword: false })
+    await router.push('/dashboard')
+    expect(router.currentRoute.value.path).toBe('/dashboard')
+  })
+
+  it('sends the user to change their password when the server asks for it', async () => {
+    const { router, store } = await setup(patient)
+    await router.push('/dashboard')
+    const { handlePasswordChangeRequired } = await import('../src/auth/guard')
+    handlePasswordChangeRequired(router)
+    await flushPromises()
+    expect(store.authState.user.mustChangePassword).toBe(true)
+    expect(router.currentRoute.value.path).toBe('/profile')
+  })
 
   it('lets visitors open public pages', async () => {
     const { router } = await setup(null)

@@ -113,8 +113,8 @@ class AuthApiTest extends IntegrationTest {
     @Test
     void databaseUniqueIndexRejectsDuplicateEmailEvenWithoutTheServiceCheck() {
         Instant now = Instant.now();
-        users.insert(new User(null, "One", "dup@example.com", "hash", Role.PATIENT, now, now, null, null, null, null));
-        assertThatThrownBy(() -> users.insert(new User(null, "Two", "dup@example.com", "hash", Role.PATIENT, now, now, null, null, null, null)))
+        users.insert(new User(null, "One", "dup@example.com", "hash", Role.PATIENT, now, now, null, null, null, null, null, null, null));
+        assertThatThrownBy(() -> users.insert(new User(null, "Two", "dup@example.com", "hash", Role.PATIENT, now, now, null, null, null, null, null, null, null)))
                 .isInstanceOf(DuplicateKeyException.class);
     }
 

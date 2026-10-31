@@ -8,5 +8,12 @@ export const APP_ROUTES = {
   patientDashboard: '/dashboard',
   doctorDashboard: '/doctor',
   adminDashboard: '/admin',
-  profile: '/profile', // the signed-in user's own account (every role)
+  profile: '/profile', // the signed-in user's own profile: the doctor profile for doctors, account details for others
+  accountSettings: '/account-settings', // a doctor's account details: name, email and password
+  forgotPassword: '/forgot-password',
+  adminAccount: '/admin-account', // the site owner's own admin profile
+  surgeons: '/breast-surgeons', // Find a Breast Surgeon (public)
+  myAppointments: '/my-appointments', // a patient's Breast Surgeon appointments
+  surgeonDashboard: '/surgeon-dashboard', // an approved Breast Surgeon's appointments and availability
+  surgeonProfile: '/profile', // a doctor's own doctor (Breast Surgeon) profile is their profile page
 }

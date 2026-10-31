@@ -9,6 +9,8 @@ import { authState, onSessionEnd } from '../auth/authStore'
 import {
   getPrediction,
   getHeatmap,
+  downloadReport,
+  reportDownloadError,
   deletePrediction,
   imageUrl,
   listShares,
@@ -27,6 +29,8 @@ const loading = ref(true)
 const error = ref('')
 const heatmap = ref(null)
 const heatmapState = ref('loading')
+const downloading = ref(false)
+const downloadError = ref('')
 
 // Sharing (owner only)
 const shares = ref([])
@@ -67,6 +71,18 @@ async function loadHeatmap(id) {
     heatmapState.value = data ? 'ready' : 'unavailable'
   } catch {
     if (route.params.id === id) heatmapState.value = 'error'
+  }
+}
+
+async function download() {
+  downloading.value = true
+  downloadError.value = ''
+  try {
+    await downloadReport(report.value.id)
+  } catch (err) {
+    downloadError.value = reportDownloadError(err)
+  } finally {
+    downloading.value = false
   }
 }
 
@@ -139,6 +155,17 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
           <ResultCard :prediction="report" />
           <ReportStatus :report="report" :is-owner="isOwner" :shares="shares" class="status-card" />
 
+          <div class="card download">
+            <div>
+              <h2>PDF report</h2>
+              <p class="muted small">Scan details, score, risk category, the scan with its heatmap, model version and disclaimer.</p>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" :disabled="downloading" @click="download">
+              {{ downloading ? 'Preparing…' : 'Download report' }}
+            </button>
+            <p v-if="downloadError" class="error small" role="alert">{{ downloadError }}</p>
+          </div>
+
           <div v-if="isOwner" class="card share">
             <h2>Share with a doctor</h2>
             <p class="muted small">Only the doctors you add here can open this report. You can remove them at any time.</p>
@@ -179,6 +206,10 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
 <style scoped>
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; margin-top: 1rem; align-items: start; }
 .status-card { margin-top: 1rem; }
+.download { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1rem; }
+.download h2 { margin: 0 0 0.2rem; font-size: 1.1rem; color: var(--purple-900); }
+.download p { margin: 0; }
+.download .error { flex-basis: 100%; }
 .layout :deep(.result) { margin-top: 0; }
 .share { margin-top: 1rem; }
 .share h2 { margin: 0 0 0.25rem; font-size: 1.1rem; color: var(--purple-900); }

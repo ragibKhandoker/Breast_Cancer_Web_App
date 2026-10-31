@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { reactive, ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import PasswordField from '../components/auth/PasswordField.vue'
 import AppIcon from '../components/common/AppIcon.vue'
 import { onSessionEnd, updateCurrentUser } from '../auth/authStore'
@@ -34,7 +34,46 @@ const memberSince = computed(() =>
   profile.value ? new Date(profile.value.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) : '',
 )
 
-// How much of the optional profile is filled in, shown as a progress bar.
+// The optional details shown on the summary card; a missing one jumps to its input when clicked.
+const facts = computed(() => {
+  if (!profile.value) return []
+  const p = profile.value
+  const list = [
+    { key: 'phone', icon: 'phone', label: 'Phone', value: p.phone, input: 'profile-phone' },
+    {
+      key: 'dateOfBirth', icon: 'calendar', label: 'Date of birth', input: 'profile-dob',
+      value: p.dateOfBirth && new Date(`${p.dateOfBirth}T00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }),
+    },
+    { key: 'gender', icon: 'users', label: 'Gender', value: GENDER_OPTIONS.find((o) => o.value === p.gender)?.label, input: 'profile-gender' },
+    { key: 'address', icon: 'map-pin', label: 'Address', value: p.address, input: 'profile-address' },
+  ]
+  if (isDoctor.value) {
+    list.push(
+      { key: 'specialization', icon: 'microscope', label: 'Specialization', value: p.specialization, input: 'profile-specialization' },
+      { key: 'hospital', icon: 'heart', label: 'Hospital', value: p.hospital, input: 'profile-hospital' },
+    )
+  }
+  return list
+})
+
+function focusField(id) {
+  const el = document.getElementById(id)
+  el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  el?.focus({ preventScroll: true })
+}
+
+// An administrator's check of a patient's or doctor's details; administrators have none.
+const VERIFICATION = {
+  VERIFIED: { label: 'Verified', icon: 'check-circle' },
+  PENDING: { label: 'Awaiting verification', icon: 'refresh' },
+  REJECTED: { label: 'Needs correction', icon: 'alert-circle' },
+}
+const verification = computed(() => VERIFICATION[profile.value?.verificationStatus] ?? null)
+
+// Circumference of the completion ring (r = 42).
+const RING = 2 * Math.PI * 42
+
+// How much of the optional profile is filled in, shown as a progress ring.
 const completion = computed(() => {
   if (!profile.value) return 0
   const keys = ['phone', 'dateOfBirth', 'gender', 'address', ...(isDoctor.value ? ['specialization', 'hospital'] : [])]
@@ -53,6 +92,10 @@ async function load() {
   loadError.value = ''
   try {
     applyProfile(await getProfile())
+    // After an administrator's password reset, take the user straight to choosing their own.
+    if (profile.value.mustChangePassword || location.hash === '#change-password') {
+      nextTick(() => focusField('profile-current-password'))
+    }
   } catch (err) {
     // A 404 here means the backend is running an older build without the profile API.
     loadError.value = err.response?.status === 404
@@ -170,6 +213,7 @@ onMounted(load)
 </script>
 
 <template>
+  <div class="photo-bg photo-bg--profile">
   <section class="container page profile-page">
     <p v-if="loading" class="muted">Loading your profile…</p>
     <div v-else-if="loadError" class="card load-error" role="alert">
@@ -181,31 +225,74 @@ onMounted(load)
     <template v-else-if="profile">
       <!-- Summary -->
       <div v-reveal class="card hero">
-        <div class="hero-banner" aria-hidden="true"></div>
         <div class="hero-body">
-          <div class="avatar" aria-hidden="true">{{ initials }}</div>
+          <div class="avatar-ring">
+            <div class="avatar" aria-hidden="true">{{ initials }}</div>
+            <span class="online" title="Signed in"></span>
+          </div>
           <div class="identity">
+            <p class="eyebrow">Welcome back</p>
             <h1>{{ profile.fullName }}</h1>
-            <p class="muted">{{ profile.email }}</p>
+            <p class="email"><AppIcon name="mail" :size="15" /> {{ profile.email }}</p>
             <div class="badges">
-              <span class="badge role" :data-role="profile.role">{{ ROLE_LABELS[profile.role] }}</span>
+              <span class="badge role" :data-role="profile.role"><AppIcon name="shield-check" :size="14" /> {{ ROLE_LABELS[profile.role] }}</span>
               <span class="badge"><AppIcon name="calendar" :size="14" /> Member since {{ memberSince }}</span>
+              <span v-if="verification" class="badge verify" :data-status="profile.verificationStatus">
+                <AppIcon :name="verification.icon" :size="14" /> {{ verification.label }}
+              </span>
             </div>
           </div>
           <div class="completion" :aria-label="`Profile ${completion}% complete`">
-            <div class="completion-top">
-              <span>Profile completeness</span>
-              <strong>{{ completion }}%</strong>
+            <div class="ring-wrap">
+              <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="ring-track" cx="50" cy="50" r="42" />
+                <circle class="ring-value" cx="50" cy="50" r="42"
+                  :stroke-dasharray="RING" :stroke-dashoffset="RING * (1 - completion / 100)" />
+              </svg>
+              <div class="ring-label"><strong>{{ completion }}%</strong><span>complete</span></div>
             </div>
-            <div class="completion-bar"><span :style="{ width: completion + '%' }"></span></div>
-            <p class="muted small">{{ completion === 100 ? 'All set. Thank you!' : 'Add your details below to complete it.' }}</p>
+            <div class="completion-text">
+              <span class="completion-title">Profile completeness</span>
+              <p>{{ completion === 100 ? 'All set. Thank you!' : 'Add your details below to complete it.' }}</p>
+            </div>
           </div>
         </div>
+
+        <ul class="facts">
+          <li v-for="fact in facts" :key="fact.key">
+            <span class="fact-icon" :class="{ filled: fact.value }"><AppIcon :name="fact.icon" :size="17" /></span>
+            <div class="fact-text">
+              <span class="fact-label">{{ fact.label }}</span>
+              <span v-if="fact.value" class="fact-value" :title="fact.value">{{ fact.value }}</span>
+              <button v-else type="button" class="fact-add" @click="focusField(fact.input)">+ Add {{ fact.label.toLowerCase() }}</button>
+            </div>
+          </li>
+        </ul>
       </div>
 
-      <div class="layout">
-        <!-- Personal details -->
-        <form v-reveal class="card section form-stack" novalidate @submit.prevent="saveDetails">
+      <div v-if="profile.mustChangePassword" class="alert error notice" role="alert">
+        <AppIcon name="shield-check" :size="20" />
+        <span>
+          You are signed in with a temporary password from an administrator. Choose a new password of your own below
+          to continue: enter the temporary password as your current password. Nobody else, administrators included,
+          will know your new password.
+        </span>
+      </div>
+      <div v-if="profile.verificationStatus === 'REJECTED'" class="alert error notice" role="status">
+        <AppIcon name="alert-circle" :size="20" />
+        <span>
+          <strong>Your details need a correction.</strong> {{ profile.verificationNote }}
+          Update them below and an administrator will check them again.
+        </span>
+      </div>
+      <div v-else-if="profile.verificationStatus === 'PENDING'" class="alert info notice" role="status">
+        <AppIcon name="refresh" :size="20" />
+        <span>An administrator will check your details soon. Keeping them complete and correct speeds this up.</span>
+      </div>
+
+      <div class="layout" :class="{ solo: profile.mustChangePassword }">
+        <!-- Personal details (hidden until a temporary password is replaced) -->
+        <form v-if="!profile.mustChangePassword" v-reveal class="card section form-stack" novalidate @submit.prevent="saveDetails">
           <header class="section-head">
             <span class="section-icon"><AppIcon name="users" :size="20" /></span>
             <div>
@@ -249,7 +336,10 @@ onMounted(load)
             <label for="profile-address">Address <span class="optional">optional</span></label>
             <textarea id="profile-address" v-model="details.address" rows="2" maxlength="300" autocomplete="street-address"
               :aria-invalid="!!detailErrors.address" aria-describedby="profile-address-error"></textarea>
-            <p id="profile-address-error" class="field-error" aria-live="polite">{{ detailErrors.address }}</p>
+            <div class="field-foot">
+              <p id="profile-address-error" class="field-error" aria-live="polite">{{ detailErrors.address }}</p>
+              <span class="counter" :class="{ over: details.address.length > 280 }">{{ details.address.length }}/300</span>
+            </div>
           </div>
 
           <div v-if="isDoctor" class="row">
@@ -281,7 +371,7 @@ onMounted(load)
 
         <div class="side">
           <!-- Email -->
-          <form v-reveal="100" class="card section form-stack" novalidate @submit.prevent="saveEmail">
+          <form v-if="!profile.mustChangePassword" v-reveal="100" class="card section form-stack" novalidate @submit.prevent="saveEmail">
             <header class="section-head">
               <span class="section-icon"><AppIcon name="mail" :size="20" /></span>
               <div>
@@ -304,7 +394,8 @@ onMounted(load)
           </form>
 
           <!-- Password -->
-          <form v-reveal="200" class="card section form-stack" novalidate @submit.prevent="savePassword">
+          <form id="change-password" v-reveal="200" class="card section form-stack" :class="{ urgent: profile.mustChangePassword }"
+            novalidate @submit.prevent="savePassword">
             <header class="section-head">
               <span class="section-icon"><AppIcon name="shield-check" :size="20" /></span>
               <div>
@@ -326,84 +417,179 @@ onMounted(load)
       </div>
     </template>
   </section>
+  </div>
 </template>
 
 <style scoped>
+.layout.solo { grid-template-columns: minmax(0, 560px); justify-content: center; }
 .small { font-size: 0.86rem; }
+
+/* Frosted cards over the radiologist photo: the photo shows through softly and the forms stay readable. */
+.profile-page .card {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 22px;
+  box-shadow: 0 18px 45px rgba(42, 22, 80, 0.14);
+}
 .load-error { max-width: 560px; margin: 2rem auto; padding: 2rem; text-align: center; }
 .load-error h1 { margin-top: 0; }
 
-/* Summary card */
+/* Summary card: the radiologist photo under a deep pink wash carries the identity in white,
+   with a strip of quick facts underneath. */
 .hero { padding: 0; overflow: hidden; }
-.hero-banner {
-  height: 110px;
-  background:
-    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.35), transparent 40%),
-    linear-gradient(120deg, var(--pink-600) 0%, #b5179e 55%, #6b3fb5 100%);
-}
 .hero-body {
-  display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(220px, 300px); gap: 1.5rem; align-items: end;
-  padding: 0 1.75rem 1.5rem;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1.75rem; align-items: center;
+  padding: 2rem 2rem 1.85rem; color: #fff;
+  background:
+    radial-gradient(circle at 8% 120%, rgba(255, 255, 255, 0.22), transparent 45%),
+    linear-gradient(110deg, rgba(150, 12, 80, 0.95) 0%, rgba(196, 22, 120, 0.86) 42%, rgba(107, 63, 181, 0.7) 100%),
+    url('../assets/images/profile-radiologist-bg.jpg') center 38% / cover no-repeat;
+}
+
+.avatar-ring {
+  position: relative; padding: 5px; border-radius: 50%;
+  background: conic-gradient(from 200deg, #ffd1e6, #fff, #e3d4ff, #ffd1e6);
+  box-shadow: 0 14px 34px rgba(42, 10, 50, 0.35);
 }
 .avatar {
-  display: grid; place-items: center; width: 108px; height: 108px; margin-top: -54px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--pink-100), #efe7ff); color: var(--pink-600);
-  font-size: 2.3rem; font-weight: 700; border: 5px solid #fff; box-shadow: 0 10px 24px rgba(42, 22, 80, 0.18);
+  display: grid; place-items: center; width: 112px; height: 112px; border-radius: 50%;
+  background: linear-gradient(135deg, #fff 0%, var(--pink-50) 55%, #efe7ff 100%); color: var(--pink-600);
+  font-size: 2.4rem; font-weight: 700; letter-spacing: 0.02em; border: 4px solid rgba(255, 255, 255, 0.9);
 }
-.identity h1 { margin: 0.75rem 0 0; font-size: 1.6rem; overflow-wrap: anywhere; }
-.identity .muted { margin: 0.1rem 0 0.6rem; overflow-wrap: anywhere; }
+.online {
+  position: absolute; right: 10px; bottom: 10px; width: 18px; height: 18px; border-radius: 50%;
+  background: #22c55e; border: 3px solid #fff; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+}
+
+.eyebrow {
+  margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+.identity h1 {
+  margin: 0.2rem 0 0.2rem; font-size: 1.95rem; line-height: 1.2; color: #fff;
+  text-shadow: 0 2px 14px rgba(60, 0, 40, 0.35); overflow-wrap: anywhere;
+}
+.email { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.9rem; color: rgba(255, 255, 255, 0.88); overflow-wrap: anywhere; }
 .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .badge {
-  display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.75rem; border-radius: 999px;
-  background: var(--pink-50); border: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.85rem; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35); color: #fff;
+  font-size: 0.8rem; font-weight: 500; backdrop-filter: blur(6px);
 }
-.badge.role { background: var(--pink-600); border-color: var(--pink-600); color: #fff; font-weight: 600; }
-.badge.role[data-role='DOCTOR'] { background: #6b3fb5; border-color: #6b3fb5; }
-.badge.role[data-role='ADMIN'] { background: var(--purple-900); border-color: var(--purple-900); }
+.badge.role { background: #fff; border-color: #fff; color: var(--pink-600); font-weight: 600; }
+.badge.role[data-role='DOCTOR'] { color: #6b3fb5; }
+.badge.role[data-role='ADMIN'] { color: var(--purple-900); }
+.badge.verify[data-status='VERIFIED'] { background: #22c55e; border-color: #22c55e; font-weight: 600; }
+.badge.verify[data-status='REJECTED'] { background: #fff4e5; border-color: #fff4e5; color: #9a3412; font-weight: 600; }
 
-.completion-top { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--purple-900); font-weight: 500; }
-.completion-top strong { color: var(--pink-600); }
-.completion-bar { height: 8px; margin: 0.4rem 0; border-radius: 4px; background: var(--pink-100); overflow: hidden; }
-.completion-bar span {
-  display: block; height: 100%; border-radius: 4px;
-  background: linear-gradient(90deg, var(--pink-600), #b5179e); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+.notice { display: flex; align-items: flex-start; gap: 0.6rem; margin: 1.25rem 0 0; line-height: 1.55; }
+.notice :deep(svg) { flex: none; margin-top: 0.1rem; }
+.section.urgent { border-color: var(--pink-600); box-shadow: 0 0 0 4px rgba(216, 27, 106, 0.15), 0 18px 45px rgba(42, 22, 80, 0.14); }
+
+/* Glass panel with a ring that fills as the profile is completed. */
+.completion {
+  display: flex; align-items: center; gap: 1rem; max-width: 330px; padding: 1rem 1.25rem 1rem 1rem;
+  border-radius: 20px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
 }
-.completion .small { margin: 0; }
+.ring-wrap { position: relative; flex: none; width: 92px; height: 92px; }
+.ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 9; }
+.ring-track { stroke: rgba(255, 255, 255, 0.22); }
+.ring-value { stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.ring-label { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; line-height: 1.1; }
+.ring-label strong { font-size: 1.35rem; }
+.ring-label span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+.completion-title { font-weight: 600; font-size: 0.95rem; }
+.completion-text p { margin: 0.2rem 0 0; font-size: 0.82rem; color: rgba(255, 255, 255, 0.85); }
+
+/* Quick facts strip */
+.facts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.25rem 0.5rem;
+  margin: 0; padding: 1rem 1.5rem; list-style: none;
+}
+.facts li { display: flex; align-items: center; gap: 0.7rem; min-width: 0; padding: 0.35rem 0.25rem; }
+.fact-icon {
+  flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px;
+  background: var(--pink-50); color: var(--pink-500); border: 1px dashed var(--pink-300);
+}
+.fact-icon.filled { background: linear-gradient(135deg, var(--pink-600), #b5179e); color: #fff; border-color: transparent; }
+.fact-text { display: grid; min-width: 0; }
+.fact-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.fact-value { color: var(--purple-900); font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fact-add {
+  justify-self: start; padding: 0; border: 0; background: none; cursor: pointer;
+  color: var(--pink-600); font: 500 0.88rem 'Poppins', sans-serif;
+}
+.fact-add:hover { text-decoration: underline; }
+.fact-add:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; border-radius: 4px; }
 
 /* Sections */
 .layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.25rem; margin-top: 1.25rem; align-items: start; }
 .side { display: grid; gap: 1.25rem; }
-.section { padding: 1.5rem; }
-.section-head { display: flex; gap: 0.85rem; align-items: flex-start; margin-bottom: 0.75rem; }
+.section { padding: 1.75rem; transition: box-shadow 0.25s ease, border-color 0.25s ease; }
+/* The card being filled in lifts slightly, so the user always sees where they are. */
+.section:focus-within { border-color: var(--pink-300); box-shadow: 0 22px 50px rgba(216, 27, 106, 0.18); }
+.section-head {
+  display: flex; gap: 0.85rem; align-items: flex-start;
+  margin-bottom: 1.1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+}
 .section-icon {
-  flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
-  background: var(--pink-50); color: var(--pink-600);
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--pink-600), #b5179e); color: #fff;
+  box-shadow: 0 8px 18px rgba(216, 27, 106, 0.28);
 }
 .section-head h2 { margin: 0; font-size: 1.15rem; color: var(--purple-900); }
 .section-head .muted { margin: 0.15rem 0 0; overflow-wrap: anywhere; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.optional { font-weight: 400; font-size: 0.78rem; color: var(--muted); }
+.optional {
+  margin-left: 0.3rem; padding: 0.05rem 0.5rem; border-radius: 999px; background: var(--pink-50);
+  font-weight: 500; font-size: 0.72rem; color: var(--muted); vertical-align: middle;
+}
+.section :deep(.form-field input),
+.section .form-field select,
+.section .form-field textarea {
+  background: #fffafc; transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.section :deep(.form-field input:focus),
+.section .form-field select:focus,
+.section .form-field textarea:focus { background: #fff; }
 .form-field textarea {
   width: 100%; padding: 0.8rem 1rem; border: 1.5px solid var(--border); border-radius: 12px; resize: vertical;
-  background: #fff; color: var(--text); font: 400 1rem 'Poppins', sans-serif;
+  color: var(--text); font: 400 1rem 'Poppins', sans-serif;
 }
+.form-field textarea:hover { border-color: var(--pink-300); }
 .form-field textarea:focus { outline: none; border-color: var(--pink-600); box-shadow: 0 0 0 4px rgba(216, 27, 106, 0.15); }
+.form-field textarea[aria-invalid='true'] { border-color: var(--high); }
+.field-foot { display: flex; justify-content: space-between; gap: 0.75rem; }
+.counter { flex: none; font-size: 0.78rem; color: var(--muted); }
+.counter.over { color: var(--pink-600); font-weight: 600; }
 .hint { margin: -0.4rem 0 0.4rem; }
-.actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.4rem; }
+.actions {
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+  margin-top: 0.4rem; padding-top: 1rem; border-top: 1px solid var(--border);
+}
 .section .btn { justify-content: center; }
-.side .btn { justify-self: start; }
+.section .btn-primary:not(:disabled) { background: linear-gradient(120deg, var(--pink-600), #b5179e); border-color: transparent; }
+.side .btn { width: 100%; margin-top: 0.25rem; }
 
 @media (max-width: 960px) {
   .hero-body { grid-template-columns: auto minmax(0, 1fr); }
-  .completion { grid-column: 1 / -1; }
+  .completion { grid-column: 1 / -1; max-width: none; }
   .layout { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .hero-body { grid-template-columns: 1fr; justify-items: start; gap: 0.75rem; padding: 0 1.25rem 1.25rem; }
-  .avatar { width: 88px; height: 88px; margin-top: -44px; font-size: 1.9rem; }
-  .identity h1 { margin-top: 0; }
+  .hero-body { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1rem; padding: 1.75rem 1.25rem 1.25rem; }
+  .avatar { width: 88px; height: 88px; font-size: 1.9rem; }
+  .identity h1 { font-size: 1.5rem; }
+  .email, .badges { justify-content: center; }
+  .completion { width: 100%; text-align: left; }
+  .facts { grid-template-columns: 1fr 1fr; padding: 0.75rem; }
   .row { grid-template-columns: 1fr; gap: 0; }
   .actions { flex-direction: column-reverse; }
-  .actions .btn, .side .btn { width: 100%; }
+  .actions .btn { width: 100%; }
+  .section { padding: 1.25rem; }
 }
 </style>

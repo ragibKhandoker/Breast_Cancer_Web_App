@@ -25,10 +25,12 @@ public class ContactService {
 
     private final ContactMessageRepository repository;
     private final MongoTemplate mongo;
+    private final NotificationService notifications;
 
-    public ContactService(ContactMessageRepository repository, MongoTemplate mongo) {
+    public ContactService(ContactMessageRepository repository, MongoTemplate mongo, NotificationService notifications) {
         this.repository = repository;
         this.mongo = mongo;
+        this.notifications = notifications;
     }
 
     /** Stores a validated Contact form submission. */
@@ -36,7 +38,10 @@ public class ContactService {
         ContactMessage message = new ContactMessage(null, request.name().strip(),
                 request.email().strip().toLowerCase(Locale.ROOT), request.subject().strip(),
                 request.message().strip(), Instant.now(), MessageStatus.NEW);
-        return repository.save(message);
+        ContactMessage saved = repository.save(message);
+        notifications.notifyAdmins("CONTACT_MESSAGE", "New message: " + saved.subject(),
+                "From " + saved.name() + " (" + saved.email() + ").", "/admin?tab=messages", null);
+        return saved;
     }
 
     /** Administrator's inbox, newest first; {@code status} null means all messages. */

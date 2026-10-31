@@ -14,7 +14,10 @@ import org.springframework.data.mongodb.core.index.PartialIndexFilter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Component;
 
+import com.cancerweb.backend.model.Appointment;
+import com.cancerweb.backend.model.BreastSurgeonProfile;
 import com.cancerweb.backend.model.ContactMessage;
+import com.cancerweb.backend.model.Notification;
 import com.cancerweb.backend.model.Prediction;
 import com.cancerweb.backend.model.RevokedToken;
 import com.cancerweb.backend.model.User;
@@ -67,8 +70,32 @@ public class DatabaseInitializer implements ApplicationRunner {
         // Admin overview counts and chart, and the Contact inbox.
         mongo.indexOps(Prediction.class).createIndex(new Index().on("createdAt", Direction.DESC).named("createdAt"));
         mongo.indexOps(User.class).createIndex(new Index().on("role", Direction.ASC).named("role"));
+        // The bell: a user's newest notifications, and how many are unread.
+        mongo.indexOps(Notification.class).createIndex(
+                new Index().on("userId", Direction.ASC).on("createdAt", Direction.DESC).named("user_createdAt"));
+        mongo.indexOps(Notification.class).createIndex(
+                new Index().on("userId", Direction.ASC).on("read", Direction.ASC).named("user_read"));
+        mongo.indexOps(Notification.class).createIndex(
+                new Index().on("type", Direction.ASC).on("ref", Direction.ASC).on("createdAt", Direction.DESC).named("type_ref_createdAt"));
         mongo.indexOps(ContactMessage.class).createIndex(
                 new Index().on("status", Direction.ASC).on("createdAt", Direction.DESC).named("status_createdAt"));
+        // Breast Surgeons: one profile per account, one per registration number, and the listing's lookup.
+        mongo.indexOps(BreastSurgeonProfile.class).createIndex(new Index().on("userId", Direction.ASC).unique().named("userId_unique"));
+        mongo.indexOps(BreastSurgeonProfile.class).createIndex(
+                new Index().on("registrationNumber", Direction.ASC).unique().named("registrationNumber_unique"));
+        mongo.indexOps(BreastSurgeonProfile.class).createIndex(
+                new Index().on("status", Direction.ASC).on("specialty", Direction.ASC).named("status_specialty"));
+        // Appointments: no two may hold the same surgeon's slot (only those holding one carry a slotKey), and
+        // each Appointment ID is unique.
+        mongo.indexOps(Appointment.class).createIndex(new Index().on("slotKey", Direction.ASC).unique()
+                .partial(PartialIndexFilter.of(Criteria.where("slotKey").exists(true))).named("slotKey_unique"));
+        mongo.indexOps(Appointment.class).createIndex(new Index().on("appointmentCode", Direction.ASC).unique().named("appointmentCode_unique"));
+        mongo.indexOps(Appointment.class).createIndex(
+                new Index().on("patientId", Direction.ASC).on("date", Direction.DESC).named("patientId_date"));
+        mongo.indexOps(Appointment.class).createIndex(
+                new Index().on("surgeonUserId", Direction.ASC).on("date", Direction.ASC).named("surgeonUserId_date"));
+        mongo.indexOps(Appointment.class).createIndex(
+                new Index().on("surgeonId", Direction.ASC).on("date", Direction.ASC).named("surgeonId_date"));
         // MongoDB deletes each entry once its token's own expiry has passed.
         mongo.indexOps(RevokedToken.class).createIndex(
                 new Index().on("expiresAt", Direction.ASC).expire(Duration.ZERO).named("expiresAt_ttl"));

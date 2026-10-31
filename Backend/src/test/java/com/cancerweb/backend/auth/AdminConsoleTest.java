@@ -49,7 +49,7 @@ class AdminConsoleTest extends IntegrationTest {
     private void storePrediction(String ownerId, String label, Instant createdAt, List<String> sharedWith) {
         predictions.save(new Prediction(null, "secret-patient-scan.png", "image/png", 10, "000000000000000000000000",
                 label, label.equals("malignant") ? 0.9 : 0.1, label.equals("malignant") ? 0.1 : 0.9, "v1", true,
-                createdAt, ownerId, sharedWith, null, "CC", 0.5, false, null));
+                createdAt, ownerId, sharedWith, null, "CC", 0.5, false, null, null));
     }
 
     private void sendContactMessage(String subject) throws Exception {

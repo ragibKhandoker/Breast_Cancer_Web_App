@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, computed, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import PasswordField from '../components/auth/PasswordField.vue'
 import PinkRibbon from '../components/common/PinkRibbon.vue'
 import AppIcon from '../components/common/AppIcon.vue'
@@ -16,6 +16,15 @@ import {
 import { APP_ROUTES } from '../config/appRoutes'
 
 const router = useRouter()
+const route = useRoute()
+
+// Register as a patient or as a doctor. /register?as=doctor opens with Doctor chosen.
+const ACCOUNT_TYPES = [
+  { value: 'PATIENT', label: 'Register as a Patient', icon: 'heart', text: 'Upload mammograms and keep your reports.' },
+  { value: 'DOCTOR', label: 'Register as a Doctor', icon: 'award', text: 'Set up your doctor profile and see shared reports.' },
+]
+const accountType = ref(route.query.as === 'doctor' ? 'DOCTOR' : 'PATIENT')
+const isDoctor = computed(() => accountType.value === 'DOCTOR')
 
 const fields = reactive({ fullName: '', email: '', password: '', confirm: '' })
 const errors = reactive({ fullName: '', email: '', password: '', confirm: '' })
@@ -31,11 +40,17 @@ const ruleStatus = computed(() => PASSWORD_RULES.map((rule) => ({ label: rule.la
 const STRENGTH_LABELS = ['Too weak', 'Weak', 'Fair', 'Good', 'Strong']
 const strength = computed(() => ruleStatus.value.filter((rule) => rule.met).length)
 
-const BENEFITS = [
+const PATIENT_BENEFITS = [
   { icon: 'microscope', title: 'AI-assisted analysis', text: 'Upload a mammogram and get an estimate in seconds.' },
   { icon: 'shield-check', title: 'Private by design', text: 'Only you, and the doctors you choose, see your reports.' },
   { icon: 'users', title: 'Share with your doctor', text: 'Send any report to your doctor with one click.' },
 ]
+const DOCTOR_BENEFITS = [
+  { icon: 'user', title: 'Your doctor profile', text: 'Photo, fees, languages, hospital and weekly schedule in one place.' },
+  { icon: 'calendar', title: 'Appointments', text: 'Patients book your free slots once your profile is approved.' },
+  { icon: 'shield-check', title: 'Verified by our team', text: 'An administrator checks your registration before patients can reach you.' },
+]
+const BENEFITS = computed(() => (isDoctor.value ? DOCTOR_BENEFITS : PATIENT_BENEFITS))
 
 const validators = {
   fullName: () => validateFullName(fields.fullName),
@@ -72,9 +87,11 @@ async function submit() {
   status.value = 'submitting'
   failure.value = ''
   try {
-    const user = await register({ fullName: fields.fullName.trim(), email: fields.email.trim(), password: fields.password })
+    const user = await register({
+      fullName: fields.fullName.trim(), email: fields.email.trim(), password: fields.password, accountType: accountType.value,
+    })
     status.value = 'success'
-    await router.push({ path: APP_ROUTES.login, query: { registered: '1' }, state: { email: user.email } })
+    await router.push({ path: APP_ROUTES.login, query: { registered: isDoctor.value ? 'doctor' : '1' }, state: { email: user.email } })
   } catch (err) {
     status.value = 'error'
     // Field problems (including "email already exists") show under their field; anything else above the button.
@@ -98,7 +115,7 @@ async function submit() {
           <div class="visual-frame"><div class="visual-photo"></div></div>
           <div class="visual-content">
             <span class="pill"><PinkRibbon :size="16" /> Join BreastCare</span>
-            <h2>Early detection starts with&nbsp;you.</h2>
+            <h2>{{ isDoctor ? 'Help patients find the right breast surgeon.' : 'Early detection starts with you.' }}</h2>
             <ul class="benefits">
               <li v-for="item in BENEFITS" :key="item.title">
                 <span class="benefit-icon"><AppIcon :name="item.icon" :size="20" /></span>
@@ -115,8 +132,23 @@ async function submit() {
         <div class="form-side">
           <header class="form-head">
             <h1>Create your account</h1>
-            <p class="muted">It takes less than a minute. Doctor accounts are set up by an administrator.</p>
+            <p class="muted">It takes less than a minute. Choose how you will use BreastCare.</p>
           </header>
+
+          <div class="account-types" role="radiogroup" aria-label="Account type">
+            <label v-for="t in ACCOUNT_TYPES" :key="t.value" class="account-type" :class="{ on: accountType === t.value }">
+              <input v-model="accountType" type="radio" name="account-type" :value="t.value" :disabled="submitting" />
+              <span class="type-icon"><AppIcon :name="t.icon" :size="20" /></span>
+              <span class="type-text">
+                <strong>{{ t.label }}</strong>
+                <span>{{ t.text }}</span>
+              </span>
+            </label>
+          </div>
+          <p v-if="isDoctor" class="alert info doctor-note">
+            Doctor accounts are checked by an administrator. After you log in, set up your doctor profile; patients
+            can share reports with you and book you once you are verified.
+          </p>
 
           <form ref="formEl" class="form-stack" novalidate @submit.prevent="submit">
             <div class="form-field">
@@ -193,7 +225,7 @@ async function submit() {
 
             <button type="submit" class="btn btn-primary submit" :disabled="submitting" :aria-busy="submitting">
               <span v-if="submitting" class="spinner" aria-hidden="true"></span>
-              {{ submitting ? 'Creating account…' : 'Create Account' }}
+              {{ submitting ? 'Creating account…' : isDoctor ? 'Create Doctor Account' : 'Create Patient Account' }}
               <AppIcon v-if="!submitting" name="arrow-right" :size="18" />
             </button>
             <p class="terms">
@@ -270,6 +302,23 @@ async function submit() {
 .benefits strong { display: block; font-size: 0.95rem; }
 .benefit-text { display: block; font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); line-height: 1.45; }
 
+/* Patient or doctor */
+.account-types { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
+.account-type {
+  position: relative; display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.85rem; border-radius: 14px;
+  border: 1.5px solid var(--border); background: #fff; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.account-type:hover { border-color: var(--pink-300); }
+.account-type.on { border-color: var(--pink-600); background: var(--pink-50); box-shadow: 0 6px 16px rgba(216, 27, 106, 0.12); }
+.account-type input { position: absolute; opacity: 0; pointer-events: none; }
+.account-type:has(input:focus-visible) { outline: 3px solid var(--pink-300); outline-offset: 2px; }
+.type-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--pink-50); color: var(--pink-600); }
+.account-type.on .type-icon { background: var(--pink-600); color: #fff; }
+.type-text { display: grid; gap: 0.15rem; }
+.type-text strong { color: var(--purple-900); font-size: 0.92rem; }
+.type-text span { color: var(--muted); font-size: 0.78rem; line-height: 1.4; }
+.doctor-note { margin: -0.2rem 0 1rem; font-size: 0.85rem; }
+
 /* Form side */
 .form-side { padding: 2.5rem 2.5rem 2rem; }
 .form-head h1 { margin: 0; font-size: 1.75rem; }
@@ -324,6 +373,7 @@ async function submit() {
   .form-head h1 { font-size: 1.5rem; line-height: 1.25; }
   .form-side { padding: 1.75rem 1.25rem 1.5rem; }
   .rules { grid-template-columns: 1fr; }
+  .account-types { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .visual-photo { animation: none; }

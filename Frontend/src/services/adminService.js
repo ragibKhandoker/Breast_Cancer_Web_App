@@ -53,3 +53,54 @@ export async function saveSiteSettings(settings) {
   const { data } = await http.put('/api/admin/site-settings', settings)
   return data
 }
+
+/** One account with its private profile details, verification and number of analyses. */
+export async function getUserDetail(userId) {
+  const { data } = await http.get(`/api/admin/users/${encodeURIComponent(userId)}`)
+  return data
+}
+
+/** `status`: 'VERIFIED', 'REJECTED' (needs a note) or 'PENDING'. Resolves with the updated detail. */
+export async function setVerification(userId, status, note = '') {
+  const { data } = await http.patch(`/api/admin/users/${encodeURIComponent(userId)}/verification`, { status, note })
+  return data
+}
+
+/** Gives the account a temporary password: { user, temporaryPassword }. Shown once; pass it on to the user. */
+export async function resetPassword(userId) {
+  const { data } = await http.post(`/api/admin/users/${encodeURIComponent(userId)}/password-reset`, {})
+  return data
+}
+
+/** "Forgot password?" requests, newest first. `status` is 'OPEN', 'RESOLVED', 'DISMISSED' or omitted for all. */
+export async function listPasswordRequests(status) {
+  const { data } = await http.get('/api/admin/password-requests', { params: status ? { status } : {} })
+  return data
+}
+
+export async function setPasswordRequestStatus(id, status) {
+  const { data } = await http.patch(`/api/admin/password-requests/${encodeURIComponent(id)}`, { status })
+  return data
+}
+
+/** Breast Surgeon profiles for review, newest submission first. `status`: 'PENDING', 'APPROVED', 'REJECTED' or omitted. */
+export async function listSurgeonProfiles(status) {
+  const { data } = await http.get('/api/admin/breast-surgeons', { params: status ? { status } : {} })
+  return data
+}
+
+/** `status`: 'APPROVED', 'REJECTED' (needs a note) or 'PENDING'. Resolves with the updated profile. */
+export async function reviewSurgeon(profileId, status, note = '') {
+  const { data } = await http.patch(`/api/admin/breast-surgeons/${encodeURIComponent(profileId)}/review`, { status, note })
+  return data
+}
+
+export function surgeonDocumentUrl(profileId, fileId) {
+  return `${http.defaults.baseURL}/api/admin/breast-surgeons/${encodeURIComponent(profileId)}/documents/${encodeURIComponent(fileId)}`
+}
+
+/** The site owner's own account and activity. Every other administrator gets 403. */
+export async function getAdminAccount() {
+  const { data } = await http.get('/api/admin/account')
+  return data
+}
