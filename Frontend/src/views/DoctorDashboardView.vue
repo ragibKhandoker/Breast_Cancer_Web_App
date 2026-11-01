@@ -4,6 +4,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { authState, onSessionEnd } from '../auth/authStore'
 import { listSharedReports, imageUrl, errorMessage } from '../services/predictionService'
 import { APP_ROUTES } from '../config/appRoutes'
+import ReviewInbox from '../components/care/ReviewInbox.vue'
+import DoctorPatients from '../components/care/DoctorPatients.vue'
 
 const shared = ref([])
 const loading = ref(true)
@@ -29,7 +31,7 @@ onMounted(load)
 <template>
   <section class="container page">
     <h1>Welcome, {{ authState.user?.fullName }}</h1>
-    <p class="muted">Reports your patients have chosen to share with you. You only see what they share.</p>
+    <p class="muted">Your patients, their review requests, and the reports they share with you. You only see what they share.</p>
 
     <div v-if="authState.user?.verificationStatus === 'PENDING'" class="alert info verify-note" role="status">
       <strong>Your doctor account is awaiting verification.</strong>
@@ -55,6 +57,9 @@ onMounted(load)
         <span class="muted">Talk to the BreastCare administrators</span>
       </RouterLink>
     </div>
+
+    <ReviewInbox />
+    <DoctorPatients />
 
     <h2 class="shared-title">Shared reports</h2>
 

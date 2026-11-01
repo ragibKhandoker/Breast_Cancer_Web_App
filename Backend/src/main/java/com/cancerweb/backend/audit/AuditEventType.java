@@ -32,4 +32,8 @@ public enum AuditEventType {
     KNOWLEDGE_MODULE_PUBLISHED,
     KNOWLEDGE_MODULE_UNPUBLISHED,
     KNOWLEDGE_SUBMISSION_REVIEWED,
+    /** A patient asked one of their doctors to review a report (metadata: the doctor's id). */
+    REPORT_REVIEW_REQUESTED,
+    /** A doctor wrote or updated a review of a report (the text itself is not logged). */
+    REPORT_REVIEWED,
 }

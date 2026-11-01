@@ -95,6 +95,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/appointments/*/cancel").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/*").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/api/appointments", "/api/appointments/**").denyAll()
+                        // Doctor-patient care (CareService checks the relation per record).
+                        .requestMatchers("/api/care/my-doctors", "/api/care/review-requests").hasRole("PATIENT")
+                        .requestMatchers("/api/care/my-patients", "/api/care/my-patients/**", "/api/care/review-inbox",
+                                "/api/care/review-inbox/**").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/care/reports/*/reviews").hasAnyRole("PATIENT", "DOCTOR")
+                        .requestMatchers("/api/care/**").denyAll()
                         .requestMatchers(HttpMethod.GET, "/api/predictions/shared").hasRole("DOCTOR")
                         // Doctors may open a single report, its image and heatmap, but only ones shared with them.
                         .requestMatchers(HttpMethod.GET, "/api/predictions/*", "/api/predictions/*/image",

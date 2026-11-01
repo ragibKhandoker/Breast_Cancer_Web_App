@@ -1,4 +1,5 @@
 <script setup>
+import AppIcon from '../common/AppIcon.vue'
 import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
 import { authState, onSessionEnd } from '../../auth/authStore'
 import { APP_ROUTES } from '../../config/appRoutes'
@@ -145,10 +146,7 @@ onBeforeUnmount(stop)
       :aria-label="open ? 'Close breast health assistant' : 'Open breast health assistant'"
       @click="toggle"
     >
-      <svg v-if="!open" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-      <span v-else aria-hidden="true" class="launcher-x">×</span>
+      <AppIcon :name="open ? 'close' : 'message'" :size="26" />
     </button>
   </div>
 </template>
@@ -160,7 +158,6 @@ onBeforeUnmount(stop)
   background: var(--pink-600); color: #fff; cursor: pointer; box-shadow: 0 10px 28px rgba(216, 27, 106, 0.4);
 }
 .launcher:focus-visible { outline: 3px solid var(--purple-900); outline-offset: 3px; }
-.launcher-x { font-size: 2rem; line-height: 1; }
 
 .panel {
   display: flex; flex-direction: column; width: min(380px, calc(100vw - 2.5rem)); height: min(560px, calc(100vh - 7rem));

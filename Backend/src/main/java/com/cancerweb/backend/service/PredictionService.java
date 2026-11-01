@@ -60,6 +60,8 @@ public class PredictionService {
     /** The browser sends a UUID; anything else of a sane length and alphabet is accepted too. */
     private static final Pattern UPLOAD_ID = Pattern.compile("[A-Za-z0-9-]{8,64}");
     /** Craniocaudal and mediolateral oblique, the two standard mammogram views the model was trained on. */
+    /** Collection of CareService's review requests, kept tidy when a report is deleted or unshared. */
+    static final String REVIEW_REQUESTS = "review_requests";
     public static final Set<String> VIEWS = Set.of("CC", "MLO");
 
     private final PredictionRepository repository;
@@ -91,6 +93,20 @@ public class PredictionService {
      * after a dropped connection) returns the record the first attempt created instead of storing a second one.
      */
     public Prediction analyse(MultipartFile file, String view, String uploadId, CurrentUser owner) throws IOException {
+        return analyse(file, view, uploadId, owner.id(), Actor.of(owner), null);
+    }
+
+    /**
+     * The same analysis, run by the patient's doctor (see CareService, which checks the doctor-patient relation).
+     * The record belongs to the patient, is shared with that doctor, and remembers who ran it.
+     */
+    public Prediction analyseForPatient(MultipartFile file, String view, String uploadId, String patientId, CurrentUser doctor)
+            throws IOException {
+        return analyse(file, view, uploadId, patientId, Actor.of(doctor), doctor);
+    }
+
+    private Prediction analyse(MultipartFile file, String view, String uploadId, String ownerId, Actor actor,
+            CurrentUser doctor) throws IOException {
         // The view is optional (the upload page no longer asks for it); a value that is sent must be valid.
         if (view != null && !view.isBlank() && !VIEWS.contains(view)) {
             throw new IllegalArgumentException("Choose the mammogram view: CC (craniocaudal) or MLO (mediolateral oblique)");
@@ -99,7 +115,7 @@ public class PredictionService {
             throw new IllegalArgumentException("Invalid upload id");
         }
         if (uploadId != null) {
-            Optional<Prediction> earlier = repository.findByOwnerIdAndUploadId(owner.id(), uploadId);
+            Optional<Prediction> earlier = repository.findByOwnerIdAndUploadId(ownerId, uploadId);
             if (earlier.isPresent()) {
                 return earlier.get();
             }
@@ -126,17 +142,19 @@ public class PredictionService {
         Prediction prediction = new Prediction(null, filename, contentType, bytes.length,
                 imageId.toHexString(), result.label(), result.malignantProbability(),
                 result.benignProbability(), result.modelVersion(), result.demoMode(), Instant.now(),
-                owner.id(), List.of(), uploadId, view == null || view.isBlank() ? null : view, result.threshold(),
-                result.lowConfidence(), null, null);
+                ownerId, doctor == null ? List.of() : List.of(doctor.id()), uploadId, view == null || view.isBlank() ? null : view,
+                result.threshold(), result.lowConfidence(), null, null, doctor == null ? null : doctor.id(),
+                doctor == null ? null : doctor.fullName());
         try {
             Prediction saved = repository.save(prediction);
             // The scan's id only: no file name, image, view or result goes into the audit log.
-            audit.record(AuditEventType.SCAN_CREATED, Actor.of(owner), "SCAN", saved.id());
+            audit.record(AuditEventType.SCAN_CREATED, actor, "SCAN", saved.id(),
+                    doctor == null ? Map.of() : Map.of("patientId", ownerId));
             return saved;
         } catch (DuplicateKeyException e) {
             // Two attempts of the same upload ran at once and the other one saved first: keep only its record.
             gridFs.delete(byFileId(imageId.toHexString()));
-            return repository.findByOwnerIdAndUploadId(owner.id(), uploadId).orElseThrow(() -> e);
+            return repository.findByOwnerIdAndUploadId(ownerId, uploadId).orElseThrow(() -> e);
         }
     }
 
@@ -219,6 +237,8 @@ public class PredictionService {
             gridFs.delete(byFileId(prediction.reportFileId()));
         }
         repository.delete(prediction);
+        // Review requests about it go too; they would point at nothing.
+        mongo.remove(Query.query(Criteria.where("predictionId").is(id)), REVIEW_REQUESTS);
         audit.record(AuditEventType.SCAN_DELETED, Actor.of(owner), "SCAN", id);
     }
 
@@ -232,6 +252,14 @@ public class PredictionService {
     }
 
     public List<UserSummary> share(String id, String doctorId, CurrentUser owner) {
+        return share(id, doctorId, owner, true);
+    }
+
+    /**
+     * Shares a report with a doctor. {@code notify} is false when the caller sends its own, more specific notice
+     * (a review request).
+     */
+    public List<UserSummary> share(String id, String doctorId, CurrentUser owner, boolean notify) {
         // Only a verified doctor: a self-registered account cannot receive reports before an administrator checks it.
         boolean isDoctor = users.findById(doctorId).map(User::isTrustedDoctor).orElse(false);
         if (!isDoctor) {
@@ -241,6 +269,8 @@ public class PredictionService {
         updateOwned(id, owner, new Update().addToSet(SHARED_WITH, doctorId));
         if (!before.sharedWithDoctorIds().contains(doctorId)) {
             audit.record(AuditEventType.SCAN_SHARED, Actor.of(owner), "SCAN", id, Map.of("doctorId", doctorId));
+        }
+        if (!before.sharedWithDoctorIds().contains(doctorId) && notify) {
             notifications.notify(doctorId, "REPORT_SHARED", "A patient shared a report",
                     owner.fullName() + " shared a mammogram report with you.", "/reports/" + id);
         }
@@ -249,6 +279,9 @@ public class PredictionService {
 
     public void unshare(String id, String doctorId, CurrentUser owner) {
         updateOwned(id, owner, new Update().pull(SHARED_WITH, doctorId));
+        // The doctor can no longer open it, so an unanswered review request is withdrawn.
+        mongo.updateMulti(Query.query(Criteria.where("predictionId").is(id).and("doctorId").is(doctorId).and("status").is("REQUESTED")),
+                new Update().set("status", "WITHDRAWN"), REVIEW_REQUESTS);
         audit.record(AuditEventType.SCAN_UNSHARED, Actor.of(owner), "SCAN", id, Map.of("doctorId", doctorId));
     }
 

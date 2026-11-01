@@ -127,7 +127,7 @@ watch(slug, (value, old) => {
             <div class="head-actions">
               <span class="time"><AppIcon name="clock" :size="15" /> {{ module.readingMinutes }} min read</span>
               <button type="button" class="btn btn-outline btn-sm" :aria-pressed="bookmarked" @click="toggleBookmark(module.slug)">
-                <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" class="bm-icon" :class="{ on: bookmarked }"><path d="M6 3h12v18l-6-4-6 4z" /></svg>
+                <AppIcon name="bookmark" :size="15" :filled="bookmarked" />
                 {{ bookmarked ? 'Bookmarked' : 'Bookmark' }}
               </button>
               <button type="button" class="btn btn-sm" :class="completed ? 'btn-done' : 'btn-primary'" @click="markCompleted(module.slug, !completed)">
@@ -232,8 +232,6 @@ watch(slug, (value, old) => {
 .time { display: inline-flex; align-items: center; gap: 0.3rem; color: #6f6787; font-size: 0.88rem; margin-right: 0.3rem; }
 .btn-outline { border: 1.5px solid #f7a8c8; }
 .btn-done { background: #e8f5e9; color: #1b5e20; border: 1.5px solid #a5d6a7; }
-.bm-icon path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
-.bm-icon.on path { fill: currentColor; }
 .btn { display: inline-flex; align-items: center; gap: 0.35rem; }
 
 .layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 2rem; align-items: start; }

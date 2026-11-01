@@ -19,5 +19,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['tests/**/*.spec.js'],
+    // Mounting whole pages is slow when every file runs at once; the 5 s default timed out under load.
+    testTimeout: 15000,
   },
 })

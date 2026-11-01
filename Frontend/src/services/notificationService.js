@@ -25,6 +25,7 @@ const ICONS = {
   SURGEON_REJECTED: 'alert-circle', REPORT_SHARED: 'microscope', APPOINTMENT_REQUESTED: 'calendar',
   APPOINTMENT_RESCHEDULED: 'calendar', APPOINTMENT_CONFIRMED: 'check-circle', APPOINTMENT_CANCELLED: 'close',
   APPOINTMENT_COMPLETED: 'heart', USER_MESSAGE: 'message', ADMIN_MESSAGE: 'message',
+  SCAN_BY_DOCTOR: 'microscope', REVIEW_REQUESTED: 'file-text', REPORT_REVIEWED: 'check-circle', KNOWLEDGE: 'book',
 }
 export const iconFor = (type) => ICONS[type] ?? 'bell'
 

@@ -42,6 +42,7 @@ onMounted(load)
         <img :src="imageUrl(p.id)" :alt="p.originalFilename" class="thumb" />
         <p class="filename">{{ p.originalFilename }}</p>
         <p v-if="p.view" class="meta">{{ p.view }} view</p>
+        <p v-if="p.createdByName" class="meta">Run by {{ p.createdByName }}</p>
         <p :class="isMalignant(p) ? 'high' : 'low'">
           {{ isMalignant(p) ? 'Malignant' : 'Benign' }} · {{ Math.round(p.malignantProbability * 1000) / 10 }}% malignancy
           <span v-if="p.demoMode" class="tag">demo</span>

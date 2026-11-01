@@ -6,6 +6,7 @@ import ScanViewer from '../components/report/ScanViewer.vue'
 import ReportStatus from '../components/report/ReportStatus.vue'
 import ReportIntegrity from '../components/report/ReportIntegrity.vue'
 import MedicalDisclaimer from '../components/report/MedicalDisclaimer.vue'
+import ReportReviews from '../components/care/ReportReviews.vue'
 import { authState, onSessionEnd } from '../auth/authStore'
 import {
   getPrediction,
@@ -60,6 +61,11 @@ async function load(id) {
   } finally {
     loading.value = false
   }
+}
+
+// A review request also shares the report with that doctor.
+async function refreshShares() {
+  if (isOwner.value) shares.value = await listShares(report.value.id)
 }
 
 // Loaded after the report so the page shows at once; older reports get their heatmap made on this request.
@@ -145,7 +151,9 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
 
     <template v-else-if="report">
       <h1>{{ report.originalFilename }}</h1>
-      <p class="meta">Analysed {{ new Date(report.createdAt).toLocaleString() }}</p>
+      <p class="meta">
+        Analysed {{ new Date(report.createdAt).toLocaleString() }}<span v-if="report.createdByName"> · run by {{ report.createdByName }}</span>
+      </p>
 
       <div class="layout">
         <ScanViewer
@@ -170,6 +178,14 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
           </div>
 
           <ReportIntegrity :scan-id="report.id" :refresh-key="downloads" />
+
+          <ReportReviews
+            :key="report.id"
+            :report-id="report.id"
+            :is-owner="isOwner"
+            :is-doctor="authState.user?.role === 'DOCTOR'"
+            @shared="refreshShares"
+          />
 
           <div v-if="isOwner" class="card share">
             <h2>Share with a doctor</h2>

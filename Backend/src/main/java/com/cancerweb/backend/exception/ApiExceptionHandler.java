@@ -22,6 +22,7 @@ import com.mongodb.MongoTimeoutException;
 import com.cancerweb.backend.audit.AuditEventNotFoundException;
 import com.cancerweb.backend.audit.BlockchainService.BlockchainException;
 import com.cancerweb.backend.backup.BackupException;
+import com.cancerweb.backend.care.CareAccessException;
 import com.cancerweb.backend.knowledge.KnowledgeAccessException;
 import com.cancerweb.backend.knowledge.KnowledgeNotFoundException;
 
@@ -122,6 +123,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(PredictionNotFoundException.class)
     public ProblemDetail notFound(PredictionNotFoundException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(CareAccessException.class)
+    ProblemDetail careAccess(CareAccessException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
     @ExceptionHandler(KnowledgeNotFoundException.class)

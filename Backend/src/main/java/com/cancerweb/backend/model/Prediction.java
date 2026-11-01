@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * {@code heatmap} is the picture for the report page (see {@link Heatmap}), made on first request at
  * /api/predictions/{id}/heatmap and served only there. It plays no part in the score.
  * {@code reportFileId} is the GridFS id of the PDF report made on the first download (GET /api/scans/{id}/report).
+ * {@code createdBy} / {@code createdByName} are set when the patient's doctor ran the analysis for them (from the
+ * doctor's "My patients" page); they are null when the patient uploaded it.
  */
 @Document("predictions")
 public record Prediction(
@@ -42,7 +45,23 @@ public record Prediction(
         Double threshold,
         boolean lowConfidence,
         @JsonIgnore Heatmap heatmap,
-        @JsonIgnore String reportFileId) {
+        @JsonIgnore String reportFileId,
+        String createdBy,
+        String createdByName) {
+
+    @PersistenceCreator
+    public Prediction {
+    }
+
+    /** A record the patient uploaded themselves. */
+    public Prediction(String id, String originalFilename, String contentType, long fileSize, String imageFileId,
+            String label, double malignantProbability, double benignProbability, String modelVersion, boolean demoMode,
+            Instant createdAt, String ownerId, List<String> sharedWithDoctorIds, String uploadId, String view,
+            Double threshold, boolean lowConfidence, Heatmap heatmap, String reportFileId) {
+        this(id, originalFilename, contentType, fileSize, imageFileId, label, malignantProbability, benignProbability,
+                modelVersion, demoMode, createdAt, ownerId, sharedWithDoctorIds, uploadId, view, threshold, lowConfidence,
+                heatmap, reportFileId, null, null);
+    }
 
     public List<String> sharedWithDoctorIds() {
         return sharedWithDoctorIds == null ? List.of() : sharedWithDoctorIds;

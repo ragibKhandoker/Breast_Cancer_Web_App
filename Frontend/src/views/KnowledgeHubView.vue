@@ -147,7 +147,7 @@ onMounted(async () => {
                 <span class="chip">{{ m.category }}</span>
                 <button type="button" class="bookmark" :class="{ on: progress.bookmarks.includes(m.slug) }"
                   :aria-pressed="progress.bookmarks.includes(m.slug)" :aria-label="`Bookmark ${m.title}`" @click="toggleBookmark(m.slug)">
-                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" /></svg>
+                  <AppIcon name="bookmark" :size="18" :filled="progress.bookmarks.includes(m.slug)" />
                 </button>
               </div>
               <h3>{{ m.title }}</h3>
@@ -246,8 +246,7 @@ h2 { margin: 0; color: #2a1650; font-size: 1.3rem; }
 .card-top { display: flex; justify-content: space-between; align-items: center; }
 .chip { padding: 0.15rem 0.65rem; border-radius: 999px; background: #fde3ef; color: #a3134f; font-size: 0.75rem; font-weight: 600; }
 .bookmark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #f3d4e3; background: #fff; cursor: pointer; }
-.bookmark path { fill: none; stroke: #d81b6a; stroke-width: 2; stroke-linejoin: round; }
-.bookmark.on path { fill: #d81b6a; }
+.bookmark { color: #d81b6a; }
 .bookmark:focus-visible { outline: 3px solid #f7a8c8; outline-offset: 2px; }
 .module-card h3 { margin: 0; color: #2a1650; font-size: 1.08rem; }
 .module-card p { margin: 0; color: #4a4263; font-size: 0.92rem; line-height: 1.6; }

@@ -82,6 +82,7 @@ Spring Boot 4 reads the URI as `spring.mongodb.uri=${MONGODB_URI}` (Boot 3 calle
 | `knowledge_modules` | Knowledge Hub lessons (structured text, items, tables, diagram ids, references), `published`, `seeded` | `slug_unique`, `published_order` |
 | `knowledge_submissions` | content proposed by Breast Surgeons, `status` PENDING/APPROVED/REJECTED and the admin's note | `status_createdAt`, `authorId_createdAt` |
 | `knowledge_progress` | per user (`_id` = user id): `completed`, `bookmarks`, `lastSlug` | — |
+| `review_requests` | a patient asking one of their doctors to review a report, with the doctor's note | `doctorId_createdAt`, `patientId_createdAt`, `open_request_unique` |
 
 `users` also holds `disabled` and `lastLoginAt`, and `predictions` / `users` get `createdAt` / `role` indexes for the admin overview. All are created at startup; older documents need no migration.
 
@@ -325,6 +326,32 @@ Full guide: [`Backend/docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md`](Backend/docs
 - **Audit log**: the backend records scans, report downloads, reviews, role changes, logins and admin and backup actions in `audit_logs`. The log is append-only and SHA-256 hash-chained. Administrators see it under Admin → Security → **Audit logs**, with filters, details, per-event and whole-chain verification.
 - **Blockchain proofs** (off by default): an event's hash, timestamp and opaque id can be anchored on a private or test Ethereum node (`AUDIT_BLOCKCHAIN_*`). Patient data never goes on chain.
 - **Backups**: encrypted (AES-256 + HMAC) backups of the whole database, from Admin → Security → **Backups**, from `Backend/scripts/backup.ps1` / `backup.sh`, or on a schedule. They need `BACKUP_ENCRYPTION_KEY`. Restore tests go into a separate `<db>_restore_test` database, only where `BACKUP_RESTORE_ENABLED=true`.
+
+## Doctor and patient care
+
+A patient becomes a doctor's patient when the doctor **confirms** (or completes) their Breast Surgeon appointment.
+
+- **My patients** (*Doctor dashboard*): each patient with their last visit, the reports the doctor may open, and
+  **Run detection**: the doctor uploads a mammogram for that patient. It runs the same analysis as a patient upload
+  (no change to the model or score), is saved in the **patient's own history** marked "run by Dr …", is shared with
+  that doctor, and the patient gets a notification.
+- **Review requests**: on a report, the patient picks one of their doctors and asks for a review (optional message).
+  That shares the report with the doctor. The doctor sees it under *Review requests*, writes a review on the report
+  page, and the patient reads it on the report and on their dashboard. Both sides are notified.
+- **Who sees what**: a doctor sees only reports the patient shared or asked about, or that the doctor ran. Stopping
+  sharing withdraws an unanswered request; deleting a report deletes its requests. Review text is never put in the
+  audit log (only ids).
+
+| Method | Path | Who | Description |
+|---|---|---|---|
+| GET | `/api/care/my-doctors` | PATIENT | doctors with a confirmed/completed appointment |
+| GET / POST | `/api/care/review-requests` | PATIENT | own requests / `{predictionId, doctorId, message}` → `201`; `403` not your doctor; `409` already asked |
+| GET | `/api/care/my-patients` | DOCTOR | patients, last visit, report count, open requests |
+| GET | `/api/care/my-patients/{patientId}/scans` | DOCTOR | that patient's reports this doctor may open; `403` not your patient |
+| POST | `/api/care/my-patients/{patientId}/scans` | DOCTOR | multipart `image` (+ optional `view`, `uploadId`) → `201` report owned by the patient |
+| GET | `/api/care/review-inbox` | DOCTOR | requests sent to this doctor, open first |
+| PUT | `/api/care/review-inbox/{id}` | DOCTOR | `{note}` → the review (can be updated) |
+| GET | `/api/care/reports/{predictionId}/reviews` | PATIENT (owner), DOCTOR (own) | reviews of one report |
 
 ## Breast Cancer Knowledge Hub
 
