@@ -1,0 +1,20 @@
+# Base for every environment. Overlays (overlays/test, overlays/production) set the namespace, host and image tags.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: breastcare
+resources:
+  - config/configmap.yaml
+  - rbac.yaml
+  - storage/pvc.yaml
+  - backend/deployment.yaml
+  - backend/service.yaml
+  - ../../../Frontend/k8s
+  - ingress/ingress.yaml
+  - network-policy.yaml
+images:
+  - name: ghcr.io/OWNER/breastcare-backend
+    newTag: latest
+  - name: ghcr.io/OWNER/breastcare-frontend
+    newTag: latest

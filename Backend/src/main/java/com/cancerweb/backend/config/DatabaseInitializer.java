@@ -15,6 +15,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Component;
 
 import com.cancerweb.backend.audit.AuditLog;
+import com.cancerweb.backend.knowledge.KnowledgeModule;
+import com.cancerweb.backend.knowledge.KnowledgeSubmission;
 import com.cancerweb.backend.model.Appointment;
 import com.cancerweb.backend.model.BreastSurgeonProfile;
 import com.cancerweb.backend.model.ContactMessage;
@@ -112,6 +114,14 @@ public class DatabaseInitializer implements ApplicationRunner {
                 new Index().on("surgeonUserId", Direction.ASC).on("date", Direction.ASC).named("surgeonUserId_date"));
         mongo.indexOps(Appointment.class).createIndex(
                 new Index().on("surgeonId", Direction.ASC).on("date", Direction.ASC).named("surgeonId_date"));
+        // Knowledge Hub: one module per address (slug), the hub's ordered list, and the review queue.
+        mongo.indexOps(KnowledgeModule.class).createIndex(new Index().on("slug", Direction.ASC).unique().named("slug_unique"));
+        mongo.indexOps(KnowledgeModule.class).createIndex(
+                new Index().on("published", Direction.ASC).on("order", Direction.ASC).named("published_order"));
+        mongo.indexOps(KnowledgeSubmission.class).createIndex(
+                new Index().on("status", Direction.ASC).on("createdAt", Direction.DESC).named("status_createdAt"));
+        mongo.indexOps(KnowledgeSubmission.class).createIndex(
+                new Index().on("authorId", Direction.ASC).on("createdAt", Direction.DESC).named("authorId_createdAt"));
         // MongoDB deletes each entry once its token's own expiry has passed.
         mongo.indexOps(RevokedToken.class).createIndex(
                 new Index().on("expiresAt", Direction.ASC).expire(Duration.ZERO).named("expiresAt_ttl"));

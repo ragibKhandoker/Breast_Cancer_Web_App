@@ -8,6 +8,7 @@ import { APP_ROUTES } from '../../config/appRoutes'
 const quickLinks = [
   { to: '/', label: 'Home' },
   { to: APP_ROUTES.analysis, label: 'Start Analysis' },
+  { to: '/knowledge', label: 'Knowledge Hub' },
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },

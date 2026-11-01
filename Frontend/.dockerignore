@@ -1,0 +1,9 @@
+# Keep secrets, local builds and dependencies out of the image build context (npm ci installs them inside).
+node_modules/
+dist/
+.env
+.env.*
+k8s/
+tests/
+coverage/
+*.log

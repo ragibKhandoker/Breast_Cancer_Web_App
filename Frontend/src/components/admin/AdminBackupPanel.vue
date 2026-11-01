@@ -148,7 +148,7 @@ onMounted(load)
             </tbody>
           </table>
         </div>
-        <p v-if="!status.restoreEnabled" class="muted small note">Restore tests are off on this server. Run them on a test server (see docs/F20).</p>
+        <p v-if="!status.restoreEnabled" class="muted small note">Restore tests are off on this server. Run them on a test server (see Backend/docs/F20).</p>
       </div>
     </template>
   </div>

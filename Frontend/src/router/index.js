@@ -25,6 +25,8 @@ import AppointmentBookingPage from '../views/AppointmentBookingPage.vue'
 import AppointmentConfirmationPage from '../views/AppointmentConfirmationPage.vue'
 import MyAppointmentsPage from '../views/MyAppointmentsPage.vue'
 import BreastSurgeonDashboard from '../views/BreastSurgeonDashboard.vue'
+import KnowledgeHubView from '../views/KnowledgeHubView.vue'
+import KnowledgeModuleView from '../views/KnowledgeModuleView.vue'
 import { APP_ROUTES } from '../config/appRoutes'
 import { ROLES } from '../auth/roles'
 import { installAuthGuard } from '../auth/guard'
@@ -63,6 +65,9 @@ export const routes = [
   { path: APP_ROUTES.myAppointments, name: 'my-appointments', component: MyAppointmentsPage, meta: { title: 'My Breast Surgeon Appointments', roles: [PATIENT] } },
   { path: APP_ROUTES.surgeonDashboard, name: 'surgeon-dashboard', component: BreastSurgeonDashboard, meta: { title: 'Breast Surgeon Dashboard', roles: [DOCTOR] } },
   { path: '/surgeon-profile', redirect: APP_ROUTES.profile }, // older links
+  // Breast Cancer Knowledge Hub: public lessons; progress is saved per account when signed in.
+  { path: '/knowledge', name: 'knowledge', component: KnowledgeHubView, meta: { title: 'Breast Cancer Knowledge Hub' } },
+  { path: '/knowledge/:slug', name: 'knowledge-module', component: KnowledgeModuleView, meta: { title: 'Knowledge Hub' } },
   { path: '/reports/:id', name: 'report', component: ReportView, meta: { title: 'Report', roles: [PATIENT, DOCTOR] } },
   {
     path: '/forbidden',
@@ -73,7 +78,7 @@ export const routes = [
   { path: '/privacy', component: ComingSoonView, meta: { title: 'Privacy Policy' } },
   { path: '/terms', component: ComingSoonView, meta: { title: 'Terms of Service' } },
   // Older placeholder links now point to the pages that cover them.
-  { path: '/learn', redirect: '/how-it-works' },
+  { path: '/learn', redirect: '/knowledge' },
   { path: '/resources', redirect: '/faq' },
   { path: '/support', redirect: '/contact' },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: 'Page Not Found' } },

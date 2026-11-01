@@ -42,7 +42,7 @@ jobs:
           else echo "tag=sha-${HEAD_SHA:0:7}" >> "$GITHUB_OUTPUT"; fi
       - uses: ./.github/actions/deploy
         with:
-          overlay: k8s/overlays/test
+          overlay: Backend/k8s/overlays/test
           namespace: breastcare-test
           tag: ${{ steps.tag.outputs.tag }}
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
@@ -60,7 +60,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: ./.github/actions/deploy
         with:
-          overlay: k8s/overlays/production
+          overlay: Backend/k8s/overlays/production
           namespace: breastcare-production
           tag: ${{ needs.deploy-test.outputs.tag }}
           kubeconfig: ${{ secrets.KUBE_CONFIG }}

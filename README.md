@@ -79,6 +79,9 @@ Spring Boot 4 reads the URI as `spring.mongodb.uri=${MONGODB_URI}` (Boot 3 calle
 | `revoked_tokens` | logged-out tokens (`_id` = token id) until they would have expired | `expiresAt_ttl` (TTL: MongoDB deletes expired entries) |
 | `contact_messages` | Contact form messages, with `status` NEW/READ (older messages without it count as NEW) | `status_createdAt` |
 | `site_settings` | one document (`_id: "site"`): footer contacts, social links, Home video, announcement, who saved it last | — |
+| `knowledge_modules` | Knowledge Hub lessons (structured text, items, tables, diagram ids, references), `published`, `seeded` | `slug_unique`, `published_order` |
+| `knowledge_submissions` | content proposed by Breast Surgeons, `status` PENDING/APPROVED/REJECTED and the admin's note | `status_createdAt`, `authorId_createdAt` |
+| `knowledge_progress` | per user (`_id` = user id): `completed`, `bookmarks`, `lastSlug` | — |
 
 `users` also holds `disabled` and `lastLoginAt`, and `predictions` / `users` get `createdAt` / `role` indexes for the admin overview. All are created at startup; older documents need no migration.
 
@@ -303,11 +306,11 @@ A chat button in the bottom-right corner of every page opens the *BreastCare Ass
 
 | Guide | |
 |---|---|
-| [docs/DOCKER_SETUP.md](docs/DOCKER_SETUP.md) | `docker compose up --build`: images, health checks, troubleshooting |
-| [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md) | `k8s/` (Kustomize base + test/production overlays), ingress and TLS, secrets, network policies, probes |
-| [docs/CI_CD_SETUP.md](docs/CI_CD_SETUP.md) | GitHub Actions: tests, scans, GHCR images, test deploy, approved production deploy |
-| [docs/BLOCKCHAIN_SETUP.md](docs/BLOCKCHAIN_SETUP.md) | Hardhat, the contract, report integrity verification |
-| [docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md](docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md) | Audit log, hashing, backups, privacy |
+| [Backend/docs/DOCKER_SETUP.md](Backend/docs/DOCKER_SETUP.md) | `docker compose up --build`: images, health checks, troubleshooting |
+| [Backend/docs/KUBERNETES_SETUP.md](Backend/docs/KUBERNETES_SETUP.md) | `Backend/k8s/` + `Frontend/k8s/` (Kustomize base + test/production overlays), ingress and TLS, secrets, network policies, probes |
+| [Backend/docs/CI_CD_SETUP.md](Backend/docs/CI_CD_SETUP.md) | GitHub Actions: tests, scans, GHCR images, test deploy, approved production deploy |
+| [Backend/docs/BLOCKCHAIN_SETUP.md](Backend/docs/BLOCKCHAIN_SETUP.md) | Hardhat, the contract, report integrity verification |
+| [Backend/docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md](Backend/docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md) | Audit log, hashing, backups, privacy |
 
 Health endpoints:
 - backend: `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` (includes MongoDB)
@@ -317,15 +320,51 @@ The backend logs JSON in containers (`LOGGING_STRUCTURED_FORMAT_CONSOLE=ecs`), a
 
 ## Audit logs, blockchain proofs, backup and privacy (F20)
 
-Full guide: [`docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md`](docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md).
+Full guide: [`Backend/docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md`](Backend/docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md).
 
 - **Audit log**: the backend records scans, report downloads, reviews, role changes, logins and admin and backup actions in `audit_logs`. The log is append-only and SHA-256 hash-chained. Administrators see it under Admin → Security → **Audit logs**, with filters, details, per-event and whole-chain verification.
 - **Blockchain proofs** (off by default): an event's hash, timestamp and opaque id can be anchored on a private or test Ethereum node (`AUDIT_BLOCKCHAIN_*`). Patient data never goes on chain.
-- **Backups**: encrypted (AES-256 + HMAC) backups of the whole database, from Admin → Security → **Backups**, from `scripts/backup.ps1` / `backup.sh`, or on a schedule. They need `BACKUP_ENCRYPTION_KEY`. Restore tests go into a separate `<db>_restore_test` database, only where `BACKUP_RESTORE_ENABLED=true`.
+- **Backups**: encrypted (AES-256 + HMAC) backups of the whole database, from Admin → Security → **Backups**, from `Backend/scripts/backup.ps1` / `backup.sh`, or on a schedule. They need `BACKUP_ENCRYPTION_KEY`. Restore tests go into a separate `<db>_restore_test` database, only where `BACKUP_RESTORE_ENABLED=true`.
+
+## Breast Cancer Knowledge Hub
+
+`/knowledge` is a public learning center with 12 modules (history, understanding, classification, types, stages,
+risk factors, symptoms, diagnosis and screening, mammography and BI-RADS, treatment, surgery and recovery, prevention
+and survivorship). Each lesson has a table of contents, reading progress, "Learn more" sections for advanced detail,
+drawn diagrams (breast anatomy, cell growth, receptors, grade, interactive TNM), an interactive BI-RADS 0–6 guide,
+references, related lessons and previous/next links. The hub page adds search, categories, "Continue learning",
+bookmarks, a glossary and an FAQ.
+
+- **Content** starts from [`Backend/src/main/resources/knowledge/modules.json`](Backend/src/main/resources/knowledge/modules.json).
+  At startup any module whose slug is missing is added; existing modules are never overwritten, so admin edits stay.
+  Every statement was written from the listed WHO, NCI, ACS, ACR, Breast Cancer Now and RadiologyInfo pages, and every
+  module has a References section. Text is plain (no HTML is stored or rendered).
+- **Progress and bookmarks**: saved in `knowledge_progress` for signed-in users (any role); visitors keep them in the
+  browser and they are added to the account at the next sign-in.
+- **Admin** (*Admin → Knowledge Hub*): create and edit modules (sections, timelines, cards, steps, tables, diagrams,
+  references), upload PNG/JPG/WebP diagrams (≤ 5 MB, SVG refused), publish and unpublish. New modules start as drafts.
+  Every save/publish is in the audit log.
+- **Breast Surgeons** with an approved profile suggest edits or new lessons from *Surgeon dashboard → Knowledge Hub*.
+  Nothing is public until an administrator approves it; returning it needs a note. Both sides get a notification.
+
+| Method | Path | Who | Description |
+|---|---|---|---|
+| GET | `/api/knowledge/modules` | anyone | published modules (summaries) in order |
+| GET | `/api/knowledge/modules/{slug}` | anyone | one published module; `404` otherwise |
+| GET | `/api/knowledge/glossary`, `/api/knowledge/faqs` | anyone | glossary terms, FAQ |
+| GET | `/api/knowledge/images/{id}` | anyone | an uploaded diagram (other stored files are `404`) |
+| GET | `/api/learning/progress` | signed in | `{completed, bookmarks, lastSlug}` |
+| PUT | `/api/learning/progress/{slug}`, `/api/learning/bookmarks/{slug}`, `/api/learning/last/{slug}` | signed in | `{completed}`, `{bookmarked}`, `{}` |
+| POST | `/api/learning/progress/merge` | signed in | `{completed, bookmarks}` from the browser |
+| GET/POST | `/api/knowledge-submissions` | DOCTOR (approved Breast Surgeon) | own submissions / `{targetSlug or null, content}` → `201` |
+| GET/POST/PUT | `/api/admin/knowledge/modules[/{slug}]` | ADMIN | list, create (draft), edit |
+| PUT | `/api/admin/knowledge/modules/{slug}/published` | ADMIN | `{published}` |
+| POST | `/api/admin/knowledge/images` | ADMIN | multipart `image` → `{fileId, url}` |
+| GET / PUT | `/api/admin/knowledge/submissions[?status=]`, `/{id}/review` | ADMIN | list / `{status: APPROVED or REJECTED, note}` |
 
 ## Pages
 
-Public: `/` Home · `/about` · `/how-it-works` · `/faq` · `/contact` · `/login` · `/register`, plus Not Found and Access Denied pages.
+Public: `/` Home · `/knowledge`, `/knowledge/{slug}` · `/about` · `/how-it-works` · `/faq` · `/contact` · `/login` · `/register`, plus Not Found and Access Denied pages.
 Signed in: `/profile` (everyone) · `/dashboard`, `/prediction`, `/history` (patient) · `/doctor` (doctor) · `/admin` (administrator) · `/reports/{id}` (owner, or a doctor it is shared with).
 Paths live in `Frontend/src/config/appRoutes.js` and `Frontend/src/router/index.js`.
 

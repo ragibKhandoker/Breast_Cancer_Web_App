@@ -22,6 +22,8 @@ import com.mongodb.MongoTimeoutException;
 import com.cancerweb.backend.audit.AuditEventNotFoundException;
 import com.cancerweb.backend.audit.BlockchainService.BlockchainException;
 import com.cancerweb.backend.backup.BackupException;
+import com.cancerweb.backend.knowledge.KnowledgeAccessException;
+import com.cancerweb.backend.knowledge.KnowledgeNotFoundException;
 
 /** Turns exceptions into RFC 9457 problem responses with a readable {@code detail}. */
 @RestControllerAdvice
@@ -120,6 +122,16 @@ public class ApiExceptionHandler {
     @ExceptionHandler(PredictionNotFoundException.class)
     public ProblemDetail notFound(PredictionNotFoundException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(KnowledgeNotFoundException.class)
+    ProblemDetail knowledgeNotFound(KnowledgeNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(KnowledgeAccessException.class)
+    ProblemDetail knowledgeAccess(KnowledgeAccessException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
     @ExceptionHandler(SurgeonNotFoundException.class)

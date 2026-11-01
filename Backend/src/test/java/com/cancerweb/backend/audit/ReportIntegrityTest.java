@@ -43,7 +43,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Report integrity end to end against a stand-in for the AuditIntegrity contract (blockchain/contracts): it decodes
+ * Report integrity end to end against a stand-in for the AuditIntegrity contract (Backend/blockchain/contracts): it decodes
  * the ABI calls the backend sends and keeps write-once records like the Solidity contract does.
  */
 class ReportIntegrityTest extends IntegrationTest {

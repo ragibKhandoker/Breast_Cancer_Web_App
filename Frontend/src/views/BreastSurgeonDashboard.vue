@@ -7,6 +7,7 @@ import AppointmentStatusBadge from '../components/appointments/AppointmentStatus
 import SurgeonAppointmentManagement from '../components/appointments/SurgeonAppointmentManagement.vue'
 import AvailabilityEditor from '../components/appointments/AvailabilityEditor.vue'
 import AvailabilityCalendar from '../components/appointments/AvailabilityCalendar.vue'
+import SurgeonKnowledgePanel from '../components/knowledge/SurgeonKnowledgePanel.vue'
 import { getMyProfile, updateAvailability } from '../services/surgeonService'
 import { listSurgeonAppointments } from '../services/appointmentService'
 import { errorMessage, fieldErrors } from '../services/http'
@@ -39,7 +40,7 @@ async function load() {
   }
 }
 
-const tab = computed(() => (route.query.tab === 'availability' ? 'availability' : 'appointments'))
+const tab = computed(() => (['availability', 'knowledge'].includes(route.query.tab) ? route.query.tab : 'appointments'))
 function openTab(id) {
   router.replace({ query: id === 'appointments' ? {} : { tab: id } })
 }
@@ -164,10 +165,17 @@ onMounted(load)
         <button type="button" role="tab" :aria-selected="tab === 'availability'" :class="{ on: tab === 'availability' }" @click="openTab('availability')">
           <AppIcon name="calendar" :size="16" /> Availability
         </button>
+        <button type="button" role="tab" :aria-selected="tab === 'knowledge'" :class="{ on: tab === 'knowledge' }" @click="openTab('knowledge')">
+          <AppIcon name="book" :size="16" /> Knowledge Hub
+        </button>
       </div>
 
       <div v-if="tab === 'appointments'" class="card panel" role="tabpanel">
         <SurgeonAppointmentManagement :appointments="appointments" :initial-view="stats.PENDING ? 'REQUESTS' : 'UPCOMING'" @changed="onChanged" />
+      </div>
+
+      <div v-else-if="tab === 'knowledge'" class="card panel" role="tabpanel">
+        <SurgeonKnowledgePanel :approved="profile.status === 'APPROVED'" />
       </div>
 
       <div v-else class="card panel" role="tabpanel">

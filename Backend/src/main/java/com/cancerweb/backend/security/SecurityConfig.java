@@ -71,6 +71,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/site-settings").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/model").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Knowledge Hub: published lessons are public; approved Breast Surgeons (checked in
+                        // KnowledgeService) propose content; progress (/api/learning) needs any sign-in.
+                        .requestMatchers(HttpMethod.GET, "/api/knowledge/**").permitAll()
+                        .requestMatchers("/api/knowledge-submissions", "/api/knowledge-submissions/**").hasRole("DOCTOR")
                         // A patient's or doctor's own conversation with the administrators.
                         .requestMatchers("/api/messages", "/api/messages/**").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/doctors").hasRole("PATIENT")

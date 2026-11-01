@@ -89,7 +89,7 @@ public class BackupService {
     private final JsonMapper json = JsonMapper.builder().build();
 
     public BackupService(MongoTemplate mongo, MongoClient client, AuditService audit,
-            @Value("${backup.dir:../backups}") String dir,
+            @Value("${backup.dir:backups}") String dir,
             @Value("${backup.encryption-key:}") String key,
             @Value("${backup.retention.enabled:false}") boolean retentionEnabled,
             @Value("${backup.retention.daily:7}") int daily,
@@ -174,7 +174,7 @@ public class BackupService {
     public synchronized BackupInfo create(Actor actor) {
         if (crypto == null) {
             throw new BackupException(HttpStatus.SERVICE_UNAVAILABLE,
-                    "Backups need BACKUP_ENCRYPTION_KEY on the server (32 random bytes, base64). See docs/F20.");
+                    "Backups need BACKUP_ENCRYPTION_KEY on the server (32 random bytes, base64). See Backend/docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md.");
         }
         Instant now = Instant.now();
         String name = "backup_" + STAMP.format(now) + EXTENSION;

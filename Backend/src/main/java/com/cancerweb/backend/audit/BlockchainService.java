@@ -31,7 +31,7 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>The node signs with its own unlocked development account ({@code eth_sendTransaction}), so this application
  * holds no private key. An event counts as anchored only when the transaction's receipt is mined with status 1.
  *
- * <p>With {@code audit.blockchain.contract} set (the AuditIntegrity contract from /blockchain, deployed with Hardhat),
+ * <p>With {@code audit.blockchain.contract} set (the AuditIntegrity contract in Backend/blockchain, deployed with Hardhat),
  * proofs are registered in the contract instead: {@code register(ref, hash, timestamp)} where ref is SHA-256 of the
  * event id (opaque), hash is the event's SHA-256 and timestamp is the event time rounded down to the hour. Proofs
  * are then read back with {@code getRecord} and {@code verify} ({@code eth_call}).
@@ -93,7 +93,7 @@ public class BlockchainService {
         return contract != null;
     }
 
-    // ---- AuditIntegrity contract (blockchain/contracts/AuditIntegrity.sol) ----
+    // ---- AuditIntegrity contract (Backend/blockchain/contracts/AuditIntegrity.sol) ----
 
     static final byte[] REGISTER = Keccak256.selector("register(bytes32,bytes32,uint64)");
     static final byte[] VERIFY = Keccak256.selector("verify(bytes32,bytes32)");

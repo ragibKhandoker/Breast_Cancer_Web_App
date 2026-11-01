@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import com.cancerweb.backend.audit.AuditService.Actor;
 
 /**
- * One-off backup jobs from the command line (scripts/backup.ps1, scripts/backup.sh, or Task Scheduler / cron):
+ * One-off backup jobs from the command line (Backend/scripts/backup.ps1 or backup.sh, or Task Scheduler / cron):
  * {@code --backup.run=create} writes a backup, {@code --backup.run=restore-test --backup.file=NAME} restores one into
  * a *_restore_test database and checks it. The app then exits with 0 on success and 1 on failure. Without
  * {@code --backup.run} this does nothing.

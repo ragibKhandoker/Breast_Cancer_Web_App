@@ -27,7 +27,7 @@ class BlockchainLiveCheck {
         String rpc = System.getenv("LIVE_BLOCKCHAIN_RPC_URL");
         String account = System.getenv("LIVE_BLOCKCHAIN_ACCOUNT");
         Assumptions.assumeTrue(rpc != null && account != null, "set LIVE_BLOCKCHAIN_RPC_URL and LIVE_BLOCKCHAIN_ACCOUNT");
-        // Optional: LIVE_BLOCKCHAIN_CONTRACT = the AuditIntegrity address from blockchain/scripts/deploy.js.
+        // Optional: LIVE_BLOCKCHAIN_CONTRACT = the AuditIntegrity address from Backend/blockchain/scripts/deploy.js.
         String contract = System.getenv().getOrDefault("LIVE_BLOCKCHAIN_CONTRACT", "");
         BlockchainService chain = new BlockchainService(true, rpc, account, "local-test-node", contract, Duration.ofSeconds(10));
         assertThat(chain.enabled()).isTrue();

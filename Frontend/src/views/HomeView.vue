@@ -9,7 +9,7 @@ import CommunityBanner from '../components/home/CommunityBanner.vue'
 </script>
 
 <template>
-  <div class="photo-bg">
+  <div class="photo-bg light-boxes">
     <HeroSection />
     <HighlightBar />
     <AboutSection />

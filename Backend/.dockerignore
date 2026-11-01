@@ -1,0 +1,14 @@
+# Keep secrets, data and everything that is not the Java app out of the image build context.
+.env
+.env.*
+!.env.example
+target/
+backups/
+*.bcbk
+src/main/resources/static/
+blockchain/
+k8s/
+docs/
+scripts/
+docker-compose.yml
+*.log

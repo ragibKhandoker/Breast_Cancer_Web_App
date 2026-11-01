@@ -21,6 +21,7 @@ const links = computed(() => [
     title: user.value && user.value.role !== ROLES.PATIENT ? 'Prediction is for patient accounts' : undefined,
   },
   { to: APP_ROUTES.surgeons, label: 'Find a Surgeon' },
+  { to: '/knowledge', label: 'Knowledge Hub' },
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },

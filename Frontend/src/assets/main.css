@@ -187,6 +187,28 @@ code { background: rgba(0, 0, 0, 0.06); padding: 0 4px; border-radius: 4px; }
   --high: #c62828;
 }
 .card .btn-outline, .dark-box .btn-outline { background: transparent; color: #f7a8c8; border-color: #f7a8c8; }
+
+/* Home, How It Works and About keep white boxes: inside .light-boxes the dark-box colours switch back to the
+   light palette, with a pink border and soft shadow so each box still stands out from the pale page. */
+.light-boxes :is(.card, .dark-box, .glass-panel) {
+  --surface: #ffffff;
+  --purple-900: #2a1650;
+  --text: #3d3557;
+  --muted: #6f6787;
+  --border: #f3d4e3;
+  --pink-50: #fff4f9;
+  --pink-100: #fde3ef;
+  --pink-600: #d81b6a;
+  --high: #c62828;
+  --low: #2e7d32;
+  --warn-bg: #fff4e5;
+  --warn-text: #8a4b00;
+  --shadow: 0 12px 30px rgba(216, 27, 106, 0.12);
+  background: #ffffff;
+  border: 1px solid #f3d4e3;
+  color: var(--text);
+}
+.light-boxes :is(.card, .dark-box) .btn-outline { background: #fff; color: #d81b6a; border-color: #d81b6a; }
 .result { margin-top: 1.5rem; }
 .result .label { margin: 0; color: var(--muted); }
 .result .percent { font-size: 2.6rem; font-weight: 700; margin: 0.25rem 0; }

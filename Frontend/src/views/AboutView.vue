@@ -20,87 +20,89 @@ const stack = [
 </script>
 
 <template>
-  <PageHeader
-    eyebrow="About BreastCare"
-    title="Helping people take the first step toward early detection"
-    subtitle="BreastCare is a team project that combines breast cancer awareness with an AI tool for analysing mammogram images."
-  />
-
-  <section class="container section overview">
-    <img
-      v-reveal
-      :src="radiologistPhoto"
-      alt="A radiologist reviewing mammogram images on diagnostic monitors"
-      class="photo"
-      width="800"
-      height="452"
-      loading="lazy"
+  <div class="light-boxes">
+    <PageHeader
+      eyebrow="About BreastCare"
+      title="Helping people take the first step toward early detection"
+      subtitle="BreastCare is a team project that combines breast cancer awareness with an AI tool for analysing mammogram images."
     />
-    <div v-reveal="120">
-      <h2>Project overview</h2>
-      <p>
-        You upload a mammogram image, and our backend runs a deep-learning model on it to estimate how likely the
-        image is to show a malignant finding. The result, together with the image, is saved so you can review it later.
-      </p>
-      <p>
-        Alongside the analysis tool, the site explains how the process works and answers common questions, so the
-        result is easier to put in context.
-      </p>
-    </div>
-  </section>
 
-  <section class="container section problem">
-    <div v-reveal class="card-block dark-box">
-      <h2>The problem</h2>
-      <p>
-        Breast cancer is one of the most common cancers among women worldwide, and finding it early makes treatment
-        far more effective. Yet many people delay screening because they do not know what a mammogram involves, or
-        they wait a long time to have images reviewed.
-      </p>
-    </div>
-    <div v-reveal="120" class="card-block dark-box">
-      <h2>Our motivation</h2>
-      <p>
-        We wanted to see how modern image models can support, not replace, the people who read mammograms, and to
-        build something that also teaches the public why early detection matters.
-      </p>
-    </div>
-  </section>
-
-  <section class="container section">
-    <h2 v-reveal class="center">Goals</h2>
-    <ul class="goals">
-      <li v-for="(goal, i) in goals" :key="goal" v-reveal="i * 80" class="dark-box">
-        <AppIcon name="shield-check" :size="22" class="check" />
-        <span>{{ goal }}</span>
-      </li>
-    </ul>
-  </section>
-
-  <section class="container section">
-    <h2 v-reveal class="center">Technology</h2>
-    <div class="stack">
-      <div v-for="(item, i) in stack" :key="item.name" v-reveal="i * 100" class="tech dark-box">
-        <span class="tech-icon"><AppIcon :name="item.icon" :size="24" /></span>
-        <h3>{{ item.name }}</h3>
-        <p>{{ item.text }}</p>
+    <section class="container section overview">
+      <img
+        v-reveal
+        :src="radiologistPhoto"
+        alt="A radiologist reviewing mammogram images on diagnostic monitors"
+        class="photo"
+        width="800"
+        height="452"
+        loading="lazy"
+      />
+      <div v-reveal="120">
+        <h2>Project overview</h2>
+        <p>
+          You upload a mammogram image, and our backend runs a deep-learning model on it to estimate how likely the
+          image is to show a malignant finding. The result, together with the image, is saved so you can review it later.
+        </p>
+        <p>
+          Alongside the analysis tool, the site explains how the process works and answers common questions, so the
+          result is easier to put in context.
+        </p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="container section">
-    <div v-reveal class="notice dark-box">
-      <h2>Important</h2>
-      <p>
-        BreastCare is for research and education only. It is not a medical device, its results can be wrong, and it
-        does not replace a diagnosis by a qualified doctor.
-      </p>
-      <div class="actions">
-        <RouterLink :to="APP_ROUTES.analysis" class="btn btn-primary">Start Analysis <AppIcon name="arrow-right" :size="18" /></RouterLink>
-        <RouterLink to="/how-it-works" class="btn btn-outline">How It Works</RouterLink>
+    <section class="container section problem">
+      <div v-reveal class="card-block dark-box">
+        <h2>The problem</h2>
+        <p>
+          Breast cancer is one of the most common cancers among women worldwide, and finding it early makes treatment
+          far more effective. Yet many people delay screening because they do not know what a mammogram involves, or
+          they wait a long time to have images reviewed.
+        </p>
       </div>
-    </div>
-  </section>
+      <div v-reveal="120" class="card-block dark-box">
+        <h2>Our motivation</h2>
+        <p>
+          We wanted to see how modern image models can support, not replace, the people who read mammograms, and to
+          build something that also teaches the public why early detection matters.
+        </p>
+      </div>
+    </section>
+
+    <section class="container section">
+      <h2 v-reveal class="center">Goals</h2>
+      <ul class="goals">
+        <li v-for="(goal, i) in goals" :key="goal" v-reveal="i * 80" class="dark-box">
+          <AppIcon name="shield-check" :size="22" class="check" />
+          <span>{{ goal }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="container section">
+      <h2 v-reveal class="center">Technology</h2>
+      <div class="stack">
+        <div v-for="(item, i) in stack" :key="item.name" v-reveal="i * 100" class="tech dark-box">
+          <span class="tech-icon"><AppIcon :name="item.icon" :size="24" /></span>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.text }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section">
+      <div v-reveal class="notice dark-box">
+        <h2>Important</h2>
+        <p>
+          BreastCare is for research and education only. It is not a medical device, its results can be wrong, and it
+          does not replace a diagnosis by a qualified doctor.
+        </p>
+        <div class="actions">
+          <RouterLink :to="APP_ROUTES.analysis" class="btn btn-primary">Start Analysis <AppIcon name="arrow-right" :size="18" /></RouterLink>
+          <RouterLink to="/how-it-works" class="btn btn-outline">How It Works</RouterLink>
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>

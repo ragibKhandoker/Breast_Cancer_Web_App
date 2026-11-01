@@ -68,7 +68,8 @@ public abstract class IntegrationTest {
     }
     private static final List<String> COLLECTIONS =
             List.of("users", "predictions", "revoked_tokens", "contact_messages", "site_settings", "password_reset_requests",
-                    "breast_surgeon_profiles", "appointments", "notifications", "messages", "audit_logs", "fs.files", "fs.chunks");
+                    "breast_surgeon_profiles", "appointments", "notifications", "messages", "audit_logs", "knowledge_modules", "knowledge_submissions",
+                    "knowledge_progress", "fs.files", "fs.chunks");
 
     @Autowired
     protected MockMvc mvc;

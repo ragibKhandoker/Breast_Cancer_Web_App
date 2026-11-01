@@ -12,6 +12,7 @@ import AdminSurgeonPanel from '../components/admin/AdminSurgeonPanel.vue'
 import AdminInboxPanel from '../components/admin/AdminInboxPanel.vue'
 import AdminAuditPanel from '../components/admin/AdminAuditPanel.vue'
 import AdminBackupPanel from '../components/admin/AdminBackupPanel.vue'
+import AdminKnowledgePanel from '../components/admin/AdminKnowledgePanel.vue'
 import { authState } from '../auth/authStore'
 import { getOverview, listMessages, listSurgeonProfiles } from '../services/adminService'
 import { APP_ROUTES } from '../config/appRoutes'
@@ -35,6 +36,8 @@ const TABS = [
     title: 'Messages', subtitle: 'What visitors sent through the Contact page.' },
   { id: 'settings', label: 'Website settings', icon: 'file-text', component: AdminSettingsPanel, group: 'Website',
     title: 'Website settings', subtitle: 'Contact details, social links and the announcement bar.' },
+  { id: 'knowledge', label: 'Knowledge Hub', icon: 'book', component: AdminKnowledgePanel, group: 'Website',
+    title: 'Knowledge Hub', subtitle: 'Edit lessons, publish them, and review surgeon content.' },
   { id: 'audit', label: 'Audit logs', icon: 'shield-check', component: AdminAuditPanel, group: 'Security',
     title: 'Audit logs', subtitle: 'Who did what and when. Each event is sealed with a SHA-256 hash chain.' },
   { id: 'backups', label: 'Backups', icon: 'clock', component: AdminBackupPanel, group: 'Security',

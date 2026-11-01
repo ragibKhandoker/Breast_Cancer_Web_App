@@ -1,0 +1,1742 @@
+{
+  "modules": [
+    {
+      "slug": "history",
+      "order": 1,
+      "title": "History of Breast Cancer",
+      "category": "Foundations",
+      "illustration": "history",
+      "readingMinutes": 7,
+      "description": "From the first written description of a breast tumour to digital mammography and AI-assisted imaging: how diagnosis and treatment changed over thousands of years.",
+      "sections": [
+        {
+          "id": "overview",
+          "title": "Why the history matters",
+          "body": "Breast cancer has been described for thousands of years. For most of that time, doctors could recognise a hard lump in the breast but had no way to cure it.\n\nOver the last two centuries, understanding of how cancer grows and spreads changed treatment from very large operations towards smaller, more precise surgery, combined with medicines that target how a particular cancer behaves. Screening with mammography made it possible to find many cancers before they can be felt.",
+          "advanced": "The dates below are the ones given by major cancer organisations. Where an exact year is not well established, a period is given instead."
+        },
+        {
+          "id": "timeline",
+          "title": "Timeline of key developments",
+          "display": "timeline",
+          "items": [
+            {
+              "label": "About 3000 BCE (ancient Egypt)",
+              "title": "The first written description",
+              "text": "The Edwin Smith Papyrus, an ancient Egyptian medical text, describes bulging tumours of the breast. It states that there is no treatment.",
+              "note": "It is the oldest known written description of what is believed to be breast cancer, and shows the disease is not new."
+            },
+            {
+              "label": "About 400 BCE (ancient Greece)",
+              "title": "The word 'cancer'",
+              "text": "The Greek physician Hippocrates is credited with first using the word for cancer, comparing a tumour to a crab ('karkinos' in Greek).",
+              "note": "The names we still use today come from this period, even though the ideas about what caused cancer were later shown to be wrong."
+            },
+            {
+              "label": "1713",
+              "title": "Early clues about hormones",
+              "text": "The Italian physician Bernardino Ramazzini noticed that nuns rarely had cervical cancer but had high rates of breast cancer, and wondered whether not having children played a role.",
+              "note": "It was an early observation linking breast cancer to reproductive and hormonal factors, which later research confirmed."
+            },
+            {
+              "label": "Late 1800s",
+              "title": "Radical mastectomy",
+              "text": "Surgeons developed the radical mastectomy, a large operation removing the breast, the chest muscles underneath and the lymph nodes under the arm.",
+              "note": "It was based on the idea that cancer spreads outward step by step, and it became the standard operation for most of the 20th century."
+            },
+            {
+              "label": "1895",
+              "title": "Hormones and breast cancer",
+              "text": "Removing the ovaries was shown to slow breast cancer.",
+              "note": "This suggested that some breast cancers depend on hormones made by the ovaries (later identified as estrogen) and led, decades later, to hormone therapy."
+            },
+            {
+              "label": "1960s",
+              "title": "Mammography",
+              "text": "The mammogram, a low-dose X-ray of the breast, was developed as a practical test.",
+              "note": "It made it possible to find breast cancer before it can be felt, and it remains the main screening test."
+            },
+            {
+              "label": "1977",
+              "title": "Tamoxifen",
+              "text": "The US Food and Drug Administration (FDA) approved tamoxifen, a drug that blocks hormone activity without the need for surgery.",
+              "note": "It became one of the most widely used hormone therapies for hormone receptor-positive breast cancer."
+            },
+            {
+              "label": "Late 1900s",
+              "title": "Breast-conserving surgery",
+              "text": "About a century after the radical mastectomy, studies showed that removing only the tumour with a margin of normal tissue (lumpectomy) worked as well for many early breast cancers.",
+              "note": "Many patients could keep their breast, and surgery became less extensive."
+            },
+            {
+              "label": "1990s",
+              "title": "BRCA genes",
+              "text": "The BRCA1 and BRCA2 genes were identified. Harmful inherited changes in them greatly increase the risk of breast and ovarian cancer.",
+              "note": "Genetic testing became possible for families at high risk."
+            },
+            {
+              "label": "1998",
+              "title": "Targeted therapy for HER2",
+              "text": "The FDA approved trastuzumab, a drug that blocks the HER2 protein, which drives the growth of some breast cancers.",
+              "note": "It was a landmark targeted therapy and changed the outlook for HER2-positive breast cancer."
+            },
+            {
+              "label": "Today",
+              "title": "Precision medicine and AI-assisted imaging",
+              "text": "Treatment is guided by tumour biology (ER, PR, HER2 and other biomarker tests), with targeted drugs and, for some triple-negative cancers, immunotherapy. Digital mammography and 3D mammography (tomosynthesis) are widely used. Artificial intelligence tools are being developed and tested to help radiologists read mammograms.",
+              "note": "AI is a support tool: a radiologist and the full diagnostic process are still needed. The AI on this website is for research and education only."
+            }
+          ]
+        }
+      ],
+      "references": [
+        {
+          "title": "A Brief History of Cancer",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/understanding-cancer/history-of-cancer.html"
+        },
+        {
+          "title": "Breast Cancer Treatment",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/treatment"
+        },
+        {
+          "title": "BRCA Gene Changes: Cancer Risk and Genetic Testing",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/about-cancer/causes-prevention/genetics/brca-fact-sheet"
+        },
+        {
+          "title": "Mammography",
+          "publisher": "RadiologyInfo.org (ACR and RSNA)",
+          "url": "https://www.radiologyinfo.org/en/info/mammo"
+        }
+      ],
+      "related": [
+        "understanding",
+        "treatment",
+        "mammography-birads"
+      ]
+    },
+    {
+      "slug": "understanding",
+      "order": 2,
+      "title": "Understanding Breast Cancer",
+      "category": "Foundations",
+      "illustration": "cells",
+      "readingMinutes": 6,
+      "description": "What breast cancer is, how the breast is built, how normal cells become cancer cells, and the difference between benign and malignant conditions.",
+      "sections": [
+        {
+          "id": "what-is",
+          "title": "What is breast cancer?",
+          "body": "Breast cancer is a disease in which cells in the breast grow out of control. Most breast cancers start in the ducts (the tubes that carry milk to the nipple) or the lobules (the glands that make milk).\n\nBreast cancer mostly affects women, but men can get it too, because men also have a small amount of breast tissue."
+        },
+        {
+          "id": "anatomy",
+          "title": "Basic breast anatomy",
+          "diagram": "anatomy",
+          "body": "The breast is made of:\n- Lobules: small glands that can make milk.\n- Ducts: thin tubes that carry milk from the lobules to the nipple.\n- Fatty and connective tissue: surrounds and supports the lobules and ducts and gives the breast its shape.\n- Blood vessels and lymph vessels: lymph vessels carry fluid to lymph nodes, many of which are in the armpit (axillary lymph nodes).\n\nThe breast lies on the chest muscle (pectoralis) over the ribs."
+        },
+        {
+          "id": "normal-cells",
+          "title": "How normal cells work",
+          "diagram": "cell-growth",
+          "body": "The body is made of cells. Normal cells grow and divide to make new cells when the body needs them. When cells become old or damaged, they die and are replaced.\n\nThis process is tightly controlled by the cell's genes, which act like instructions telling the cell when to grow, divide, repair itself or die."
+        },
+        {
+          "id": "how-cancer-develops",
+          "title": "How cancer develops",
+          "body": "Cancer starts when changes in genes (mutations) disrupt this control. A cell may keep dividing when it should stop, or fail to die when it should. Over time, these cells can build up and form a lump called a tumour.\n\nMost gene changes that lead to breast cancer happen during a person's lifetime. A smaller number are inherited from a parent, such as harmful changes in the BRCA1 or BRCA2 genes.",
+          "advanced": "Cancer usually develops through several changes over time rather than a single event. Some cells first look abnormal (atypical) without being cancer. Cancer cells that stay inside the duct or lobule where they started are called 'in situ'. When they break through the wall of the duct or lobule into the surrounding tissue, the cancer is called 'invasive'."
+        },
+        {
+          "id": "normal-vs-cancer",
+          "title": "Normal cells compared with cancer cells",
+          "display": "cards",
+          "items": [
+            {
+              "title": "Growth",
+              "text": "Normal cells grow only when needed. Cancer cells keep growing and dividing.",
+              "label": "Control"
+            },
+            {
+              "title": "Appearance",
+              "text": "Normal cells look regular and organised under the microscope. Cancer cells often look irregular, and the more abnormal they look, the higher the tumour grade.",
+              "label": "Microscope"
+            },
+            {
+              "title": "Staying in place",
+              "text": "Normal cells stay where they belong. Cancer cells can invade nearby tissue.",
+              "label": "Invasion"
+            },
+            {
+              "title": "Repair and death",
+              "text": "Damaged normal cells are repaired or die. Cancer cells can ignore these signals.",
+              "label": "Lifespan"
+            }
+          ]
+        },
+        {
+          "id": "spread",
+          "title": "How cancer may spread",
+          "body": "Invasive breast cancer can spread through lymph vessels to lymph nodes, most often those under the arm, and through the blood to other parts of the body.\n\nWhen breast cancer spreads to distant organs, such as the bones, liver, lungs or brain, it is called metastatic or stage IV breast cancer. It is still breast cancer, not bone or lung cancer, because the cells came from the breast."
+        },
+        {
+          "id": "benign-vs-malignant",
+          "title": "Benign and malignant breast conditions",
+          "body": "Many breast lumps and changes are not cancer.\n- Benign (non-cancerous) conditions do not spread to other parts of the body. Examples are cysts (fluid-filled sacs) and fibroadenomas (solid, smooth lumps).\n- Malignant means cancer: cells that can invade nearby tissue and spread.\n\n> Only tests such as imaging and, when needed, a biopsy can tell whether a breast change is benign or malignant. Any new or changing breast change should be checked by a doctor."
+        }
+      ],
+      "references": [
+        {
+          "title": "What Is Breast Cancer?",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/what-is-breast-cancer"
+        },
+        {
+          "title": "What Is Cancer?",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/about-cancer/understanding/what-is-cancer"
+        },
+        {
+          "title": "Breast Cancer",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer.html"
+        },
+        {
+          "title": "Breast cancer fact sheet",
+          "publisher": "World Health Organization",
+          "url": "https://www.who.int/news-room/fact-sheets/detail/breast-cancer"
+        }
+      ],
+      "related": [
+        "classification",
+        "symptoms",
+        "risk-factors"
+      ]
+    },
+    {
+      "slug": "classification",
+      "order": 3,
+      "title": "Breast Cancer Classification",
+      "category": "Classification",
+      "illustration": "classification",
+      "readingMinutes": 10,
+      "description": "The four ways doctors describe a breast cancer: where it started, its molecular subtype (ER, PR, HER2, Ki-67), its grade, and its stage.",
+      "sections": [
+        {
+          "id": "overview",
+          "title": "Four ways to describe one cancer",
+          "body": "Doctors describe each breast cancer in several ways at once. Together these help predict how the cancer may behave and which treatments are likely to help.\n- Origin: where in the breast it started and whether it is in situ or invasive.\n- Molecular subtype: what receptors and proteins the cancer cells have.\n- Histological grade: how abnormal the cells look under the microscope.\n- Stage: how large the cancer is and how far it has spread."
+        },
+        {
+          "id": "origin",
+          "title": "A. Classification by origin",
+          "body": "'In situ' means the abnormal cells are still inside the duct or lobule where they started. 'Invasive' (or infiltrating) means the cells have grown through the wall into the surrounding breast tissue, from where they can spread.",
+          "display": "cards",
+          "items": [
+            {
+              "label": "In situ · non-invasive",
+              "title": "Ductal carcinoma in situ (DCIS)",
+              "text": "Abnormal cells line the milk ducts but have not spread into nearby breast tissue. It is called stage 0 breast cancer.",
+              "note": "It is often found on a mammogram as tiny calcium deposits. It is usually treated because it can become invasive."
+            },
+            {
+              "label": "Invasive · most common",
+              "title": "Invasive ductal carcinoma (IDC)",
+              "text": "Cancer that starts in a duct and grows into the surrounding breast tissue. It is the most common type of invasive breast cancer.",
+              "note": "Sometimes reported as invasive breast cancer 'of no special type'."
+            },
+            {
+              "label": "Not cancer · risk marker",
+              "title": "Lobular carcinoma in situ (LCIS)",
+              "text": "Abnormal cells in the lobules. Despite the name, LCIS is not considered cancer.",
+              "note": "It is a sign of a higher chance of developing breast cancer in either breast, so closer follow-up may be advised."
+            },
+            {
+              "label": "Invasive",
+              "title": "Invasive lobular carcinoma (ILC)",
+              "text": "Cancer that starts in the lobules and grows into nearby tissue. It is the second most common invasive type.",
+              "note": "It may grow in a line of single cells and can be harder to see on a mammogram than IDC."
+            },
+            {
+              "label": "Less common",
+              "title": "Other types",
+              "text": "Less common types include inflammatory breast cancer, Paget disease of the breast, and special types such as tubular, mucinous and medullary carcinoma. Phyllodes tumours and angiosarcoma are rare.",
+              "note": "See 'Types of Breast Cancer' for details."
+            }
+          ]
+        },
+        {
+          "id": "molecular",
+          "title": "B. Classification by molecular subtype",
+          "diagram": "receptors",
+          "body": "Breast cancer cells are tested for proteins that act as 'receptors' or growth signals. The results describe the cancer's biology and guide treatment.\n- Estrogen receptor (ER) and progesterone receptor (PR): if present, the cancer is 'hormone receptor-positive' and its growth may be fuelled by these hormones. Hormone therapy can then help.\n- HER2: a protein that helps cells grow. Cancers with too much HER2 are 'HER2-positive' and can be treated with drugs that target HER2.\n- Ki-67: a marker of how many cells are dividing. A higher Ki-67 suggests faster growth.",
+          "table": {
+            "columns": [
+              "Subtype",
+              "Typical receptor pattern",
+              "What it usually means"
+            ],
+            "rows": [
+              [
+                "Luminal A",
+                "ER and/or PR positive, HER2 negative, low Ki-67",
+                "Tends to grow more slowly; usually treated with hormone therapy"
+              ],
+              [
+                "Luminal B",
+                "ER and/or PR positive, HER2 positive or negative, higher Ki-67",
+                "Tends to grow faster than luminal A; may need chemotherapy and/or HER2 drugs as well as hormone therapy"
+              ],
+              [
+                "HER2-positive (HER2-enriched)",
+                "HER2 positive, ER and PR negative",
+                "Can grow faster, but HER2-targeted drugs are effective"
+              ],
+              [
+                "Triple-negative",
+                "ER negative, PR negative, HER2 negative",
+                "Hormone therapy and HER2 drugs do not work; treated with chemotherapy and sometimes immunotherapy"
+              ]
+            ]
+          },
+          "advanced": "Molecular subtypes were first defined by studying the pattern of genes active in tumours. In everyday care, doctors usually estimate the subtype from ER, PR, HER2 and Ki-67 testing on the biopsy, and sometimes from multigene tests that help decide whether chemotherapy is likely to help. Labs report HER2 as 0, 1+, 2+ or 3+; '2+' results are checked with another test. Cancers with low HER2 levels ('HER2-low') may be eligible for some newer HER2-directed drugs."
+        },
+        {
+          "id": "grade",
+          "title": "C. Classification by histological grade",
+          "diagram": "grade",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Grade 1",
+              "title": "Well differentiated (low grade)",
+              "text": "Cells look more like normal breast cells and tend to grow slowly."
+            },
+            {
+              "label": "Grade 2",
+              "title": "Moderately differentiated (intermediate grade)",
+              "text": "Cells look somewhat abnormal and grow faster than grade 1."
+            },
+            {
+              "label": "Grade 3",
+              "title": "Poorly differentiated (high grade)",
+              "text": "Cells look very different from normal cells and tend to grow and spread faster."
+            }
+          ],
+          "body": "The grade describes how abnormal the cancer cells look under a microscope and how quickly they seem to be dividing.\n\n> Grade is not the same as stage. Grade describes what the cells look like; stage describes how big the cancer is and how far it has spread. A small, early-stage cancer can still be high grade.",
+          "advanced": "Pathologists commonly use the Nottingham grading system, which scores three features from 1 to 3: how much the cells form normal-looking gland structures (tubule formation), how varied the nuclei look (nuclear pleomorphism), and how many cells are dividing (mitotic count). The total score gives grade 1, 2 or 3."
+        },
+        {
+          "id": "stage",
+          "title": "D. Classification by stage",
+          "diagram": "tnm",
+          "body": "Stage describes the size of the cancer and how far it has spread. It is based on the TNM system:\n- T (tumour): the size of the main tumour and whether it has grown into the skin or chest wall.\n- N (nodes): whether cancer has reached nearby lymph nodes, and how many.\n- M (metastasis): whether cancer has spread to distant parts of the body.\n\nStages run from 0 (non-invasive) to IV (spread to distant organs). The 'Breast Cancer Stages' module explains each stage.\n\n> Clinical stage is based on examination, imaging and biopsy before surgery. Pathological stage uses what is found in the tissue and lymph nodes removed during surgery. The two can differ.",
+          "advanced": "In current staging, the TNM findings are combined with tumour grade and biomarker status (ER, PR and HER2) to give a 'prognostic stage'. This is why two cancers of the same size and spread can be given different stages."
+        }
+      ],
+      "references": [
+        {
+          "title": "Types of Breast Cancer",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/breast-cancer-types"
+        },
+        {
+          "title": "Breast Cancer Hormone Receptor Status",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/understanding-a-breast-cancer-diagnosis/breast-cancer-hormone-receptor-status.html"
+        },
+        {
+          "title": "Breast Cancer HER2 Status",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/understanding-a-breast-cancer-diagnosis/breast-cancer-her2-status.html"
+        },
+        {
+          "title": "Breast Cancer Grades",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/understanding-a-breast-cancer-diagnosis/breast-cancer-grades.html"
+        },
+        {
+          "title": "Tumor Grade",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/about-cancer/diagnosis-staging/diagnosis/tumor-grade"
+        },
+        {
+          "title": "Breast Cancer Stages",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/stages"
+        }
+      ],
+      "related": [
+        "types",
+        "stages",
+        "treatment"
+      ]
+    },
+    {
+      "slug": "types",
+      "order": 4,
+      "title": "Types of Breast Cancer",
+      "category": "Classification",
+      "illustration": "microscope",
+      "readingMinutes": 9,
+      "description": "Invasive ductal and lobular carcinoma, DCIS, inflammatory breast cancer, triple-negative and HER2-positive cancers, Paget disease and breast cancer in men.",
+      "sections": [
+        {
+          "id": "intro",
+          "title": "Why the type matters",
+          "body": "The type of breast cancer is identified from the biopsy. Together with the stage and the receptor results, it helps the care team plan treatment. The descriptions below are general; each person's cancer is different."
+        },
+        {
+          "id": "idc",
+          "title": "Invasive ductal carcinoma (IDC)",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "The most common invasive type",
+              "text": "Cancer that starts in a milk duct and grows into the surrounding breast tissue."
+            },
+            {
+              "label": "Possible symptoms",
+              "title": "Often a lump",
+              "text": "May be found as a lump or on a screening mammogram before any symptoms."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "Imaging and biopsy",
+              "text": "Mammogram and ultrasound, then a core needle biopsy with ER, PR and HER2 testing."
+            },
+            {
+              "label": "Treatment",
+              "title": "Depends on stage and receptors",
+              "text": "Surgery, often radiation, and depending on the cancer, hormone therapy, chemotherapy, HER2-targeted therapy or other medicines."
+            }
+          ]
+        },
+        {
+          "id": "ilc",
+          "title": "Invasive lobular carcinoma (ILC)",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "Starts in the lobules",
+              "text": "Cancer that starts in the milk-producing lobules and spreads into nearby tissue."
+            },
+            {
+              "label": "Characteristics",
+              "title": "Can be harder to see",
+              "text": "Cells often grow in single lines, so it may feel like a thickening rather than a distinct lump and can be harder to see on a mammogram. It is usually hormone receptor-positive."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "Imaging and biopsy",
+              "text": "Mammogram, ultrasound and sometimes MRI, followed by a biopsy."
+            },
+            {
+              "label": "Treatment",
+              "title": "Similar approach to IDC",
+              "text": "Surgery, radiation when indicated, and usually hormone therapy; other treatments depend on the cancer."
+            }
+          ]
+        },
+        {
+          "id": "dcis",
+          "title": "Ductal carcinoma in situ (DCIS)",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "Stage 0, non-invasive",
+              "text": "Abnormal cells inside the milk ducts that have not spread into surrounding tissue."
+            },
+            {
+              "label": "Symptoms",
+              "title": "Usually none",
+              "text": "Most DCIS is found on a screening mammogram, often as small calcium deposits (microcalcifications)."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "Biopsy",
+              "text": "A biopsy of the area seen on the mammogram confirms it."
+            },
+            {
+              "label": "Treatment",
+              "title": "To prevent invasive cancer",
+              "text": "Usually surgery (lumpectomy or mastectomy), often followed by radiation after lumpectomy; hormone therapy may be offered for hormone receptor-positive DCIS."
+            }
+          ]
+        },
+        {
+          "id": "ibc",
+          "title": "Inflammatory breast cancer (IBC)",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "A rare, fast-growing type",
+              "text": "Cancer cells block lymph vessels in the skin of the breast."
+            },
+            {
+              "label": "Symptoms",
+              "title": "Usually no lump",
+              "text": "The breast becomes red, swollen and may look bruised; the skin can look like orange peel. Symptoms often appear quickly, over weeks."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "Biopsy of breast and skin",
+              "text": "Imaging and a biopsy. It can be mistaken for an infection, so symptoms that do not improve need checking."
+            },
+            {
+              "label": "Treatment",
+              "title": "Combined treatment",
+              "text": "Usually chemotherapy first, then surgery (mastectomy) and radiation, with targeted or hormone therapy depending on the cancer."
+            }
+          ]
+        },
+        {
+          "id": "tnbc",
+          "title": "Triple-negative breast cancer (TNBC)",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "ER, PR and HER2 negative",
+              "text": "The cancer cells lack estrogen and progesterone receptors and do not have extra HER2."
+            },
+            {
+              "label": "Characteristics",
+              "title": "Often grows faster",
+              "text": "It is more common in younger women and in people with a BRCA1 mutation."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "Receptor testing",
+              "text": "Found through ER, PR and HER2 testing on the biopsy."
+            },
+            {
+              "label": "Treatment",
+              "title": "Chemotherapy-based",
+              "text": "Hormone therapy and HER2 drugs do not work. Chemotherapy is the main treatment; immunotherapy and other drugs may be used for some patients."
+            }
+          ]
+        },
+        {
+          "id": "her2",
+          "title": "HER2-positive breast cancer",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "Too much HER2",
+              "text": "The cancer cells make too much of the HER2 protein, which helps them grow."
+            },
+            {
+              "label": "Characteristics",
+              "title": "Can grow faster",
+              "text": "It can grow and spread faster than HER2-negative cancer, but it responds to HER2-targeted drugs."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "HER2 testing",
+              "text": "Tested on the biopsy with immunohistochemistry (IHC) and, if unclear, in situ hybridisation (ISH)."
+            },
+            {
+              "label": "Treatment",
+              "title": "HER2-targeted therapy",
+              "text": "HER2-targeted drugs such as trastuzumab are usually combined with chemotherapy, plus surgery and radiation as needed."
+            }
+          ]
+        },
+        {
+          "id": "paget",
+          "title": "Paget disease of the breast",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "Affects the nipple and areola",
+              "text": "A rare type in which cancer cells collect in or around the nipple. Most people with it also have DCIS or invasive cancer elsewhere in the same breast."
+            },
+            {
+              "label": "Symptoms",
+              "title": "Nipple skin changes",
+              "text": "Itching, tingling or redness; flaky, crusty or thickened skin; a flattened nipple; yellowish or bloody discharge. It can be mistaken for eczema."
+            },
+            {
+              "label": "Diagnosis",
+              "title": "Skin biopsy",
+              "text": "A biopsy of the nipple skin, plus breast imaging to look for other tumours."
+            },
+            {
+              "label": "Treatment",
+              "title": "Surgery",
+              "text": "Surgery to remove the nipple and areola with breast-conserving surgery or mastectomy, followed by other treatment depending on what is found."
+            }
+          ]
+        },
+        {
+          "id": "male",
+          "title": "Breast cancer in men",
+          "display": "cards",
+          "items": [
+            {
+              "label": "What it is",
+              "title": "Rare but real",
+              "text": "Men have a small amount of breast tissue behind the nipple, and cancer can develop there. According to the WHO, about 0.5–1% of breast cancers occur in men."
+            },
+            {
+              "label": "Symptoms",
+              "title": "Often a lump near the nipple",
+              "text": "A painless lump, nipple changes or discharge. Men may delay seeking help because they do not expect breast cancer."
+            },
+            {
+              "label": "Risk factors",
+              "title": "Including BRCA2",
+              "text": "Older age, family history, BRCA2 mutations and high estrogen levels are among the risk factors."
+            },
+            {
+              "label": "Treatment",
+              "title": "Similar to women",
+              "text": "Usually mastectomy, with radiation, hormone therapy, chemotherapy or targeted therapy depending on the cancer. Most are hormone receptor-positive."
+            }
+          ]
+        }
+      ],
+      "references": [
+        {
+          "title": "Types of Breast Cancer",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/types-of-breast-cancer.html"
+        },
+        {
+          "title": "Ductal Carcinoma in Situ (DCIS)",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/breast-cancer-types/dcis"
+        },
+        {
+          "title": "Inflammatory Breast Cancer",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/ibc-fact-sheet"
+        },
+        {
+          "title": "Paget Disease of the Breast",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/paget-breast-fact-sheet"
+        },
+        {
+          "title": "Breast Cancer in Men",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/male-breast-cancer"
+        },
+        {
+          "title": "Triple-Negative Breast Cancer",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/types-of-breast-cancer/triple-negative.html"
+        },
+        {
+          "title": "Breast cancer fact sheet",
+          "publisher": "World Health Organization",
+          "url": "https://www.who.int/news-room/fact-sheets/detail/breast-cancer"
+        }
+      ],
+      "related": [
+        "classification",
+        "treatment",
+        "symptoms"
+      ]
+    },
+    {
+      "slug": "stages",
+      "order": 5,
+      "title": "Breast Cancer Stages",
+      "category": "Classification",
+      "illustration": "stages",
+      "readingMinutes": 6,
+      "description": "Stage 0 to stage IV explained with the TNM system, and why clinical and pathological stage can differ.",
+      "sections": [
+        {
+          "id": "why-stage",
+          "title": "What staging tells you",
+          "body": "The stage describes how much cancer there is and where it is in the body. It helps the care team plan treatment and estimate the outlook. Staging uses the results of examination, imaging, biopsy and, after surgery, the tissue removed."
+        },
+        {
+          "id": "tnm",
+          "title": "The TNM system",
+          "diagram": "tnm",
+          "display": "cards",
+          "items": [
+            {
+              "label": "T",
+              "title": "Primary tumour",
+              "text": "How large the main tumour is and whether it has grown into the skin or chest wall. Tis means in situ; T1 to T4 go from small to larger or more extensive."
+            },
+            {
+              "label": "N",
+              "title": "Regional lymph nodes",
+              "text": "Whether cancer has reached nearby lymph nodes (under the arm, near the breastbone or collarbone) and how many. N0 means none."
+            },
+            {
+              "label": "M",
+              "title": "Distant metastasis",
+              "text": "Whether cancer has spread to distant parts of the body. M0 means no distant spread; M1 means it has spread."
+            }
+          ]
+        },
+        {
+          "id": "stage-groups",
+          "title": "Stages 0 to IV",
+          "display": "stages",
+          "items": [
+            {
+              "label": "Stage 0",
+              "title": "Non-invasive",
+              "text": "Abnormal cells have not spread beyond the duct where they started, such as DCIS."
+            },
+            {
+              "label": "Stage I",
+              "title": "Early, small",
+              "text": "A small invasive cancer confined to the breast, or with a very small amount of cancer in nearby lymph nodes (IA and IB)."
+            },
+            {
+              "label": "Stage II",
+              "title": "Early, larger or in nodes",
+              "text": "Cancer in the breast, in a few nearby lymph nodes, or both (IIA and IIB)."
+            },
+            {
+              "label": "Stage III",
+              "title": "Locally advanced",
+              "text": "Cancer has spread to more lymph nodes near the breast, or to the skin of the breast or the chest wall (IIIA, IIIB, IIIC). Inflammatory breast cancer is at least stage IIIB."
+            },
+            {
+              "label": "Stage IV",
+              "title": "Metastatic",
+              "text": "Cancer has spread to distant parts of the body, such as the bones, liver, lungs or brain."
+            }
+          ]
+        },
+        {
+          "id": "clinical-pathological",
+          "title": "Clinical and pathological stage",
+          "body": "- Clinical stage is given first, before any surgery, from the physical exam, imaging and biopsy.\n- Pathological stage is given when surgery is the first treatment, using what is found in the breast tissue and lymph nodes removed.\n\n> The two can differ: surgery sometimes finds more or less cancer than imaging suggested. If chemotherapy or other treatment is given before surgery, the stage after treatment is recorded separately.",
+          "advanced": "Current staging also combines TNM with tumour grade and ER, PR and HER2 status to give a 'prognostic stage'. Two cancers of the same size and spread can therefore have different stages. Stage is one of several factors used to plan treatment."
+        }
+      ],
+      "references": [
+        {
+          "title": "Breast Cancer Stages",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/stages"
+        },
+        {
+          "title": "Breast Cancer Stages",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/understanding-a-breast-cancer-diagnosis/stages-of-breast-cancer.html"
+        },
+        {
+          "title": "Cancer Staging",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/about-cancer/diagnosis-staging/staging"
+        }
+      ],
+      "related": [
+        "classification",
+        "treatment",
+        "diagnosis"
+      ]
+    },
+    {
+      "slug": "risk-factors",
+      "order": 6,
+      "title": "Causes and Risk Factors",
+      "category": "Foundations",
+      "illustration": "dna",
+      "readingMinutes": 7,
+      "description": "Age, family history, BRCA genes, hormones, lifestyle and previous breast conditions: what raises risk, what is uncertain, and what a risk factor really means.",
+      "sections": [
+        {
+          "id": "meaning",
+          "title": "What a risk factor means",
+          "body": "A risk factor is anything that raises the chance of getting a disease.\n\n> Having a risk factor, or even several, does not mean you will get breast cancer. Many people with risk factors never develop it, and many people with breast cancer have no risk factor other than being a woman and getting older."
+        },
+        {
+          "id": "cannot-change",
+          "title": "Established risk factors you cannot change",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Sex",
+              "title": "Being a woman",
+              "text": "Breast cancer is much more common in women than in men."
+            },
+            {
+              "label": "Age",
+              "title": "Getting older",
+              "text": "Risk increases with age; most breast cancers are found in women over 50."
+            },
+            {
+              "label": "Genes",
+              "title": "Inherited gene changes",
+              "text": "Harmful inherited changes in genes such as BRCA1 and BRCA2 greatly increase risk, although some people with these changes never develop cancer."
+            },
+            {
+              "label": "Family",
+              "title": "Family history",
+              "text": "Having close relatives (such as a mother, sister or daughter) with breast or ovarian cancer increases risk."
+            },
+            {
+              "label": "History",
+              "title": "Previous breast cancer or conditions",
+              "text": "A previous breast cancer, and some benign conditions such as atypical hyperplasia or LCIS, increase risk."
+            },
+            {
+              "label": "Hormones",
+              "title": "Reproductive history",
+              "text": "Starting periods early or menopause late means longer exposure to hormones and slightly higher risk."
+            },
+            {
+              "label": "Density",
+              "title": "Dense breasts",
+              "text": "Dense breast tissue on a mammogram is linked to higher risk and can make cancers harder to see."
+            },
+            {
+              "label": "Radiation",
+              "title": "Chest radiation at a young age",
+              "text": "Radiation to the chest, for example for lymphoma in childhood or young adulthood, increases risk."
+            }
+          ]
+        },
+        {
+          "id": "lifestyle",
+          "title": "Lifestyle-related risk factors",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Alcohol",
+              "title": "Drinking alcohol",
+              "text": "Risk rises with the amount of alcohol drunk."
+            },
+            {
+              "label": "Weight",
+              "title": "Overweight after menopause",
+              "text": "Having more body fat after menopause increases risk."
+            },
+            {
+              "label": "Activity",
+              "title": "Physical inactivity",
+              "text": "Regular physical activity is linked to lower risk."
+            },
+            {
+              "label": "Hormones",
+              "title": "Some hormone therapy after menopause",
+              "text": "Combined estrogen-plus-progestin hormone therapy after menopause increases risk."
+            },
+            {
+              "label": "Pregnancy",
+              "title": "Childbearing and breastfeeding",
+              "text": "Not having children, or having a first child after 30, slightly increases risk; breastfeeding may slightly lower it."
+            }
+          ]
+        },
+        {
+          "id": "uncertain",
+          "title": "Factors with uncertain or no proven effect",
+          "body": "Research has not shown a clear link, or results have been mixed, for factors such as:\n- Diet and vitamins, such as fat intake, soy or vitamin D.\n- Some chemicals in the environment.\n- Night shift work.\n\nAntiperspirants, bras, breast implants, and abortion or miscarriage are listed by the American Cancer Society as disproven or controversial risk factors.",
+          "advanced": "Cancer organisations update these lists as new studies are published; the American Cancer Society keeps a separate page on unclear, disproven and controversial risk factors (see references)."
+        },
+        {
+          "id": "genetic-counseling",
+          "title": "When genetic counselling may help",
+          "body": "A doctor may suggest genetic counselling and testing if you have a strong family history of breast or ovarian cancer, a relative with a known BRCA mutation, a personal history of breast cancer at a young age, or breast cancer in a male relative. A genetic counsellor explains what testing can and cannot tell you before you decide."
+        }
+      ],
+      "references": [
+        {
+          "title": "Breast Cancer Risk Factors You Cannot Change",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/risk-and-prevention/breast-cancer-risk-factors-you-cannot-change.html"
+        },
+        {
+          "title": "Lifestyle-related Breast Cancer Risk Factors",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/risk-and-prevention/lifestyle-related-breast-cancer-risk-factors.html"
+        },
+        {
+          "title": "Unclear, Disproven, and Controversial Breast Cancer Risk Factors",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/risk-and-prevention/disproven-or-controversial-breast-cancer-risk-factors.html"
+        },
+        {
+          "title": "Breast Cancer Causes and Risk Factors",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/causes-risk-factors"
+        },
+        {
+          "title": "BRCA Gene Changes: Cancer Risk and Genetic Testing",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/about-cancer/causes-prevention/genetics/brca-fact-sheet"
+        },
+        {
+          "title": "Breast cancer fact sheet",
+          "publisher": "World Health Organization",
+          "url": "https://www.who.int/news-room/fact-sheets/detail/breast-cancer"
+        }
+      ],
+      "related": [
+        "prevention",
+        "symptoms",
+        "diagnosis"
+      ]
+    },
+    {
+      "slug": "symptoms",
+      "order": 7,
+      "title": "Signs and Symptoms",
+      "category": "Diagnosis",
+      "illustration": "symptoms",
+      "readingMinutes": 7,
+      "description": "The breast changes worth getting checked, how to check your own breasts (Touch, Look, Check), and when to see a doctor. Most lumps are not cancer, but new changes should be looked at.",
+      "sections": [
+        {
+          "id": "know-your-normal",
+          "title": "Know what is normal for you",
+          "body": "Breasts change with age, periods, pregnancy and weight. Knowing how your breasts usually look and feel makes it easier to notice something new.\n\n> Most breast lumps and changes are not cancer. But only a doctor, with tests if needed, can tell what a change is."
+        },
+        {
+          "id": "self-exam",
+          "title": "Breast self-examination: Touch, Look, Check",
+          "body": "Checking your own breasts helps you learn what is normal for you, so a new change is easier to notice. There is no special technique and you do not need any training. The most important thing is to check regularly.\n\n> A self-check does not replace screening. Self-exams alone are not enough to find breast cancer early, so keep going to the mammograms recommended for you, and tell your doctor about any change, even if your last mammogram was normal.",
+          "display": "steps",
+          "items": [
+            {
+              "title": "Touch",
+              "text": "Feel your whole breast area, including up to your collarbone and into your armpits.",
+              "note": "Feel for a lump, thickening, or any area that feels different from the rest or from the other side."
+            },
+            {
+              "title": "Look",
+              "text": "Look at your breasts and nipples for any change in size, shape or skin.",
+              "note": "For example puckering or dimpling, redness or a rash, crusting around the nipple, a nipple that has turned inward, or fluid from a nipple."
+            },
+            {
+              "title": "Check",
+              "text": "If you notice anything new or unusual for you, make an appointment with a doctor.",
+              "note": "Most changes are not cancer, but getting a change checked is always better than waiting."
+            }
+          ],
+          "advanced": "When and where: any time that suits you, for example in bed, in the shower or while getting dressed. Breasts can change during periods, pregnancy and menopause, so checking regularly helps you learn your own pattern.\n\nMen can get breast cancer too, so men should also check their chest area and report any lump or nipple change."
+        },
+        {
+          "id": "warning-signs",
+          "title": "Changes to get checked",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Lump",
+              "title": "A new lump or thickening",
+              "text": "In the breast or armpit, often painless. A hard lump with irregular edges is more likely to be cancer, but cancers can also be soft or rounded."
+            },
+            {
+              "label": "Shape",
+              "title": "Change in size or shape",
+              "text": "One breast changes size or shape, or looks different from before."
+            },
+            {
+              "label": "Nipple",
+              "title": "Nipple changes",
+              "text": "A nipple that turns inward (when it did not before), changes position or shape, or has a rash or crusting."
+            },
+            {
+              "label": "Discharge",
+              "title": "Nipple discharge",
+              "text": "Fluid from the nipple that is not breast milk, especially if it is bloody or comes from one breast without squeezing."
+            },
+            {
+              "label": "Skin",
+              "title": "Skin dimpling",
+              "text": "Puckering or dimpling of the skin, sometimes looking like orange peel."
+            },
+            {
+              "label": "Colour",
+              "title": "Redness or swelling",
+              "text": "Redness, darkening, warmth or swelling of all or part of the breast."
+            },
+            {
+              "label": "Armpit",
+              "title": "Changes around the armpit",
+              "text": "A lump or swelling under the arm or around the collarbone."
+            },
+            {
+              "label": "Pain",
+              "title": "Pain that does not go away",
+              "text": "Breast pain alone is rarely a sign of cancer, but pain in one spot that does not go away should be checked."
+            }
+          ]
+        },
+        {
+          "id": "when-to-see",
+          "title": "When to see a healthcare professional",
+          "body": "See a doctor if you notice any new breast change, or a change that does not go away after your next period.\n- Do not wait for a change to become painful.\n- Get urgent care if the breast becomes red, hot and swollen with fever, or if symptoms change quickly over days or weeks.\n- Keep going to screening appointments even if you have no symptoms, because many early cancers cause no symptoms at all."
+        }
+      ],
+      "references": [
+        {
+          "title": "Touch Look Check",
+          "publisher": "Breast Cancer Now",
+          "url": "https://breastcancernow.org/about-breast-cancer/touch-look-check"
+        },
+        {
+          "title": "American Cancer Society Recommendations for the Early Detection of Breast Cancer",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/screening-tests-and-early-detection/american-cancer-society-recommendations-for-the-early-detection-of-breast-cancer.html"
+        },
+        {
+          "title": "Breast Cancer Screening (PDQ®)",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/patient/breast-screening-pdq"
+        },
+        {
+          "title": "Breast Cancer Signs and Symptoms",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/symptoms"
+        },
+        {
+          "title": "Signs and symptoms of breast cancer",
+          "publisher": "Breast Cancer Now",
+          "url": "https://breastcancernow.org/about-breast-cancer/awareness/signs-and-symptoms-of-breast-cancer"
+        },
+        {
+          "title": "Breast cancer fact sheet",
+          "publisher": "World Health Organization",
+          "url": "https://www.who.int/news-room/fact-sheets/detail/breast-cancer"
+        }
+      ],
+      "related": [
+        "diagnosis",
+        "understanding",
+        "types"
+      ]
+    },
+    {
+      "slug": "diagnosis",
+      "order": 8,
+      "title": "Diagnosis and Screening",
+      "category": "Diagnosis",
+      "illustration": "diagnosis",
+      "readingMinutes": 8,
+      "description": "The diagnostic journey step by step, from a clinical breast exam and imaging to biopsy, pathology and biomarker tests, and how screening differs from diagnostic tests.",
+      "sections": [
+        {
+          "id": "screening-vs-diagnostic",
+          "title": "Screening and diagnostic tests",
+          "table": {
+            "columns": [
+              "",
+              "Screening",
+              "Diagnostic"
+            ],
+            "rows": [
+              [
+                "Who",
+                "People with no symptoms",
+                "People with a symptom or an abnormal screening result"
+              ],
+              [
+                "Purpose",
+                "Find cancer early, before it can be felt",
+                "Find out what a specific change is"
+              ],
+              [
+                "Typical test",
+                "Screening mammogram",
+                "Diagnostic mammogram, ultrasound, MRI, biopsy"
+              ],
+              [
+                "Result",
+                "Normal, or called back for more tests",
+                "A diagnosis, or a plan for follow-up"
+              ]
+            ]
+          },
+          "body": "Being called back after a screening mammogram is common and usually does not mean cancer. It means more pictures or tests are needed."
+        },
+        {
+          "id": "journey",
+          "title": "The diagnostic journey",
+          "display": "steps",
+          "items": [
+            {
+              "title": "Clinical breast examination",
+              "text": "A doctor or nurse looks at and feels the breasts and armpits for lumps or other changes.",
+              "note": "Tells the team where to look; it cannot show what a lump is."
+            },
+            {
+              "title": "Mammography",
+              "text": "Low-dose X-ray images of the breast. A diagnostic mammogram takes extra views of the area of concern.",
+              "note": "Shows masses, calcifications and distortions, and is reported with a BI-RADS category."
+            },
+            {
+              "title": "Breast ultrasound",
+              "text": "Sound waves create images of the breast.",
+              "note": "Shows whether a lump is a fluid-filled cyst or solid, and helps guide biopsies."
+            },
+            {
+              "title": "Breast MRI, when indicated",
+              "text": "Magnets and radio waves, usually with contrast dye.",
+              "note": "Used for some high-risk screening, to measure a known cancer, or when other tests are unclear. It is not needed for everyone."
+            },
+            {
+              "title": "Image-guided biopsy",
+              "text": "A needle removes small samples of tissue, guided by ultrasound, mammography (stereotactic) or MRI.",
+              "note": "A biopsy is the only way to confirm whether a change is cancer."
+            },
+            {
+              "title": "Histopathology",
+              "text": "A pathologist examines the tissue under a microscope.",
+              "note": "Confirms whether it is cancer, the type (for example IDC or ILC), whether it is in situ or invasive, and the grade."
+            },
+            {
+              "title": "Biomarker testing",
+              "text": "The tissue is tested for ER, PR and HER2, and sometimes Ki-67 or multigene tests.",
+              "note": "Shows the molecular subtype and which treatments are likely to help."
+            }
+          ]
+        },
+        {
+          "id": "after-diagnosis",
+          "title": "After a diagnosis",
+          "body": "If cancer is found, further tests may be done to see whether it has spread, such as blood tests or scans of the chest, bones or abdomen, depending on the stage and symptoms. A multidisciplinary team of surgeons, oncologists, radiologists and pathologists then plans treatment together with the patient."
+        },
+        {
+          "id": "screening",
+          "title": "About screening",
+          "body": "Screening recommendations, such as the age to start and how often to have mammograms, differ between countries and depend on personal risk. Talk with a doctor about what is right for you, especially if you have a family history or other risk factors.",
+          "advanced": "Screening has benefits (finding cancers earlier, when treatment may be simpler) and limits (false alarms that lead to extra tests, and finding some cancers that would never have caused harm). Organisations weigh these differently, which is why recommendations vary."
+        }
+      ],
+      "references": [
+        {
+          "title": "Breast Cancer Screening",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/screening"
+        },
+        {
+          "title": "Breast Cancer Diagnosis",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/diagnosis"
+        },
+        {
+          "title": "Mammography",
+          "publisher": "RadiologyInfo.org (ACR and RSNA)",
+          "url": "https://www.radiologyinfo.org/en/info/mammo"
+        },
+        {
+          "title": "Breast MRI",
+          "publisher": "RadiologyInfo.org (ACR and RSNA)",
+          "url": "https://www.radiologyinfo.org/en/info/breastmr"
+        },
+        {
+          "title": "Breast Biopsy (Ultrasound-Guided)",
+          "publisher": "RadiologyInfo.org (ACR and RSNA)",
+          "url": "https://www.radiologyinfo.org/en/info/breastbius"
+        }
+      ],
+      "related": [
+        "mammography-birads",
+        "classification",
+        "symptoms"
+      ]
+    },
+    {
+      "slug": "mammography-birads",
+      "order": 9,
+      "title": "Mammography and BI-RADS",
+      "category": "Diagnosis",
+      "illustration": "mammogram",
+      "readingMinutes": 7,
+      "description": "How a mammogram works and an interactive guide to the BI-RADS categories 0 to 6 that radiologists use to report it.",
+      "sections": [
+        {
+          "id": "mammogram",
+          "title": "What a mammogram is",
+          "body": "A mammogram is a low-dose X-ray of the breast. The breast is pressed between two plates for a few seconds to spread the tissue and get a clear picture. Usually two views of each breast are taken.\n- 2D digital mammography takes flat images.\n- Digital breast tomosynthesis (3D mammography) takes many images from different angles to build a layered picture, which can help in dense breasts.\n\nRadiologists look for masses, tiny calcium deposits (microcalcifications), areas where the tissue looks distorted, and differences between the two breasts.",
+          "advanced": "The report also describes breast density: (a) almost entirely fatty, (b) scattered fibroglandular density, (c) heterogeneously dense, or (d) extremely dense. Dense tissue can hide cancers and is itself linked to slightly higher risk, so additional imaging is sometimes discussed."
+        },
+        {
+          "id": "birads",
+          "title": "BI-RADS categories: interactive guide",
+          "display": "birads",
+          "body": "BI-RADS (Breast Imaging Reporting and Data System), developed by the American College of Radiology, is the standard way radiologists summarise a mammogram, ultrasound or breast MRI. Select a category to learn what it means.",
+          "items": [
+            {
+              "label": "0",
+              "title": "Incomplete",
+              "text": "The radiologist needs more imaging, or older mammograms to compare with, before giving a final assessment.",
+              "note": "Usually more mammogram views (spot compression or magnification) and/or an ultrasound, or comparison with previous images."
+            },
+            {
+              "label": "1",
+              "title": "Negative",
+              "text": "Nothing abnormal to report. The breasts look symmetrical, with no masses, distortion or suspicious calcifications.",
+              "note": "Continue routine screening as advised."
+            },
+            {
+              "label": "2",
+              "title": "Benign",
+              "text": "A definitely non-cancerous finding is present, such as benign calcifications, a simple cyst or a lymph node in the breast.",
+              "note": "Continue routine screening as advised."
+            },
+            {
+              "label": "3",
+              "title": "Probably benign",
+              "text": "The finding is very likely benign; the chance of cancer is no more than 2%.",
+              "note": "Repeat imaging in about 6 to 12 months, then regular checks until the area has been stable, usually for at least 2 years."
+            },
+            {
+              "label": "4",
+              "title": "Suspicious",
+              "text": "The finding does not definitely look like cancer, but cancer is possible. Often split into 4A (low), 4B (moderate) and 4C (high) suspicion.",
+              "note": "A biopsy should be considered."
+            },
+            {
+              "label": "5",
+              "title": "Highly suggestive of malignancy",
+              "text": "The finding looks very much like cancer; the chance of cancer is at least 95%.",
+              "note": "A biopsy is very strongly recommended."
+            },
+            {
+              "label": "6",
+              "title": "Known biopsy-proven malignancy",
+              "text": "Cancer has already been confirmed by biopsy. This category is used for imaging done before or during treatment.",
+              "note": "Imaging helps plan treatment and see how well it is working."
+            }
+          ]
+        },
+        {
+          "id": "follow-up",
+          "title": "Why follow-up matters",
+          "body": "A BI-RADS category is only useful if its recommendation is followed. Missing a recommended follow-up scan or biopsy can delay finding a cancer, while following it can often confirm that a finding is harmless.\n\n> BI-RADS is an imaging assessment category, not a cancer stage. A BI-RADS 4 or 5 result does not mean cancer has been diagnosed; only a biopsy can confirm cancer. The AI result on this website is not a BI-RADS assessment."
+        }
+      ],
+      "references": [
+        {
+          "title": "Understanding Your Mammogram Report",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/screening-tests-and-early-detection/mammograms/understanding-your-mammogram-report.html"
+        },
+        {
+          "title": "Breast Imaging Reporting & Data System (BI-RADS)",
+          "publisher": "American College of Radiology",
+          "url": "https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Reporting-and-Data-Systems/BI-RADS"
+        },
+        {
+          "title": "Mammography",
+          "publisher": "RadiologyInfo.org (ACR and RSNA)",
+          "url": "https://www.radiologyinfo.org/en/info/mammo"
+        }
+      ],
+      "related": [
+        "diagnosis",
+        "symptoms",
+        "history"
+      ]
+    },
+    {
+      "slug": "treatment",
+      "order": 10,
+      "title": "Breast Cancer Treatment",
+      "category": "Treatment",
+      "illustration": "treatment",
+      "readingMinutes": 9,
+      "description": "Local treatments (lumpectomy, mastectomy, radiation) and systemic treatments (chemotherapy, hormone therapy, targeted therapy, immunotherapy): what they are, when they may be used, and common side effects.",
+      "sections": [
+        {
+          "id": "how-decided",
+          "title": "How treatment is decided",
+          "body": "Treatment is planned by a team of specialists together with the patient. It depends on:\n- The type of breast cancer and its stage.\n- Biomarkers: ER, PR and HER2 status, and sometimes other tests.\n- The grade of the cancer.\n- The person's age, general health and preferences.\n\n> This information is general education. It does not recommend a treatment for any individual. Only your care team can advise what is right for you."
+        },
+        {
+          "id": "local",
+          "title": "Local treatment",
+          "body": "Local treatments treat the breast and nearby lymph nodes.",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Surgery",
+              "title": "Lumpectomy (breast-conserving surgery)",
+              "text": "Removes the cancer with a margin of normal tissue, keeping most of the breast.",
+              "note": "Usually followed by radiation. Side effects can include pain, swelling and a change in breast shape."
+            },
+            {
+              "label": "Surgery",
+              "title": "Mastectomy",
+              "text": "Removes the whole breast. It may be recommended for large or multiple tumours, or chosen by the patient.",
+              "note": "Breast reconstruction can be done at the same time or later. Recovery usually takes a few weeks."
+            },
+            {
+              "label": "Radiation",
+              "title": "Radiation therapy",
+              "text": "High-energy rays kill cancer cells that may remain in the breast, chest wall or lymph node areas.",
+              "note": "Commonly given after lumpectomy and sometimes after mastectomy. Side effects include tiredness and skin changes like sunburn in the treated area."
+            }
+          ]
+        },
+        {
+          "id": "systemic",
+          "title": "Systemic treatment",
+          "body": "Systemic treatments are medicines that travel through the body. They may be given before surgery (neoadjuvant) to shrink a tumour, after surgery (adjuvant) to lower the chance of the cancer coming back, or for cancer that has spread.",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Medicine",
+              "title": "Chemotherapy",
+              "text": "Drugs that kill fast-dividing cells, given in cycles, usually by drip or by mouth.",
+              "note": "May be considered for higher-risk, HER2-positive or triple-negative cancers. Side effects can include tiredness, hair loss, nausea and a higher risk of infection; most improve after treatment ends."
+            },
+            {
+              "label": "Medicine",
+              "title": "Hormone (endocrine) therapy",
+              "text": "Blocks estrogen or lowers its levels, for example tamoxifen or aromatase inhibitors.",
+              "note": "Used for hormone receptor-positive cancers, often for 5 years or more. Side effects can include hot flushes, joint pain and, with some drugs, bone thinning."
+            },
+            {
+              "label": "Medicine",
+              "title": "Targeted therapy",
+              "text": "Drugs that act on specific features of cancer cells, such as HER2-targeted drugs (for example trastuzumab) or drugs for certain gene changes.",
+              "note": "Used when the cancer has the target. Side effects depend on the drug; some HER2 drugs require heart monitoring."
+            },
+            {
+              "label": "Medicine",
+              "title": "Immunotherapy",
+              "text": "Helps the immune system recognise and attack cancer cells.",
+              "note": "Used for some triple-negative breast cancers. It can cause inflammation in different organs, so it needs monitoring."
+            }
+          ]
+        },
+        {
+          "id": "recovery",
+          "title": "Recovery and support",
+          "body": "Recovery depends on the treatments received. Common considerations include managing tiredness, looking after the skin during radiation, moving the arm and shoulder as advised after surgery, and attending follow-up appointments. Many hospitals offer specialist nurses, physiotherapy and emotional support. Clinical trials may also be an option to discuss with the care team."
+        }
+      ],
+      "references": [
+        {
+          "title": "Breast Cancer Treatment",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/treatment"
+        },
+        {
+          "title": "Treatment of Breast Cancer by Stage",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/treatment/by-stage"
+        },
+        {
+          "title": "Breast Cancer Treatment",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/treatment.html"
+        },
+        {
+          "title": "Breast cancer treatment",
+          "publisher": "Breast Cancer Now",
+          "url": "https://breastcancernow.org/about-breast-cancer/treatment"
+        }
+      ],
+      "related": [
+        "surgery-recovery",
+        "classification",
+        "prevention"
+      ]
+    },
+    {
+      "slug": "surgery-recovery",
+      "order": 11,
+      "title": "Surgery and Recovery",
+      "category": "Treatment",
+      "illustration": "surgery",
+      "readingMinutes": 7,
+      "description": "Lumpectomy and mastectomy, sentinel and axillary lymph node surgery, breast reconstruction, recovering after surgery, lymphedema and follow-up.",
+      "sections": [
+        {
+          "id": "breast-surgery",
+          "title": "Surgery on the breast",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Breast-conserving",
+              "title": "Lumpectomy",
+              "text": "Removes the tumour and a rim of normal tissue (the margin). If cancer cells are found at the edge, a second operation may be needed.",
+              "note": "Usually followed by radiation therapy."
+            },
+            {
+              "label": "Whole breast",
+              "title": "Mastectomy",
+              "text": "Removes the breast. Types include simple (total) mastectomy and skin- or nipple-sparing mastectomy, which can help with reconstruction.",
+              "note": "Some people choose to have both breasts removed; this is discussed with the surgeon."
+            }
+          ]
+        },
+        {
+          "id": "lymph-nodes",
+          "title": "Lymph node surgery",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Smaller operation",
+              "title": "Sentinel lymph node biopsy",
+              "text": "Finds and removes the first one to a few lymph nodes that the cancer would drain to, using a dye and/or a tracer.",
+              "note": "If these are clear, other nodes usually do not need to be removed, which lowers the risk of side effects."
+            },
+            {
+              "label": "Larger operation",
+              "title": "Axillary lymph node surgery (dissection)",
+              "text": "Removes more lymph nodes from the armpit.",
+              "note": "May be needed when cancer is found in several nodes. It has a higher risk of arm swelling (lymphedema)."
+            }
+          ]
+        },
+        {
+          "id": "reconstruction",
+          "title": "Breast reconstruction",
+          "body": "Reconstruction rebuilds the shape of the breast after mastectomy. It can be done at the same time as the mastectomy or later.\n- Implant-based reconstruction uses a silicone or saline implant.\n- Tissue-flap (autologous) reconstruction uses tissue from another part of the body, such as the abdomen.\n- Nipple reconstruction or tattooing can follow.\n\nSome people choose not to have reconstruction and have a flat closure or use an external prosthesis. All of these are valid choices."
+        },
+        {
+          "id": "recovery",
+          "title": "Recovering after surgery",
+          "body": "- Most people go home the same day or after a short stay.\n- Drains may be left in for a few days to remove fluid.\n- Pain usually improves over days to weeks; follow the team's advice on pain relief.\n- Arm and shoulder exercises, as advised by the team or a physiotherapist, help restore movement.\n- Contact the care team about fever, increasing redness, swelling or fluid at the wound."
+        },
+        {
+          "id": "lymphedema",
+          "title": "Lymphedema awareness",
+          "body": "Lymphedema is long-lasting swelling caused by lymph fluid building up when lymph flow is disrupted, for example after lymph node surgery or radiation. It can develop months or years after treatment.\n- Watch for swelling, heaviness or tightness in the arm, hand, breast or chest on the treated side.\n- Report it early: treatment such as specialised massage, compression and exercise works best when started early."
+        },
+        {
+          "id": "follow-up",
+          "title": "Follow-up appointments",
+          "body": "After treatment, regular follow-up visits check recovery, manage side effects and look for signs of the cancer returning. They usually include a physical exam and regular mammograms of the remaining breast tissue. Report any new symptoms between visits."
+        }
+      ],
+      "references": [
+        {
+          "title": "Breast Cancer Surgery",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/treatment/surgery"
+        },
+        {
+          "title": "Breast Reconstruction After Mastectomy",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/reconstruction-fact-sheet"
+        },
+        {
+          "title": "Lymphedema and Cancer",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/about-cancer/treatment/side-effects/lymphedema"
+        },
+        {
+          "title": "Breast cancer treatment",
+          "publisher": "Breast Cancer Now",
+          "url": "https://breastcancernow.org/about-breast-cancer/treatment"
+        }
+      ],
+      "related": [
+        "treatment",
+        "prevention",
+        "stages"
+      ]
+    },
+    {
+      "slug": "prevention",
+      "order": 12,
+      "title": "Prevention and Survivorship",
+      "category": "Living well",
+      "illustration": "survivorship",
+      "readingMinutes": 6,
+      "description": "Ways to lower risk, screening and genetic counselling discussions, follow-up care, emotional health and support during and after breast cancer.",
+      "sections": [
+        {
+          "id": "risk-reduction",
+          "title": "Lowering risk",
+          "body": "There is no sure way to prevent breast cancer, and no lifestyle change can completely remove the risk. Some choices are linked to lower risk:\n- Staying physically active.\n- Keeping a healthy weight, especially after menopause.\n- Limiting or avoiding alcohol.\n- Breastfeeding, if possible.\n- Discussing the risks and benefits of hormone therapy after menopause with a doctor.\n\nThese also benefit general health.",
+          "advanced": "For people at high risk, for example those with a BRCA mutation or a strong family history, doctors may discuss closer screening (sometimes including MRI), medicines that lower risk, or risk-reducing surgery. These decisions are personal and made with specialists."
+        },
+        {
+          "id": "screening-genetics",
+          "title": "Screening and genetic counselling",
+          "body": "Talk with a doctor about when to start screening and how often, based on your age, country guidelines and personal risk. If you have a strong family history of breast or ovarian cancer, ask whether genetic counselling is right for you."
+        },
+        {
+          "id": "survivorship",
+          "title": "Life after treatment",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Follow-up",
+              "title": "Follow-up care",
+              "text": "Regular check-ups and mammograms, and continuing medicines such as hormone therapy as prescribed."
+            },
+            {
+              "label": "Body",
+              "title": "Managing long-term effects",
+              "text": "Tiredness, lymphedema, menopause symptoms, fertility questions and bone health can be addressed with the care team."
+            },
+            {
+              "label": "Mind",
+              "title": "Emotional health",
+              "text": "Fear of recurrence, anxiety and low mood are common. Counselling and support groups can help; ask your team for referrals."
+            },
+            {
+              "label": "People",
+              "title": "Family support",
+              "text": "Partners, children and friends may need information and support too. Being open about what helps can make a difference."
+            },
+            {
+              "label": "Resources",
+              "title": "Support organisations",
+              "text": "Organisations such as Breast Cancer Now, the American Cancer Society and the National Cancer Institute provide information and support services."
+            }
+          ]
+        }
+      ],
+      "references": [
+        {
+          "title": "Can I Lower My Risk of Breast Cancer?",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/risk-and-prevention/can-i-lower-my-risk.html"
+        },
+        {
+          "title": "Genetic Counseling and Testing for Breast Cancer Risk",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/risk-and-prevention/genetic-testing.html"
+        },
+        {
+          "title": "Living with Breast Cancer & Survivorship",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/breast-cancer-survivorship"
+        },
+        {
+          "title": "Life after treatment",
+          "publisher": "Breast Cancer Now",
+          "url": "https://breastcancernow.org/about-breast-cancer/life-after-treatment"
+        }
+      ],
+      "related": [
+        "risk-factors",
+        "surgery-recovery",
+        "symptoms"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Adjuvant therapy",
+      "definition": "Treatment given after surgery to lower the chance of the cancer coming back."
+    },
+    {
+      "term": "Aromatase inhibitor",
+      "definition": "A type of hormone therapy that lowers estrogen levels, mainly used after menopause."
+    },
+    {
+      "term": "Axillary lymph nodes",
+      "definition": "Lymph nodes in the armpit, where breast cancer most often spreads first."
+    },
+    {
+      "term": "Benign",
+      "definition": "Not cancer. A benign lump does not spread to other parts of the body."
+    },
+    {
+      "term": "BI-RADS",
+      "definition": "Breast Imaging Reporting and Data System: categories 0 to 6 that radiologists use to summarise breast imaging results."
+    },
+    {
+      "term": "Biopsy",
+      "definition": "Removing a small sample of tissue to examine under a microscope. It is the only way to confirm cancer."
+    },
+    {
+      "term": "BRCA1 and BRCA2",
+      "definition": "Genes that help repair DNA. Inherited harmful changes in them greatly increase the risk of breast and ovarian cancer."
+    },
+    {
+      "term": "Breast self-examination",
+      "definition": "Checking your own breasts by touch and by looking, to learn what is normal for you and notice changes. It does not replace screening."
+    },
+    {
+      "term": "Calcifications",
+      "definition": "Small calcium deposits seen on a mammogram. Most are benign; some patterns need further tests."
+    },
+    {
+      "term": "Chemotherapy",
+      "definition": "Medicines that kill fast-dividing cells, including cancer cells."
+    },
+    {
+      "term": "Cyst",
+      "definition": "A fluid-filled sac. Breast cysts are common and usually benign."
+    },
+    {
+      "term": "DCIS",
+      "definition": "Ductal carcinoma in situ: abnormal cells inside the milk ducts that have not spread into surrounding tissue (stage 0)."
+    },
+    {
+      "term": "Dense breasts",
+      "definition": "Breasts with more glandular and connective tissue than fat. Density can make mammograms harder to read."
+    },
+    {
+      "term": "Duct",
+      "definition": "A thin tube that carries milk from the lobules to the nipple."
+    },
+    {
+      "term": "ER (estrogen receptor)",
+      "definition": "A protein on some breast cancer cells that lets estrogen fuel their growth."
+    },
+    {
+      "term": "Fibroadenoma",
+      "definition": "A common benign, solid breast lump, most often in younger women."
+    },
+    {
+      "term": "Grade",
+      "definition": "How abnormal cancer cells look under the microscope (grade 1 to 3). Not the same as stage."
+    },
+    {
+      "term": "HER2",
+      "definition": "A protein that helps cells grow. Cancers with too much HER2 are called HER2-positive."
+    },
+    {
+      "term": "Hormone therapy",
+      "definition": "Treatment that blocks hormones or lowers their levels to slow hormone receptor-positive cancer."
+    },
+    {
+      "term": "IDC",
+      "definition": "Invasive ductal carcinoma: cancer that starts in a duct and grows into nearby breast tissue."
+    },
+    {
+      "term": "ILC",
+      "definition": "Invasive lobular carcinoma: cancer that starts in a lobule and grows into nearby breast tissue."
+    },
+    {
+      "term": "Immunotherapy",
+      "definition": "Treatment that helps the immune system fight cancer."
+    },
+    {
+      "term": "In situ",
+      "definition": "Abnormal cells that are still in the place where they started and have not invaded nearby tissue."
+    },
+    {
+      "term": "Invasive",
+      "definition": "Cancer that has grown beyond where it started into surrounding tissue."
+    },
+    {
+      "term": "Ki-67",
+      "definition": "A marker of how many cancer cells are dividing; higher values suggest faster growth."
+    },
+    {
+      "term": "LCIS",
+      "definition": "Lobular carcinoma in situ: abnormal cells in the lobules. Not cancer, but a sign of higher risk."
+    },
+    {
+      "term": "Lobule",
+      "definition": "A gland in the breast that can make milk."
+    },
+    {
+      "term": "Lumpectomy",
+      "definition": "Surgery that removes the tumour and a margin of normal tissue, keeping most of the breast."
+    },
+    {
+      "term": "Lymphedema",
+      "definition": "Long-lasting swelling caused by lymph fluid building up, for example after lymph node surgery."
+    },
+    {
+      "term": "Malignant",
+      "definition": "Cancerous: able to invade nearby tissue and spread."
+    },
+    {
+      "term": "Mammogram",
+      "definition": "A low-dose X-ray picture of the breast."
+    },
+    {
+      "term": "Mastectomy",
+      "definition": "Surgery to remove the whole breast."
+    },
+    {
+      "term": "Metastasis",
+      "definition": "Spread of cancer from where it started to another part of the body."
+    },
+    {
+      "term": "Neoadjuvant therapy",
+      "definition": "Treatment given before surgery, for example to shrink a tumour."
+    },
+    {
+      "term": "PR (progesterone receptor)",
+      "definition": "A protein on some breast cancer cells that responds to progesterone."
+    },
+    {
+      "term": "Radiation therapy",
+      "definition": "High-energy rays used to kill cancer cells in a specific area."
+    },
+    {
+      "term": "Sentinel lymph node",
+      "definition": "The first lymph node(s) that cancer would drain to from a tumour."
+    },
+    {
+      "term": "Stage",
+      "definition": "How large a cancer is and how far it has spread (stage 0 to IV)."
+    },
+    {
+      "term": "Targeted therapy",
+      "definition": "Medicines that act on specific features of cancer cells, such as HER2."
+    },
+    {
+      "term": "TNM",
+      "definition": "The staging system based on Tumour size, lymph Nodes and Metastasis."
+    },
+    {
+      "term": "Tomosynthesis",
+      "definition": "3D mammography: many low-dose images taken from different angles to build a layered picture."
+    },
+    {
+      "term": "Triple-negative",
+      "definition": "Breast cancer that is negative for ER, PR and HER2."
+    }
+  ],
+  "faqs": [
+    {
+      "question": "Is every breast lump cancer?",
+      "answer": "No. Most breast lumps are not cancer; many are cysts or fibroadenomas. Any new or changing lump should still be checked by a doctor, because only tests can tell for sure."
+    },
+    {
+      "question": "How do I check my own breasts?",
+      "answer": "Touch your whole breast area up to your collarbone and armpits, look for changes in size, shape, skin or nipples, and see a doctor about anything new. There is no special technique; checking regularly is what matters. It does not replace mammograms."
+    },
+    {
+      "question": "Can men get breast cancer?",
+      "answer": "Yes. It is rare, but men have breast tissue and can develop breast cancer. Men should also get a new lump or nipple change checked."
+    },
+    {
+      "question": "What is the difference between grade and stage?",
+      "answer": "Grade describes how abnormal the cancer cells look under the microscope. Stage describes how big the cancer is and how far it has spread. They are measured separately."
+    },
+    {
+      "question": "What does triple-negative mean?",
+      "answer": "The cancer cells do not have estrogen or progesterone receptors and do not have too much HER2. Hormone therapy and HER2 drugs do not work for it, so chemotherapy is usually the main treatment."
+    },
+    {
+      "question": "Does a BI-RADS 4 or 5 result mean I have cancer?",
+      "answer": "No. BI-RADS describes how suspicious a finding looks on imaging. Only a biopsy can confirm cancer. A BI-RADS 4 or 5 result means a biopsy is recommended."
+    },
+    {
+      "question": "If I have a risk factor, will I get breast cancer?",
+      "answer": "Not necessarily. Many people with risk factors never get breast cancer, and many who do have no risk factor besides being a woman and getting older."
+    },
+    {
+      "question": "Can I prevent breast cancer completely?",
+      "answer": "No. Staying active, keeping a healthy weight and limiting alcohol are linked to lower risk, but nothing removes the risk completely. Screening helps find cancer early."
+    },
+    {
+      "question": "Is the AI result on this website a diagnosis?",
+      "answer": "No. It is an estimate for research and education only. Only a doctor, with imaging, a biopsy and pathology, can diagnose breast cancer."
+    },
+    {
+      "question": "Where can I find reliable information?",
+      "answer": "Trusted sources include the World Health Organization, the National Cancer Institute, the American Cancer Society, Breast Cancer Now and RadiologyInfo.org. Each module here lists its references."
+    }
+  ]
+}

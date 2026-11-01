@@ -7,28 +7,30 @@ import { APP_ROUTES } from '../config/appRoutes'
 </script>
 
 <template>
-  <PageHeader
-    eyebrow="How It Works"
-    title="From upload to result in a few steps"
-    subtitle="Here is exactly what happens when you analyse a mammogram on BreastCare."
-  />
+  <div class="light-boxes">
+    <PageHeader
+      eyebrow="How It Works"
+      title="From upload to result in a few steps"
+      subtitle="Here is exactly what happens when you analyse a mammogram on BreastCare."
+    />
 
-  <section class="container section">
-    <StepList :steps="HOW_IT_WORKS_STEPS" />
-  </section>
+    <section class="container section">
+      <StepList :steps="HOW_IT_WORKS_STEPS" />
+    </section>
 
-  <section class="container section">
-    <div v-reveal class="cta dark-box">
-      <div>
-        <h2>Ready to try it?</h2>
-        <p>Upload a PNG or JPG mammogram and see the model's estimate in a few seconds.</p>
+    <section class="container section">
+      <div v-reveal class="cta dark-box">
+        <div>
+          <h2>Ready to try it?</h2>
+          <p>Upload a PNG or JPG mammogram and see the model's estimate in a few seconds.</p>
+        </div>
+        <div class="actions">
+          <RouterLink :to="APP_ROUTES.analysis" class="btn btn-primary">Start Analysis <AppIcon name="arrow-right" :size="18" /></RouterLink>
+          <RouterLink to="/faq" class="btn btn-outline">Read the FAQ</RouterLink>
+        </div>
       </div>
-      <div class="actions">
-        <RouterLink :to="APP_ROUTES.analysis" class="btn btn-primary">Start Analysis <AppIcon name="arrow-right" :size="18" /></RouterLink>
-        <RouterLink to="/faq" class="btn btn-outline">Read the FAQ</RouterLink>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </template>
 
 <style scoped>

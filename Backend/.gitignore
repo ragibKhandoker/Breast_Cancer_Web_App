@@ -35,5 +35,10 @@ build/
 ### Secrets ###
 .env
 
+### F20 encrypted database backups (backup.dir defaults to Backend/backups) ###
+backups/
+*.bcbk
+*.bcbk.part
+
 ### Vue build output (npm run build in Frontend) ###
 src/main/resources/static/

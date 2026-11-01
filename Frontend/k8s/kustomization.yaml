@@ -1,0 +1,6 @@
+# The website's Deployment and Service. Included by Backend/k8s/base, which holds the rest of the app.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml

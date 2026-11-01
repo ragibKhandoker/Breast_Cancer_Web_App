@@ -27,4 +27,9 @@ public enum AuditEventType {
     BACKUP_CREATED,
     BACKUP_DELETED,
     BACKUP_RESTORE_TESTED,
+    /** An administrator created or edited a Knowledge Hub module (or approved a surgeon's content). */
+    KNOWLEDGE_MODULE_SAVED,
+    KNOWLEDGE_MODULE_PUBLISHED,
+    KNOWLEDGE_MODULE_UNPUBLISHED,
+    KNOWLEDGE_SUBMISSION_REVIEWED,
 }

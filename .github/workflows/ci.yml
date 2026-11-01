@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: blockchain
+        working-directory: Backend/blockchain
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -93,7 +93,11 @@ jobs:
       packages: write
     strategy:
       matrix:
-        component: [backend, frontend]
+        include:
+          - component: backend
+            context: Backend
+          - component: frontend
+            context: Frontend
     steps:
       - uses: actions/checkout@v4
       - name: Image name (GHCR needs lower case)
@@ -111,8 +115,7 @@ jobs:
       # Build once and load it locally, so it is scanned before anything is published.
       - uses: docker/build-push-action@v6
         with:
-          context: .
-          file: docker/${{ matrix.component }}/Dockerfile
+          context: ${{ matrix.context }}
           build-args: VERSION=${{ steps.meta.outputs.version }}
           tags: ${{ steps.name.outputs.image }}:scan
           load: true
@@ -133,8 +136,7 @@ jobs:
       - if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: docker/${{ matrix.component }}/Dockerfile
+          context: ${{ matrix.context }}
           build-args: VERSION=${{ steps.meta.outputs.version }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
