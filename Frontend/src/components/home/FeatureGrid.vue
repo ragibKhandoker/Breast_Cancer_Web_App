@@ -6,7 +6,7 @@ const features = [
   { icon: 'microscope', title: 'Mammography Prediction', text: 'Upload a PNG or JPG mammogram and get an AI estimate in seconds.', to: '/prediction' },
   { icon: 'file-text', title: 'Analysis History', text: 'Look back at past analyses with their images, or delete them.', to: '/history' },
   { icon: 'book', title: 'Step-by-Step Guide', text: 'See exactly what happens from upload to result.', to: '/how-it-works' },
-  { icon: 'mail', title: 'Ask the Team', text: 'Questions or feedback? Send us a message.', to: '/contact' },
+  { icon: 'file-text', title: 'Blogs', text: 'Breast cancer news, research and events.', to: '/blogs' },
 ]
 </script>
 

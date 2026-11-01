@@ -33,10 +33,10 @@ export const FAQS = [
   {
     question: 'Do I need an account?',
     answer:
-      'Not at the moment. Login and registration are being built as a separate feature. Once they are ready, your history will be private to your account.',
+      'Yes, to upload a mammogram: create a free patient account, and your history stays private to it. You can read the Knowledge Hub and find a Breast Surgeon without an account.',
   },
   {
     question: 'How can I contact the team?',
-    answer: 'Use the Contact page to send us a message. We read every message that comes in through the form.',
+    answer: 'Our email, phone and address are on the Blogs page. Signed-in patients and doctors can also write to the team from Messages.',
   },
 ]

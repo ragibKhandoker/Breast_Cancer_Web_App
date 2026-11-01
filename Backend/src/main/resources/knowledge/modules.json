@@ -1492,7 +1492,7 @@
       "related": [
         "treatment",
         "prevention",
-        "stages"
+        "breast-implants"
       ],
       "video": {
         "youtubeId": "OCShXskGW20",
@@ -1585,6 +1585,180 @@
         "title": "Survivorship Series: Moving Forward After Breast Cancer",
         "channel": "Dana-Farber Cancer Institute"
       }
+    },
+    {
+      "slug": "breast-implants",
+      "order": 13,
+      "title": "Breast Augmentation and Implants",
+      "category": "Treatment",
+      "illustration": "implants",
+      "readingMinutes": 8,
+      "description": "What breast implants are, cosmetic augmentation and implants after mastectomy, possible complications, BIA-ALCL, and how to get mammograms when you have implants.",
+      "sections": [
+        {
+          "id": "what-are",
+          "title": "What breast implants are",
+          "body": "Breast implants are medical devices placed under the breast tissue or under the chest muscle. They are used to:\n- increase breast size or change breast shape (augmentation),\n- rebuild the breast after a mastectomy or an injury (reconstruction),\n- replace earlier implants (revision surgery).\n\nTwo types are approved in the United States: saline-filled and silicone gel-filled. Both have a silicone outer shell. They come in different sizes, shapes, shell thicknesses and surface textures.",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Fill",
+              "title": "Saline implants",
+              "text": "A silicone shell filled with sterile salt water.",
+              "note": "If the shell leaks, the saline is absorbed by the body and the implant loses its size or shape (deflation)."
+            },
+            {
+              "label": "Fill",
+              "title": "Silicone gel implants",
+              "text": "A silicone shell filled with silicone gel.",
+              "note": "A leak often causes no symptoms (a \"silent\" rupture), so it may only be found with imaging."
+            },
+            {
+              "label": "Surface",
+              "title": "Smooth or textured",
+              "text": "The shell surface can be smooth or textured.",
+              "note": "The risk of BIA-ALCL, a rare lymphoma, is higher with textured implants (see below)."
+            }
+          ]
+        },
+        {
+          "id": "augmentation",
+          "title": "Breast augmentation: things to consider",
+          "body": "Breast augmentation is surgery to make the breasts larger or change their shape with implants. Before deciding, the US Food and Drug Administration (FDA) asks people to know that:\n- Breast implants are not lifetime devices. The longer you have them, the more likely complications become.\n- You should expect to need more surgery (reoperation) at some point.\n- Even when there are complications, removing or replacing implants may not be covered by insurance.\n- In the US, the surgeon goes through a patient decision checklist with you, and you both sign it before surgery.\n\n> Choose a qualified surgeon, ask about every risk, and take time to decide."
+        },
+        {
+          "id": "reconstruction",
+          "title": "Implants after a mastectomy",
+          "body": "Implants are one way to rebuild a breast after a mastectomy. Reconstruction can be done at the same time as the mastectomy (immediate) or months or even years later (delayed).",
+          "display": "steps",
+          "items": [
+            {
+              "title": "Tissue expander",
+              "text": "Often a tissue expander is placed first under the skin or chest muscle and filled with saline or air over several visits.",
+              "note": "This slowly makes room for the implant."
+            },
+            {
+              "title": "Implant",
+              "text": "When the tissue has stretched and healed, usually 2 to 6 months later, the expander is replaced with a saline or silicone implant.",
+              "note": "Sometimes the implant is placed during the mastectomy itself, without an expander."
+            },
+            {
+              "title": "Other choices",
+              "text": "Reconstruction can also use your own tissue (a flap), a mix of both, or no reconstruction at all.",
+              "note": "See \"Surgery and Recovery\" for these options."
+            }
+          ]
+        },
+        {
+          "id": "risks",
+          "title": "Possible complications",
+          "body": "The FDA lists these among the complications that can happen with breast implants. Smoking, obesity and diabetes can raise the chance of problems.",
+          "display": "cards",
+          "items": [
+            {
+              "label": "Common",
+              "title": "Capsular contracture",
+              "text": "Hard scar tissue forms around the implant and squeezes it.",
+              "note": "Severe cases can cause pain or a changed shape and may need another operation."
+            },
+            {
+              "label": "Common",
+              "title": "Rupture or deflation",
+              "text": "The shell can tear or leak. Saline implants deflate; silicone ruptures are often silent.",
+              "note": "MRI is the most effective way to find a silent rupture; ultrasound is an acceptable alternative if there are no symptoms."
+            },
+            {
+              "label": "Other",
+              "title": "Other local problems",
+              "text": "Breast pain, infection, fluid or blood collecting around the implant, uneven breasts, wrinkling, or the implant moving out of place."
+            },
+            {
+              "label": "Systemic",
+              "title": "\"Breast implant illness\"",
+              "text": "Some people report tiredness, memory problems, rash, \"brain fog\" or joint pain.",
+              "note": "These symptoms are poorly understood. Some people report that they improved after the implants were removed."
+            }
+          ]
+        },
+        {
+          "id": "cancer",
+          "title": "Implants and cancer",
+          "body": "Breast implants have not been shown to increase the risk of breast cancer, or the chance of breast cancer coming back.\n\nThey have been linked to a rare cancer of the immune system called breast implant-associated anaplastic large cell lymphoma (BIA-ALCL). It is not breast cancer; it is a type of non-Hodgkin lymphoma.\n- The risk is low, and higher with textured implants than with smooth ones. The filling (saline or silicone) does not appear to matter.\n- The main signs are swelling that does not go away, a lump, or pain around the implant, often years after surgery.\n- Treatment is removal of the implant and the scar capsule around it; some people also need chemotherapy or radiation.\n\n> Swelling, a lump or pain around an implant, even years later, should be checked by a doctor.",
+          "advanced": "The FDA has also received reports of other rare cancers, such as squamous cell carcinoma and other lymphomas, in the scar capsule around breast implants, and has issued safety communications about them."
+        },
+        {
+          "id": "screening",
+          "title": "Mammograms when you have implants",
+          "body": "If you have breast implants you should still have regular screening mammograms, unless all breast tissue was removed by a double mastectomy before the implants were placed.",
+          "display": "steps",
+          "items": [
+            {
+              "title": "Tell them when you book",
+              "text": "Say that you have implants, so you can check that the centre is experienced in imaging people with implants."
+            },
+            {
+              "title": "Tell the technologist",
+              "text": "Tell the person taking your mammogram about your implants before it starts."
+            },
+            {
+              "title": "Extra pictures",
+              "text": "Usually four extra images are taken (two of each breast), with the implant gently pushed back so more breast tissue can be seen.",
+              "note": "Implants can hide some breast tissue on a mammogram. Rupture during a mammogram is very rare."
+            },
+            {
+              "title": "After reconstruction",
+              "text": "A breast rebuilt after a mastectomy usually does not need mammograms; it is checked by physical exams. The other breast still has mammograms."
+            }
+          ]
+        }
+      ],
+      "references": [
+        {
+          "title": "Breast Implants",
+          "publisher": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/medical-devices/implants-and-prosthetics/breast-implants"
+        },
+        {
+          "title": "Risks and Complications of Breast Implants",
+          "publisher": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/medical-devices/breast-implants/risks-and-complications-breast-implants"
+        },
+        {
+          "title": "Things to Consider Before Getting Breast Implants",
+          "publisher": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/medical-devices/breast-implants/things-consider-getting-breast-implants"
+        },
+        {
+          "title": "Questions and Answers about Breast Implant-Associated Anaplastic Large Cell Lymphoma (BIA-ALCL)",
+          "publisher": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/medical-devices/breast-implants/questions-and-answers-about-breast-implant-associated-anaplastic-large-cell-lymphoma-bia-alcl"
+        },
+        {
+          "title": "Mammograms for Women with Breast Implants",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/screening-tests-and-early-detection/mammograms/mammograms-for-women-with-breast-implants.html"
+        },
+        {
+          "title": "Unclear, Disproven, and Controversial Breast Cancer Risk Factors",
+          "publisher": "American Cancer Society",
+          "url": "https://www.cancer.org/cancer/types/breast-cancer/risk-and-prevention/disproven-or-controversial-breast-cancer-risk-factors.html"
+        },
+        {
+          "title": "Breast Reconstruction After Mastectomy",
+          "publisher": "National Cancer Institute",
+          "url": "https://www.cancer.gov/types/breast/reconstruction-fact-sheet"
+        }
+      ],
+      "related": [
+        "surgery-recovery",
+        "mammography-birads",
+        "treatment"
+      ],
+      "video": {
+        "youtubeId": "rtKs625vxQg",
+        "title": "FDA proposes \"black-box warning\" for breast implants",
+        "channel": "CBS Mornings"
+      }
     }
   ],
   "glossary": [
@@ -1609,6 +1783,10 @@
       "definition": "Breast Imaging Reporting and Data System: categories 0 to 6 that radiologists use to summarise breast imaging results."
     },
     {
+      "term": "BIA-ALCL",
+      "definition": "Breast implant-associated anaplastic large cell lymphoma: a rare immune system cancer linked to implants, more often textured ones. It is not breast cancer."
+    },
+    {
       "term": "Biopsy",
       "definition": "Removing a small sample of tissue to examine under a microscope. It is the only way to confirm cancer."
     },
@@ -1617,12 +1795,24 @@
       "definition": "Genes that help repair DNA. Inherited harmful changes in them greatly increase the risk of breast and ovarian cancer."
     },
     {
+      "term": "Breast augmentation",
+      "definition": "Surgery to make the breasts larger or change their shape, usually with implants."
+    },
+    {
+      "term": "Breast implant",
+      "definition": "A saline- or silicone gel-filled device with a silicone shell, placed under the breast tissue or chest muscle."
+    },
+    {
       "term": "Breast self-examination",
       "definition": "Checking your own breasts by touch and by looking, to learn what is normal for you and notice changes. It does not replace screening."
     },
     {
       "term": "Calcifications",
       "definition": "Small calcium deposits seen on a mammogram. Most are benign; some patterns need further tests."
+    },
+    {
+      "term": "Capsular contracture",
+      "definition": "Hard scar tissue that forms around a breast implant and squeezes it."
     },
     {
       "term": "Chemotherapy",
@@ -1745,6 +1935,10 @@
       "definition": "Medicines that act on specific features of cancer cells, such as HER2."
     },
     {
+      "term": "Tissue expander",
+      "definition": "A temporary device placed after mastectomy and filled over several visits to make room for an implant."
+    },
+    {
       "term": "TNM",
       "definition": "The staging system based on Tumour size, lymph Nodes and Metastasis."
     },
@@ -1797,6 +1991,10 @@
     {
       "question": "Where can I find reliable information?",
       "answer": "Trusted sources include the World Health Organization, the National Cancer Institute, the American Cancer Society, Breast Cancer Now and RadiologyInfo.org. Each module here lists its references."
+    },
+    {
+      "question": "Do breast implants cause breast cancer?",
+      "answer": "Breast implants have not been shown to increase breast cancer risk. They are linked to a rare lymphoma called BIA-ALCL, so swelling, a lump or pain around an implant should be checked. People with implants should still have screening mammograms."
     }
   ]
 }

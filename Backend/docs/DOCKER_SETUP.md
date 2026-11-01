@@ -43,7 +43,7 @@ Each image is built from its own folder. `Backend/.dockerignore` and `Frontend/.
 ## What the images do and do not contain
 
 - No secrets.
-  - The backend reads `MONGODB_URI`, `JWT_SECRET`, `BACKUP_ENCRYPTION_KEY` and `ANTHROPIC_API_KEY` from the environment (`env_file: .env` in `Backend/docker-compose.yml`).
+  - The backend reads `MONGODB_URI`, `JWT_SECRET`, `BACKUP_ENCRYPTION_KEY` and `GEMINI_API_KEY` from the environment (`env_file: .env` in `Backend/docker-compose.yml`).
   - Check an image with `docker history --no-trunc <image>` and `docker run --rm --entrypoint env <image>`.
 - Non-root users: 10001 for the backend, 101 (nginx) for the frontend.
 - Both services run with `no-new-privileges` and all Linux capabilities dropped.

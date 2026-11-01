@@ -18,7 +18,7 @@ export const DIAGRAMS = [
   { value: 'tnm', label: 'TNM (interactive)' },
 ]
 export const ILLUSTRATIONS = ['book', 'history', 'cells', 'classification', 'microscope', 'stages', 'dna', 'symptoms',
-  'diagnosis', 'mammogram', 'treatment', 'surgery', 'survivorship']
+  'diagnosis', 'mammogram', 'treatment', 'surgery', 'survivorship', 'implants']
 
 export function blankSection() {
   return { id: '', title: '', body: '', advanced: '', display: '', items: [], diagram: '', imageFileId: '', imageCaption: '', tableColumns: '', tableRows: '' }

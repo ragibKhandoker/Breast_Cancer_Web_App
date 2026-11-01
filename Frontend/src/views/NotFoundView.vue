@@ -10,7 +10,7 @@ import PinkRibbon from '../components/common/PinkRibbon.vue'
     <p class="muted">The page <code>{{ $route.fullPath }}</code> does not exist or has moved.</p>
     <div class="actions">
       <RouterLink to="/" class="btn btn-primary">Back to Home</RouterLink>
-      <RouterLink to="/contact" class="btn btn-outline">Contact Us</RouterLink>
+      <RouterLink to="/blogs" class="btn btn-outline">Contact Us</RouterLink>
     </div>
   </section>
 </template>

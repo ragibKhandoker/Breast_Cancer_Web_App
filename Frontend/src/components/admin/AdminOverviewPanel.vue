@@ -42,7 +42,7 @@ const todo = computed(() => {
   return [
     { icon: 'users', label: 'Patients to verify', value: s.pendingVerification, note: `${s.verified} verified · ${s.rejected} need correction`, tab: 'verification' },
     { icon: 'shield-check', label: 'Password requests', value: s.openPasswordRequests, note: 'from “Forgot password?”', tab: 'passwords' },
-    { icon: 'mail', label: 'Unread messages', value: data.value.messages.unread, note: 'from the Contact page', tab: 'messages' },
+    { icon: 'mail', label: 'Unread messages', value: data.value.messages.unread, note: 'from the old Contact form', tab: 'messages' },
   ]
 })
 

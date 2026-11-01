@@ -33,7 +33,7 @@ const TABS = [
   { id: 'users', label: 'Users & roles', icon: 'users', component: AdminUsersPanel, group: 'Accounts',
     title: 'Users & roles', subtitle: 'Create accounts, change roles, disable or reset access.' },
   { id: 'messages', label: 'Messages', icon: 'mail', component: AdminMessagesPanel, group: 'Website', count: 'unread',
-    title: 'Messages', subtitle: 'What visitors sent through the Contact page.' },
+    title: 'Messages', subtitle: 'Messages visitors sent through the old Contact form.' },
   { id: 'settings', label: 'Website settings', icon: 'file-text', component: AdminSettingsPanel, group: 'Website',
     title: 'Website settings', subtitle: 'Contact details, social links and the announcement bar.' },
   { id: 'knowledge', label: 'Knowledge Hub', icon: 'book', component: AdminKnowledgePanel, group: 'Website',

@@ -15,11 +15,13 @@ import org.springframework.stereotype.Service;
 import com.cancerweb.backend.dto.ChatMessage;
 import com.cancerweb.backend.dto.ChatResponse;
 import com.cancerweb.backend.exception.ChatRateLimitException;
+import com.cancerweb.backend.exception.ChatUnavailableException;
 
 /**
  * The breast health chatbot for signed-in users. Checks the conversation the browser sends, limits how often one
  * user can ask, and answers anything that is not about breast cancer or breast health with a fixed message.
- * Conversations are not stored or logged.
+ * Answers come from Google Gemini when it is set up and working, otherwise from BreastCare's own Knowledge Hub
+ * ({@link KnowledgeChatbot}), so the chatbot works without any API key. Conversations are not stored or logged.
  */
 @Service
 public class ChatService {
@@ -34,23 +36,35 @@ public class ChatService {
     static final Duration WINDOW = Duration.ofMinutes(10);
 
     private final BreastHealthAssistant assistant;
+    private final KnowledgeChatbot knowledgeBot;
     private final Clock clock;
     private final Map<String, Deque<Instant>> recent = new ConcurrentHashMap<>();
 
     @Autowired
-    public ChatService(BreastHealthAssistant assistant) {
-        this(assistant, Clock.systemUTC());
+    public ChatService(BreastHealthAssistant assistant, KnowledgeChatbot knowledgeBot) {
+        this(assistant, knowledgeBot, Clock.systemUTC());
     }
 
-    ChatService(BreastHealthAssistant assistant, Clock clock) {
+    ChatService(BreastHealthAssistant assistant, KnowledgeChatbot knowledgeBot, Clock clock) {
         this.assistant = assistant;
+        this.knowledgeBot = knowledgeBot;
         this.clock = clock;
     }
 
     public ChatResponse reply(String userId, List<ChatMessage> messages) {
         validate(messages);
         throttle(userId);
-        BreastHealthAssistant.Answer answer = assistant.ask(messages);
+        BreastHealthAssistant.Answer answer = null;
+        if (assistant.available()) {
+            try {
+                answer = assistant.ask(messages);
+            } catch (ChatUnavailableException e) {
+                // Gemini is down, out of quota or rejected the key: answer from the Knowledge Hub instead.
+            }
+        }
+        if (answer == null) {
+            answer = knowledgeBot.ask(messages);
+        }
         if (!answer.onTopic() || answer.answer() == null || answer.answer().isBlank()) {
             return new ChatResponse(OFF_TOPIC_REPLY, false);
         }

@@ -5,7 +5,7 @@ const items = [
   { icon: 'shield-check', label: 'AI-Powered Prediction', to: '/prediction' },
   { icon: 'book', label: 'How It Works', to: '/how-it-works' },
   { icon: 'heart', label: 'Answers to Your Questions', to: '/faq' },
-  { icon: 'mail', label: 'Get in Touch', to: '/contact' },
+  { icon: 'file-text', label: 'Blogs & News', to: '/blogs' },
 ]
 </script>
 

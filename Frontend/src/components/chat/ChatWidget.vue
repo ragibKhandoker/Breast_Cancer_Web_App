@@ -5,6 +5,12 @@ import { authState, onSessionEnd } from '../../auth/authStore'
 import { APP_ROUTES } from '../../config/appRoutes'
 import { sendChat, chatError, MAX_MESSAGE_CHARS } from '../../services/chatService'
 
+// Site paths in an answer ("Read more: … (/knowledge/symptoms#self-exam)") become links; everything else stays text.
+const SITE_PATH = /(\/(?:knowledge|prediction|history|breast-surgeons|blogs|faq)(?:[\/#][\w\-\/#]*)?)/g
+function linkParts(text) {
+  return text.split(SITE_PATH).map((piece, i) => (i % 2 === 1 ? { to: piece } : { text: piece })).filter((p) => p.to || p.text)
+}
+
 // The breast health assistant: a button in the corner of every page that opens a chat panel. Answers come from
 // POST /api/chat, which only answers breast cancer and breast health questions. The conversation lives only in
 // this component: it is not saved in the browser and is cleared when the user signs out.
@@ -31,6 +37,15 @@ async function scrollToEnd() {
   if (list.value) list.value.scrollTop = list.value.scrollHeight
 }
 
+// A new answer: show it from its first line (long answers would otherwise open at their end).
+async function scrollToLatestAnswer() {
+  await nextTick()
+  const box = list.value
+  const last = box ? [...box.querySelectorAll('.bubble.assistant:not(.typing)')].at(-1) : null
+  if (!box || !last) return scrollToEnd()
+  box.scrollTop = Math.max(0, last.offsetTop - box.offsetTop - 12)
+}
+
 async function toggle() {
   open.value = !open.value
   if (open.value) {
@@ -47,9 +62,11 @@ async function send(text = draft.value) {
   draft.value = ''
   sending.value = true
   scrollToEnd()
+  let answered = false
   try {
     const { reply, onTopic } = await sendChat([...messages.value])
     messages.value.push({ role: 'assistant', content: reply, offTopic: !onTopic })
+    answered = true
   } catch (err) {
     // Take the question back so the conversation stays user/assistant pairs, and let the user resend it.
     messages.value.pop()
@@ -57,7 +74,8 @@ async function send(text = draft.value) {
     error.value = chatError(err)
   } finally {
     sending.value = false
-    scrollToEnd()
+    if (answered) scrollToLatestAnswer()
+    else scrollToEnd()
     nextTick(() => input.value?.focus())
   }
 }
@@ -84,7 +102,8 @@ onBeforeUnmount(stop)
 
 <template>
   <div class="chat">
-    <section v-if="open" id="breast-health-chat" class="panel" role="dialog" aria-label="Breast health assistant">
+    <!-- data-lenis-prevent: the page's smooth scrolling must not take the wheel or touch scroll inside the chat. -->
+    <section v-if="open" id="breast-health-chat" class="panel" role="dialog" aria-label="Breast health assistant" data-lenis-prevent>
       <header class="head">
         <div>
           <h2>BreastCare Assistant</h2>
@@ -109,7 +128,8 @@ onBeforeUnmount(stop)
             :key="i"
             class="bubble"
             :class="[m.role, { 'off-topic': m.offTopic }]"
-          >{{ m.content }}</p>
+          ><template v-for="(part, j) in m.role === 'assistant' ? linkParts(m.content) : [{ text: m.content }]" :key="j"><RouterLink
+            v-if="part.to" :to="part.to" class="chat-link" @click="open = false">{{ part.to }}</RouterLink><template v-else>{{ part.text }}</template></template></p>
           <p v-if="sending" class="bubble assistant typing">Typing…</p>
         </div>
 
@@ -164,14 +184,18 @@ onBeforeUnmount(stop)
   border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--border);
   box-shadow: 0 24px 60px rgba(42, 22, 80, 0.25);
 }
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; padding: 0.9rem 1rem; background: var(--pink-600); color: #fff; }
+.head { flex-shrink: 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; padding: 0.9rem 1rem; background: var(--pink-600); color: #fff; }
 .head h2 { margin: 0; font-size: 1.05rem; }
 .head p { margin: 0.15rem 0 0; font-size: 0.78rem; opacity: 0.9; }
 .head-actions { display: flex; align-items: center; gap: 0.4rem; }
 .text-btn { border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 999px; background: transparent; color: #fff; padding: 0.2rem 0.7rem; font: 600 0.78rem 'Poppins', sans-serif; cursor: pointer; }
 .close { border: 0; background: transparent; color: #fff; font-size: 1.6rem; line-height: 1; cursor: pointer; padding: 0 0.2rem; }
 
-.messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; background: var(--pink-50); }
+/* min-height: 0 lets this list shrink inside the panel and scroll, instead of pushing the composer out of view. */
+.messages {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem;
+  display: flex; flex-direction: column; gap: 0.6rem; background: var(--pink-50);
+}
 .welcome p { margin: 0 0 0.75rem; font-size: 0.9rem; color: var(--text); line-height: 1.5; }
 .suggestions { display: grid; gap: 0.4rem; }
 .suggestions button {
@@ -179,14 +203,15 @@ onBeforeUnmount(stop)
   color: var(--purple-900); font: 500 0.85rem 'Poppins', sans-serif; cursor: pointer;
 }
 .suggestions button:hover { border-color: var(--pink-300); }
-.bubble { max-width: 85%; margin: 0; padding: 0.6rem 0.8rem; border-radius: 14px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.bubble { flex-shrink: 0; max-width: 85%; margin: 0; padding: 0.6rem 0.8rem; border-radius: 14px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .bubble.user { align-self: flex-end; background: var(--pink-600); color: #fff; border-bottom-right-radius: 4px; }
 .bubble.assistant { align-self: flex-start; background: #fff; color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 .bubble.off-topic { background: var(--warn-bg); color: var(--warn-text); border-color: #f5c98a; }
 .typing { color: var(--muted) !important; font-style: italic; }
+.chat-link { color: var(--pink-600); font-weight: 600; text-decoration: underline; }
 
 .error { margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem; background: #fdecea; }
-.composer { display: flex; gap: 0.5rem; align-items: flex-end; padding: 0.75rem; border-top: 1px solid var(--border); }
+.composer { flex-shrink: 0; display: flex; gap: 0.5rem; align-items: flex-end; padding: 0.75rem; border-top: 1px solid var(--border); }
 .composer textarea {
   flex: 1; resize: none; padding: 0.55rem 0.7rem; border: 1.5px solid var(--border); border-radius: 12px;
   font: 400 0.9rem 'Poppins', sans-serif; color: var(--text);

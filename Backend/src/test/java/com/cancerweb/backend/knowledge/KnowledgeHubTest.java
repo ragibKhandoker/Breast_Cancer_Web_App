@@ -38,7 +38,7 @@ class KnowledgeHubTest extends IntegrationTest {
     private static final byte[] PNG = { (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0 };
     private static final byte[] PDF = "%PDF-1.4\n% test certificate\n".getBytes(StandardCharsets.US_ASCII);
     private static final List<String> SLUGS = List.of("history", "understanding", "classification", "types", "stages",
-            "risk-factors", "symptoms", "diagnosis", "mammography-birads", "treatment", "surgery-recovery", "prevention");
+            "risk-factors", "symptoms", "diagnosis", "mammography-birads", "treatment", "surgery-recovery", "prevention", "breast-implants");
 
     @Autowired
     private KnowledgeService knowledge;
@@ -67,7 +67,7 @@ class KnowledgeHubTest extends IntegrationTest {
     // ----- Public reading -----
 
     @Test
-    void visitorsReadTwelvePublishedModulesWithoutSigningIn() throws Exception {
+    void visitorsReadAllPublishedModulesWithoutSigningIn() throws Exception {
         String list = mvc.perform(get("/api/knowledge/modules"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -89,7 +89,7 @@ class KnowledgeHubTest extends IntegrationTest {
     @Test
     void everySeededModuleHasHttpsReferencesAndValidRelatedLinks() {
         List<KnowledgeModule> modules = knowledge.listPublished();
-        assertThat(modules).hasSize(12);
+        assertThat(modules).hasSize(13);
         for (KnowledgeModule m : modules) {
             assertThat(m.references()).as(m.slug()).isNotEmpty();
             assertThat(m.references()).allSatisfy(r -> assertThat(r.url()).startsWith("https://"));

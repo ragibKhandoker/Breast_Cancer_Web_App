@@ -395,11 +395,12 @@ onBeforeUnmount(() => {
   border-radius: 50%; background: var(--pink-100); color: var(--pink-600);
 }
 .drop-title { margin: 0; font-weight: 600; font-size: 1.05rem; color: var(--purple-900); }
-.drop-or { margin: 0.15rem 0 0.35rem; color: var(--muted); font-size: 0.9rem; }
-.rules { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.85rem; }
+.drop-or { margin: 0.15rem 0 0.35rem; color: var(--muted); font-size: 0.95rem; }
+.rules { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.9rem; }
 
 /* Selected file */
-.selected { display: grid; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.92); }
+/* A dark card like the rest of the panel, so its light text (file name, status, buttons) stays readable. */
+.selected { display: grid; gap: 1rem; padding: 1rem; }
 @media (min-width: 560px) and (max-width: 899px) {
   .selected { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; }
 }
@@ -433,7 +434,9 @@ onBeforeUnmount(() => {
 .consent input:disabled, .consent input:disabled + label { cursor: not-allowed; }
 .field-error { min-height: 0; margin-top: -0.4rem; }
 .upload-btn { justify-content: center; width: 100%; }
-.hint { margin: -0.4rem 0 0; color: var(--purple-900); font-size: 0.85rem; text-align: center; }
+/* Waiting for a file or consent: still clearly readable on the dark panel, just not pink. */
+.upload-btn:disabled { opacity: 1; background: #3b3058; border-color: #5c4f80; color: #e6e0f3; }
+.hint { margin: -0.4rem 0 0; color: var(--purple-900); font-size: 0.9rem; text-align: center; }
 
 .alert { display: grid; gap: 0.6rem; margin: 0; }
 .alert p { display: flex; align-items: flex-start; gap: 0.45rem; margin: 0; }

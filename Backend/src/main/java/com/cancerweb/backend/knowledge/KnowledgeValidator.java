@@ -29,7 +29,7 @@ final class KnowledgeValidator {
     static final Set<String> DISPLAYS = Set.of("timeline", "cards", "steps", "stages", "birads");
     static final Set<String> DIAGRAMS = Set.of("anatomy", "cell-growth", "receptors", "grade", "tnm");
     static final Set<String> ILLUSTRATIONS = Set.of("history", "cells", "classification", "microscope", "stages", "dna",
-            "symptoms", "diagnosis", "mammogram", "treatment", "surgery", "survivorship", "book");
+            "symptoms", "diagnosis", "mammogram", "treatment", "surgery", "survivorship", "implants", "book");
 
     static final int MAX_SECTIONS = 30;
     static final int MAX_ITEMS = 40;

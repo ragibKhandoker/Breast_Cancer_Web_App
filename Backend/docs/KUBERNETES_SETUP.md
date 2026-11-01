@@ -38,7 +38,7 @@ kubectl -n $NS create secret generic breastcare-secrets \
   --from-literal=MONGODB_URI='mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/breast_cancer' \
   --from-literal=JWT_SECRET="$(openssl rand -base64 48)" \
   --from-literal=BACKUP_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
-  --from-literal=ANTHROPIC_API_KEY='sk-ant-...'
+  --from-literal=GEMINI_API_KEY='AIza...'
 
 # 2. Everything else.
 kubectl apply -k Backend/k8s/overlays/test
@@ -94,7 +94,7 @@ Without a domain, test with a port-forward: `kubectl -n $NS port-forward svc/bre
 - **NetworkPolicy:** everything is denied by default.
   - frontend ← ingress controller; frontend → backend
   - backend ← ingress controller and frontend
-  - backend → internet on 27017 (Atlas) and 443 (Claude API), and an optional in-cluster blockchain node (namespace `blockchain`, port 8545)
+  - backend → internet on 27017 (Atlas) and 443 (Google Gemini API), and an optional in-cluster blockchain node (namespace `blockchain`, port 8545)
   - DNS for all pods
 
 ## Health checks

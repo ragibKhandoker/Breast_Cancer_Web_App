@@ -284,12 +284,13 @@ Prediction JSON is the same as before, plus `ownerId`, `view` (CC/MLO), `thresho
 
 A chat button in the bottom-right corner of every page opens the *BreastCare Assistant* ([`components/chat/ChatWidget.vue`](Frontend/src/components/chat/ChatWidget.vue)). It answers questions about breast cancer, breast health and using BreastCare. Anything else gets a fixed "I can only help with breast cancer and breast health" reply.
 
-- **Setup**: set `ANTHROPIC_API_KEY` (from the Claude Console) in the backend's environment and restart it. The key stays on the server; the browser never sees it. Optional: `CHAT_MODEL` (default `claude-opus-5-5`). Without a key the rest of the site works and the chatbot says it is not set up (`503`).
+- **Works without any key**: by default the chatbot answers from BreastCare's own Knowledge Hub ([`KnowledgeChatbot.java`](Backend/src/main/java/com/cancerweb/backend/service/KnowledgeChatbot.java)): it finds the best-matching lesson section, FAQ or glossary entry (BM25-style word matching, with Bangla/Banglish words mapped to English) and replies with that text and a "Read more" link. Every answer is text the site already publishes, with its references. Questions about anything else get the fixed off-topic reply.
+- **Optional AI (Google Gemini)**: put `GEMINI_API_KEY=...` (from aistudio.google.com/apikey) in `Backend/.env` and restart. Gemini then writes the answers; if it is unavailable (no free tier for the project, quota, network) the Knowledge Hub answers instead, and after a key or billing error Gemini is not tried again for 10 minutes. Optional: `CHAT_MODEL` (default `gemini-3.8-flash`).
 - **API**: `POST /api/chat` with `{ "messages": [{ "role": "user", "content": "..." }, ...] }` (alternating, ending with the user's question) returns `{ "reply", "onTopic" }`. It is for signed-in users of any role, and each user may send 20 questions per 10 minutes (counted in memory). Messages are limited to 2000 characters and conversations to 20 messages; the widget drops the oldest messages to stay within that.
-- **How the topic rule works**: [`BreastHealthAssistant.java`](Backend/src/main/java/com/cancerweb/backend/service/BreastHealthAssistant.java) sends the conversation to Claude with a system prompt that defines the allowed topics. It asks for a JSON answer (structured output): `{ onTopic, answer }`. When `onTopic` is false, [`ChatService.java`](Backend/src/main/java/com/cancerweb/backend/service/ChatService.java) replies with its own fixed message, so an off-topic answer can never reach the user. The prompt also tells Claude not to diagnose, to send warning signs to a doctor, and to answer in the user's language (English, Bangla or Banglish).
-- **Safety refusals**: requests use `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`), so if Claude's safety classifier declines, Anthropic retries on its recommended fallback model. If it is still declined, the user gets a short "can't help with that" reply.
-- **Privacy**: conversations are not saved on the server or in the browser, and are not logged. The widget forgets them on sign-out. The text is sent to Anthropic's API to get the answer.
-- **Cost**: every question is one Claude API call, billed to the key's account. The per-user limit above caps it.
+- **How the topic rule works**: [`BreastHealthAssistant.java`](Backend/src/main/java/com/cancerweb/backend/service/BreastHealthAssistant.java) sends the conversation to Gemini's `generateContent` with a system instruction that defines the allowed topics, and asks for a JSON answer with a fixed schema: `{ onTopic, answer }`. When `onTopic` is false, [`ChatService.java`](Backend/src/main/java/com/cancerweb/backend/service/ChatService.java) replies with its own fixed message, so an off-topic answer can never reach the user. The instruction also tells Gemini not to diagnose, to send warning signs to a doctor, and to answer in the user's language (English, Bangla or Banglish).
+- **Safety blocks**: if Gemini's own safety checks block a question or an answer, the user gets a short "can't help with that" reply.
+- **Privacy**: conversations are not saved on the server or in the browser, and are not logged. The widget forgets them on sign-out. The text is sent to Google's Gemini API to get the answer.
+- **Cost**: every question is one Gemini API call, billed to (or counted against the free tier of) the key's Google account. The per-user limit above caps it.
 
 ## Architecture and deployment
 
@@ -297,7 +298,7 @@ A chat button in the bottom-right corner of every page opens the *BreastCare Ass
  Browser ──HTTPS──► Ingress (TLS) ──/──────────► frontend: nginx serving the Vue site ──/api──┐
                                    ──/api──────► backend: Spring Boot API + ONNX models ◄─────┘
                                                    │            │                    │
-                                     MongoDB Atlas (external)   Claude API (chat)    private/test chain (AuditIntegrity)
+                                     MongoDB Atlas (external)   Gemini API (chat)    private/test chain (AuditIntegrity)
 ```
 
 - **Frontend** (Vue 3, Vite) is served by nginx, which proxies `/api` to the backend.
@@ -355,9 +356,9 @@ A patient becomes a doctor's patient when the doctor **confirms** (or completes)
 
 ## Breast Cancer Knowledge Hub
 
-`/knowledge` is a public learning center with 12 modules (history, understanding, classification, types, stages,
+`/knowledge` is a public learning center with 13 modules (history, understanding, classification, types, stages,
 risk factors, symptoms, diagnosis and screening, mammography and BI-RADS, treatment, surgery and recovery, prevention
-and survivorship). Each lesson has a table of contents, reading progress, "Learn more" sections for advanced detail,
+and survivorship, breast augmentation and implants). Each lesson has a table of contents, reading progress, "Learn more" sections for advanced detail,
 drawn diagrams (breast anatomy, cell growth, receptors, grade, interactive TNM), an interactive BI-RADS 0–6 guide,
 references, related lessons and previous/next links. The hub page adds search, categories, "Continue learning",
 bookmarks, a glossary and an FAQ.

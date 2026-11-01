@@ -12,7 +12,7 @@ const quickLinks = [
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/blogs', label: 'Blogs' },
 ]
 const legalLinks = [
   { to: '/privacy', label: 'Privacy Policy' },

@@ -120,18 +120,18 @@ h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--purple-900); }
 h3 { margin: 0; font-size: 1.02rem; color: var(--purple-900); }
 .intro { margin: 0 0 1rem; line-height: 1.55; }
 .test { padding: 1rem 0 0.5rem; border-top: 1px solid var(--border); }
-.test-meta { margin: 0.25rem 0 0.75rem; font-size: 0.85rem; color: var(--muted); line-height: 1.45; }
+.test-meta { margin: 0.25rem 0 0.75rem; font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 0.75rem; margin: 0 0 1rem; padding: 0; list-style: none; }
 .tile { display: grid; gap: 0.15rem; padding: 0.85rem 0.9rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
-.tile-name { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+.tile-name { font-size: 0.86rem; font-weight: 600; color: var(--muted); }
 .tile-value { font-size: 1.5rem; font-weight: 700; color: var(--purple-900); }
-.tile-ci { font-size: 0.78rem; color: var(--muted); }
-.tile-plain { margin-top: 0.25rem; font-size: 0.82rem; line-height: 1.4; color: var(--text); }
+.tile-ci { font-size: 0.84rem; color: var(--muted); }
+.tile-plain { margin-top: 0.25rem; font-size: 0.88rem; line-height: 1.45; color: var(--text); }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 caption { text-align: left; font-weight: 600; color: var(--purple-900); margin-bottom: 0.4rem; }
 th, td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
-thead th { color: var(--muted); font-size: 0.8rem; }
+thead th { color: var(--muted); font-size: 0.86rem; }
 tr.highlight { background: var(--pink-50); }
 .you { font-weight: 400; color: var(--pink-600); }
 .limits { margin: 1rem 0 0; font-size: 0.88rem; line-height: 1.55; }

@@ -113,7 +113,7 @@ onMounted(async () => {
 
       <section class="card form-stack">
         <h3>Contact details</h3>
-        <p class="muted small">Shown in the footer and on the Contact page. Leave a field empty to hide it.</p>
+        <p class="muted small">Shown in the footer and on the Blogs page. Leave a field empty to hide it.</p>
         <div class="form-field">
           <label for="set-phone">Phone</label>
           <input id="set-phone" v-model="form.contactPhone" type="tel" maxlength="20" :aria-invalid="!!errors.contactPhone" />

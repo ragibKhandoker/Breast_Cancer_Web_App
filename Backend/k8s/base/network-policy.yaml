@@ -52,7 +52,7 @@ spec:
         - port: 8080
 ---
 # Backend: reachable from the ingress controller and the website (and the kubelet's probes, which are not
-# subject to NetworkPolicy); may call out to MongoDB Atlas, the Claude API and an optional blockchain node only.
+# subject to NetworkPolicy); may call out to MongoDB Atlas, the Google Gemini API and an optional blockchain node only.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

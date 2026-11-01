@@ -9,17 +9,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.cancerweb.backend.exception.ChatUnavailableException;
 import com.cancerweb.backend.model.Role;
+import com.cancerweb.backend.knowledge.KnowledgeService;
 import com.cancerweb.backend.service.BreastHealthAssistant;
 import com.cancerweb.backend.service.ChatService;
 import com.cancerweb.backend.support.IntegrationTest;
 
 import jakarta.servlet.http.Cookie;
 
-/** POST /api/chat with Claude replaced by a mock: no API key or network needed. */
+/** POST /api/chat with Gemini replaced by a mock: no API key or network needed. */
 class ChatApiTest extends IntegrationTest {
 
     private static final String QUESTION = "{\"messages\":[{\"role\":\"user\",\"content\":\"What are early signs of breast cancer?\"}]}";
@@ -27,9 +29,13 @@ class ChatApiTest extends IntegrationTest {
     @MockitoBean
     private BreastHealthAssistant assistant;
 
+    @Autowired
+    private KnowledgeService knowledge;
+
     @Test
     void signedInUsersGetAnswersAndOffTopicQuestionsAreDeclined() throws Exception {
         Cookie patient = signedIn(Role.PATIENT, "chat@example.com");
+        when(assistant.available()).thenReturn(true);
         when(assistant.ask(anyList())).thenReturn(new BreastHealthAssistant.Answer(true, "A new lump, skin dimpling..."));
         mvc.perform(withJson(post("/api/chat"), QUESTION).cookie(patient))
                 .andExpect(status().isOk())
@@ -55,7 +61,8 @@ class ChatApiTest extends IntegrationTest {
     }
 
     @Test
-    void badConversationsAre400AndAnUnavailableChatbotIs503() throws Exception {
+    void badConversationsAre400AndAFailingGeminiFallsBackToTheKnowledgeHub() throws Exception {
+        knowledge.seed();
         Cookie patient = signedIn(Role.PATIENT, "chat@example.com");
         mvc.perform(withJson(post("/api/chat"), "{\"messages\":[]}").cookie(patient))
                 .andExpect(status().isBadRequest())
@@ -63,9 +70,11 @@ class ChatApiTest extends IntegrationTest {
         mvc.perform(withJson(post("/api/chat"), "null").cookie(patient)).andExpect(status().isBadRequest());
         verify(assistant, never()).ask(anyList());
 
-        when(assistant.ask(anyList())).thenThrow(new ChatUnavailableException("The chatbot is not set up on this server yet.", null));
+        when(assistant.available()).thenReturn(true);
+        when(assistant.ask(anyList())).thenThrow(new ChatUnavailableException("The assistant is not available right now.", null));
         mvc.perform(withJson(post("/api/chat"), QUESTION).cookie(patient))
-                .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.detail").value("The chatbot is not set up on this server yet."));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.onTopic").value(true))
+                .andExpect(jsonPath("$.reply").value(org.hamcrest.Matchers.containsString("Knowledge Hub")));
     }
 }

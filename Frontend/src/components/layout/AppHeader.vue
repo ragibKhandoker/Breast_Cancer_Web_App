@@ -25,7 +25,7 @@ const links = computed(() => [
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/about', label: 'About' },
   { to: '/faq', label: 'FAQ' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/blogs', label: 'Blogs' },
 ])
 
 const menuOpen = ref(false)
@@ -115,13 +115,13 @@ async function logout() {
 
 <style scoped>
 .header { position: sticky; top: 0; z-index: 10; background: rgba(255, 244, 249, 0.92); backdrop-filter: blur(8px); }
-/* A little wider than page content: logo, seven links and the account buttons need about 1180px. */
-.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 76px; max-width: 1280px; }
+/* Wider than page content: the logo, eight links and a signed-in user's buttons need about 1300px. */
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 76px; max-width: 1440px; }
 .header-inner > :first-child { flex: none; }
 
 .nav { display: flex; gap: 0.1rem; min-width: 0; }
 .nav-link {
-  padding: 0.4rem 0.7rem; border-radius: 999px; border: 2px solid transparent; white-space: nowrap;
+  padding: 0.4rem 0.6rem; border-radius: 999px; border: 2px solid transparent; white-space: nowrap;
   color: var(--purple-900); font-weight: 500; font-size: 0.93rem;
 }
 .nav-link:hover { color: var(--pink-600); }
@@ -140,17 +140,17 @@ async function logout() {
 .msg-btn:hover, .msg-btn.router-link-active { border-color: var(--pink-300); color: var(--pink-600); }
 .msg-btn:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }
 
-/* Narrower desktops: tighter links so everything stays on one line. */
-@media (max-width: 1320px) and (min-width: 1201px) {
+/* Narrower desktops: tighter links so everything stays on one line without touching the buttons. */
+@media (max-width: 1500px) and (min-width: 1361px) {
   .header-inner { gap: 0.75rem; }
-  .nav-link { padding: 0.4rem 0.55rem; font-size: 0.9rem; }
+  .nav-link { padding: 0.4rem 0.45rem; font-size: 0.88rem; }
   .auth { padding: 0.5rem 1rem; }
 }
-/* Below that the links move into the menu button. */
-@media (max-width: 1200px) {
+/* Below that the links move into the menu button, so they can never run under the account buttons. */
+@media (max-width: 1360px) {
   .menu-btn { display: block; }
   .nav {
-    display: none; position: absolute; top: 76px; left: 0; right: 0;
+    display: none; position: absolute; top: 76px; left: 0; right: 0; max-height: calc(100vh - 76px); overflow-y: auto;
     flex-direction: column; gap: 0.25rem; padding: 1rem 20px 1.25rem; background: #fff; box-shadow: var(--shadow);
   }
   .nav.open { display: flex; }

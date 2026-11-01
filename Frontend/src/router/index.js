@@ -5,7 +5,7 @@ import HistoryView from '../views/HistoryView.vue'
 import AboutView from '../views/AboutView.vue'
 import HowItWorksView from '../views/HowItWorksView.vue'
 import FaqView from '../views/FaqView.vue'
-import ContactView from '../views/ContactView.vue'
+import BlogsView from '../views/BlogsView.vue'
 import ComingSoonView from '../views/ComingSoonView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import LoginView from '../views/LoginView.vue'
@@ -40,7 +40,8 @@ export const routes = [
   { path: '/about', name: 'about', component: AboutView, meta: { title: 'About' } },
   { path: '/how-it-works', name: 'how-it-works', component: HowItWorksView, meta: { title: 'How It Works' } },
   { path: '/faq', name: 'faq', component: FaqView, meta: { title: 'FAQ' } },
-  { path: '/contact', name: 'contact', component: ContactView, meta: { title: 'Contact' } },
+  { path: '/blogs', name: 'blogs', component: BlogsView, meta: { title: 'Blogs' } },
+  { path: '/contact', redirect: '/blogs' }, // older links: contact details are on the Blogs page
   { path: APP_ROUTES.login, name: 'login', component: LoginView, meta: { title: 'Login', guestOnly: true } },
   { path: APP_ROUTES.register, name: 'register', component: RegisterView, meta: { title: 'Register', guestOnly: true } },
   { path: APP_ROUTES.forgotPassword, name: 'forgot-password', component: ForgotPasswordView, meta: { title: 'Forgot Password', guestOnly: true } },
@@ -80,7 +81,7 @@ export const routes = [
   // Older placeholder links now point to the pages that cover them.
   { path: '/learn', redirect: '/knowledge' },
   { path: '/resources', redirect: '/faq' },
-  { path: '/support', redirect: '/contact' },
+  { path: '/support', redirect: '/blogs' },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { title: 'Page Not Found' } },
 ]
 
