@@ -162,11 +162,12 @@ async function doCancel(reason) {
   display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1.5px solid var(--border);
   background: var(--surface); color: var(--purple-900); font: 500 0.88rem 'Poppins', sans-serif; cursor: pointer;
 }
-.views button.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
+.views button.on { background: #6b3fb5; border-color: #6b3fb5; color: #fff; }
 .count { min-width: 20px; padding: 0 0.35rem; border-radius: 999px; background: var(--pink-50); color: var(--pink-600); font-size: 0.72rem; font-weight: 700; text-align: center; }
 .views button.on .count { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.search { display: flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); }
-.search input { border: 0; outline: none; padding: 0.5rem 0; font: inherit; min-width: 210px; background: transparent; }
+.search { display: flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; color: #6f6787; }
+.search input { border: 0; outline: none; padding: 0.5rem 0; font: inherit; min-width: 210px; background: transparent; color: #241445; }
+.search input::placeholder { color: #8d86a0; }
 .search:focus-within { border-color: var(--pink-600); }
 .empty { padding: 2rem; text-align: center; border: 2px dashed var(--border); border-radius: 18px; }
 .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
@@ -189,7 +190,7 @@ async function doCancel(reason) {
 .details dd { margin: 0.1rem 0 0; font-size: 0.9rem; overflow-wrap: anywhere; }
 .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.8rem; }
 .reject { background: var(--surface); border-color: #f5b5b0; color: var(--high); }
-.reject:hover { background: #fdecea; box-shadow: none; }
+.reject:hover { background: #fdecea; color: #c62828; box-shadow: none; }
 .inline { margin: 0; padding: 0.4rem 0.7rem; font-size: 0.85rem; }
 @media (max-width: 760px) {
   .row-main { grid-template-columns: auto minmax(0, 1fr) auto; }

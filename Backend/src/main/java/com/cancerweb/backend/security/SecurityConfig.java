@@ -98,7 +98,8 @@ public class SecurityConfig {
                                 .hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/api/predictions", "/api/predictions/**").hasRole("PATIENT")
                         // PDF report of a scan: the owner, or a doctor it is shared with (checked per record).
-                        .requestMatchers(HttpMethod.GET, "/api/scans/*/report").hasAnyRole("PATIENT", "DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/scans/*/report", "/api/scans/*/integrity").hasAnyRole("PATIENT", "DOCTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/scans/*/integrity/verify").hasAnyRole("PATIENT", "DOCTOR")
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")

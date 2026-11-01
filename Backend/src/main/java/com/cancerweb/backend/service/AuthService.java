@@ -29,6 +29,9 @@ import com.cancerweb.backend.repository.RevokedTokenRepository;
 import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.JwtService;
 import com.cancerweb.backend.security.JwtService.IssuedToken;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 @Service
 public class AuthService {
@@ -42,10 +45,14 @@ public class AuthService {
     private final JwtDecoder jwtDecoder;
     private final RevokedTokenRepository revokedTokens;
     private final NotificationService notifications;
+    private final AuditService audit;
+    /** Failed logins for one account within 15 minutes that are logged as a security warning. */
+    static final int REPEATED_FAILURES = 5;
 
     public AuthService(UserService userService, UserRepository users, AuthenticationManager authenticationManager,
             JwtService jwtService, JwtDecoder jwtDecoder, RevokedTokenRepository revokedTokens,
-            NotificationService notifications) {
+            NotificationService notifications, AuditService audit) {
+        this.audit = audit;
         this.userService = userService;
         this.users = users;
         this.authenticationManager = authenticationManager;
@@ -95,8 +102,22 @@ public class AuthService {
         if (UserService.passwordTooLong(request.password())) {
             throw new BadCredentialsException("Bad credentials");
         }
-        Authentication result = authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(
-                UserService.normalizeEmail(request.email()), request.password()));
+        Authentication result;
+        try {
+            result = authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(
+                    UserService.normalizeEmail(request.email()), request.password()));
+        } catch (BadCredentialsException e) {
+            // Only for an existing account, by its id: the typed email itself is never stored.
+            users.findByEmail(UserService.normalizeEmail(request.email())).ifPresent(u -> {
+                audit.record(AuditEventType.USER_LOGIN_FAILED, Actor.ANONYMOUS, "USER", u.id());
+                long recent = audit.countSince(AuditEventType.USER_LOGIN_FAILED, u.id(), Instant.now().minusSeconds(15 * 60));
+                if (recent >= REPEATED_FAILURES) {
+                    // The account id only; never the email or the password that was tried.
+                    log.warn("SECURITY repeated failed logins: {} in 15 minutes for account {}", recent, u.id());
+                }
+            });
+            throw e;
+        }
         String userId = ((UserDetails) result.getPrincipal()).getUsername();
         User user = users.findById(userId).orElseThrow(() -> new BadCredentialsException("Bad credentials"));
         // Checked only after the password matched, so a disabled account is not revealed to someone guessing.
@@ -112,6 +133,7 @@ public class AuthService {
             throw new TemporaryPasswordUsedException();
         }
         userService.recordLogin(user.id());
+        audit.record(AuditEventType.USER_LOGIN, Actor.of(user), "USER", user.id());
         return new Login(user, jwtService.issue(user));
     }
 
@@ -144,17 +166,26 @@ public class AuthService {
      * already invalid, expired or revoked needs nothing more, so logout always succeeds.
      */
     public void logout(String rawToken) {
+        String userId = revoke(rawToken);
+        if (userId != null) {
+            users.findById(userId).ifPresent(u -> audit.record(AuditEventType.USER_LOGOUT, Actor.of(u), "USER", u.id()));
+        }
+    }
+
+    /** Revokes a token without recording a logout (a password change also ends the current login); returns its user id. */
+    public String revoke(String rawToken) {
         if (rawToken == null) {
-            return;
+            return null;
         }
         Jwt jwt;
         try {
             jwt = jwtDecoder.decode(rawToken);
         } catch (JwtException e) {
-            return;
+            return null;
         }
         revokedTokens.save(new RevokedToken(jwt.getId(), jwt.getSubject(), jwt.getExpiresAt(), Instant.now()));
         log.debug("Revoked token {} for user {}", jwt.getId(), jwt.getSubject());
+        return jwt.getSubject();
     }
 
     public record Login(User user, IssuedToken token) {

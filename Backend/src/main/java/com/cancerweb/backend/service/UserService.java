@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -35,6 +36,9 @@ import com.cancerweb.backend.model.Verification;
 import com.cancerweb.backend.model.VerificationStatus;
 import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.SiteOwner;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 /** Creating accounts and the administrator's user management. */
 @Service
@@ -50,9 +54,11 @@ public class UserService {
     private final MongoTemplate mongo;
     private final SiteOwner owner;
     private final NotificationService notifications;
+    private final AuditService audit;
 
     public UserService(UserRepository users, PasswordEncoder passwordEncoder, MongoTemplate mongo, SiteOwner owner,
-            NotificationService notifications) {
+            NotificationService notifications, AuditService audit) {
+        this.audit = audit;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.mongo = mongo;
@@ -140,7 +146,10 @@ public class UserService {
             return user;
         }
         // Only role and updatedAt change, so a profile edit the user makes at the same moment is not lost.
-        return modify(userId, new Update().set("role", role).set("updatedAt", Instant.now()));
+        User changed = modify(userId, new Update().set("role", role).set("updatedAt", Instant.now()));
+        audit.record(AuditEventType.ADMIN_ROLE_CHANGED, new Actor(adminId, Role.ADMIN.name()), "USER", userId,
+                Map.of("previousRole", user.role().name(), "newRole", role.name()));
+        return changed;
     }
 
     /**
@@ -152,7 +161,10 @@ public class UserService {
             throw new IllegalArgumentException("You cannot disable your own account.");
         }
         get(userId);
-        return modify(userId, new Update().set("disabled", disabled).set("updatedAt", Instant.now()));
+        User changed = modify(userId, new Update().set("disabled", disabled).set("updatedAt", Instant.now()));
+        audit.record(disabled ? AuditEventType.ACCOUNT_DISABLED : AuditEventType.ACCOUNT_ENABLED,
+                new Actor(adminId, Role.ADMIN.name()), "USER", userId);
+        return changed;
     }
 
     /** An account with its private profile details and how many analyses it owns, for the admin's review. */
@@ -184,6 +196,9 @@ public class UserService {
             update = new Update().set("verification", new Verification(status, note, adminEmail, Instant.now()));
         }
         User updated = modify(userId, update.set("updatedAt", Instant.now()));
+        String adminId = users.findByEmail(normalizeEmail(adminEmail)).map(User::id).orElse(null);
+        audit.record(AuditEventType.REVIEW_UPDATED, new Actor(adminId, Role.ADMIN.name()), "USER", userId,
+                Map.of("reviewType", "ACCOUNT_VERIFICATION", "status", status.name()));
         String link = NotificationService.accountLink(user.role());
         if (status == VerificationStatus.VERIFIED) {
             notifications.notify(userId, "ACCOUNT_VERIFIED", "Account verified",
@@ -226,6 +241,7 @@ public class UserService {
                 PasswordResetRequest.class);
         notifications.notify(userId, "PASSWORD_RESET", "Password reset by an administrator",
                 "Choose a new password of your own now. The temporary one works for 24 hours.", NotificationService.accountLink(user.role()));
+        audit.record(AuditEventType.PASSWORD_RESET_BY_ADMIN, new Actor(adminId, Role.ADMIN.name()), "USER", userId);
         return new PasswordReset(user, temporary);
     }
 

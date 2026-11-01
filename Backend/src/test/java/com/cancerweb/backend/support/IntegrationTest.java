@@ -57,9 +57,18 @@ public abstract class IntegrationTest {
     public static final String OWNER_EMAIL = "owner@example.com";
 
     private static final TransitionWalker.ReachedState<RunningMongodProcess> MONGOD = startMongod();
+    protected static final java.nio.file.Path BACKUP_DIR = createBackupDir();
+
+    private static java.nio.file.Path createBackupDir() {
+        try {
+            return java.nio.file.Files.createTempDirectory("breastcare-test-backups");
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
     private static final List<String> COLLECTIONS =
             List.of("users", "predictions", "revoked_tokens", "contact_messages", "site_settings", "password_reset_requests",
-                    "breast_surgeon_profiles", "appointments", "notifications", "messages", "fs.files", "fs.chunks");
+                    "breast_surgeon_profiles", "appointments", "notifications", "messages", "audit_logs", "fs.files", "fs.chunks");
 
     @Autowired
     protected MockMvc mvc;
@@ -91,6 +100,11 @@ public abstract class IntegrationTest {
         registry.add("app.auth.token-ttl", () -> "PT1H");
         registry.add("app.admin.email", () -> OWNER_EMAIL);
         registry.add("app.admin.password", () -> "");
+        // Backups go to a throwaway folder with a test-only key; restore tests are allowed (into *_restore_test).
+        registry.add("backup.dir", () -> BACKUP_DIR.toString());
+        registry.add("backup.encryption-key", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
+        registry.add("backup.restore.enabled", () -> "true");
+        registry.add("backup.schedule", () -> "-");
     }
 
     @BeforeEach

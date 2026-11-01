@@ -1,0 +1,98 @@
+# Spring Boot backend, which also runs the ONNX models (there is no separate inference service). One replica: it
+# runs the backup schedule and keeps chat rate limits in memory; scale out only after moving those (see docs).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: breastcare-backend
+  labels:
+    app.kubernetes.io/name: breastcare-backend
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: breastcare-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: breastcare-backend
+    spec:
+      serviceAccountName: breastcare-backend
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend
+          image: ghcr.io/OWNER/breastcare-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: breastcare-config
+            - secretRef:
+                name: breastcare-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1536Mi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+          # Loading the models takes a while; liveness only starts once this passes.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # Readiness includes MongoDB: no traffic while the database is unreachable, but no restart either.
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+            - name: backups
+              mountPath: /data/backups
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: breastcare-models
+            readOnly: true
+        - name: backups
+          persistentVolumeClaim:
+            claimName: breastcare-backups
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi

@@ -1,0 +1,47 @@
+# Applies one Kustomize overlay with the given image tag and waits for the rollout. The kubeconfig comes from the
+# GitHub environment's secret, is written with owner-only permissions, and is removed afterwards.
+name: Deploy to Kubernetes
+description: Apply a Kustomize overlay with an image tag and wait for the rollout
+inputs:
+  overlay:
+    description: Kustomize overlay folder
+    required: true
+  namespace:
+    description: Target namespace
+    required: true
+  tag:
+    description: Image tag
+    required: true
+  kubeconfig:
+    description: Kubeconfig contents (a secret)
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: azure/setup-kubectl@v4
+    - uses: imranismail/setup-kustomize@v2
+    - shell: bash
+      env:
+        KUBECONFIG_CONTENT: ${{ inputs.kubeconfig }}
+      run: |
+        set -euo pipefail
+        umask 077
+        printf '%s' "$KUBECONFIG_CONTENT" > "$RUNNER_TEMP/kubeconfig"
+        echo "KUBECONFIG=$RUNNER_TEMP/kubeconfig" >> "$GITHUB_ENV"
+    - shell: bash
+      working-directory: ${{ inputs.overlay }}
+      env:
+        TAG: ${{ inputs.tag }}
+        NAMESPACE: ${{ inputs.namespace }}
+      run: |
+        set -euo pipefail
+        owner="${GITHUB_REPOSITORY_OWNER,,}"
+        kustomize edit set image \
+          "ghcr.io/OWNER/breastcare-backend=ghcr.io/${owner}/breastcare-backend:${TAG}" \
+          "ghcr.io/OWNER/breastcare-frontend=ghcr.io/${owner}/breastcare-frontend:${TAG}"
+        kubectl apply -k .
+        kubectl -n "$NAMESPACE" rollout status deployment/breastcare-backend --timeout=10m
+        kubectl -n "$NAMESPACE" rollout status deployment/breastcare-frontend --timeout=5m
+    - if: always()
+      shell: bash
+      run: rm -f "$RUNNER_TEMP/kubeconfig"

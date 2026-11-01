@@ -10,6 +10,8 @@ import AdminMessagesPanel from '../components/admin/AdminMessagesPanel.vue'
 import AdminSettingsPanel from '../components/admin/AdminSettingsPanel.vue'
 import AdminSurgeonPanel from '../components/admin/AdminSurgeonPanel.vue'
 import AdminInboxPanel from '../components/admin/AdminInboxPanel.vue'
+import AdminAuditPanel from '../components/admin/AdminAuditPanel.vue'
+import AdminBackupPanel from '../components/admin/AdminBackupPanel.vue'
 import { authState } from '../auth/authStore'
 import { getOverview, listMessages, listSurgeonProfiles } from '../services/adminService'
 import { APP_ROUTES } from '../config/appRoutes'
@@ -33,6 +35,10 @@ const TABS = [
     title: 'Messages', subtitle: 'What visitors sent through the Contact page.' },
   { id: 'settings', label: 'Website settings', icon: 'file-text', component: AdminSettingsPanel, group: 'Website',
     title: 'Website settings', subtitle: 'Contact details, social links and the announcement bar.' },
+  { id: 'audit', label: 'Audit logs', icon: 'shield-check', component: AdminAuditPanel, group: 'Security',
+    title: 'Audit logs', subtitle: 'Who did what and when. Each event is sealed with a SHA-256 hash chain.' },
+  { id: 'backups', label: 'Backups', icon: 'clock', component: AdminBackupPanel, group: 'Security',
+    title: 'Backups & restore', subtitle: 'Encrypted database backups and restore tests.' },
 ]
 const GROUPS = [...new Set(TABS.map((t) => t.group))]
 

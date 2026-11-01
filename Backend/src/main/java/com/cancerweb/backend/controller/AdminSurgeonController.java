@@ -1,6 +1,7 @@
 package com.cancerweb.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,10 @@ import com.cancerweb.backend.dto.SurgeonReviewRequest;
 import com.cancerweb.backend.model.SurgeonProfileStatus;
 import com.cancerweb.backend.security.CurrentUser;
 import com.cancerweb.backend.service.BreastSurgeonService;
+import com.cancerweb.backend.model.BreastSurgeonProfile;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 import jakarta.validation.Valid;
 
@@ -27,9 +32,11 @@ import jakarta.validation.Valid;
 public class AdminSurgeonController {
 
     private final BreastSurgeonService surgeons;
+    private final AuditService audit;
 
-    public AdminSurgeonController(BreastSurgeonService surgeons) {
+    public AdminSurgeonController(BreastSurgeonService surgeons, AuditService audit) {
         this.surgeons = surgeons;
+        this.audit = audit;
     }
 
     /** Most recently submitted first; {@code status} PENDING, APPROVED or REJECTED, or omitted for all. */
@@ -46,7 +53,10 @@ public class AdminSurgeonController {
     @PatchMapping("/{id}/review")
     public SurgeonProfileDetail review(@PathVariable String id, @Valid @RequestBody SurgeonReviewRequest request,
             @AuthenticationPrincipal CurrentUser admin) {
-        return SurgeonProfileDetail.from(surgeons.review(admin.email(), id, request.status(), request.note()));
+        BreastSurgeonProfile reviewed = surgeons.review(admin.email(), id, request.status(), request.note());
+        audit.record(AuditEventType.REVIEW_UPDATED, Actor.of(admin), "SURGEON_PROFILE", id,
+                Map.of("reviewType", "SURGEON_PROFILE", "status", request.status().name()));
+        return SurgeonProfileDetail.from(reviewed);
     }
 
     @GetMapping("/{id}/documents/{documentId}")

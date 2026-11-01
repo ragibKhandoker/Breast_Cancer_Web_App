@@ -138,3 +138,15 @@ export async function listDoctors() {
   const { data } = await http.get('/api/doctors')
   return data
 }
+
+/** The report's integrity status from its stored records: { status, message, transactionReference, ... }. */
+export async function getReportIntegrity(id) {
+  const { data } = await http.get(`/api/scans/${encodeURIComponent(id)}/integrity`)
+  return data
+}
+
+/** A full integrity check on the server (PDF hash, its record and, when configured, the blockchain proof). */
+export async function verifyReportIntegrity(id) {
+  const { data } = await http.post(`/api/scans/${encodeURIComponent(id)}/integrity/verify`, null, { timeout: 60 * 1000 })
+  return data
+}

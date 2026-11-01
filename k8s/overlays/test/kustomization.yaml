@@ -1,0 +1,30 @@
+# Test environment. CI sets the image tags here with `kustomize edit set image` before applying.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: breastcare-test
+resources:
+  - namespace.yaml
+  - ../../base
+images:
+  - name: ghcr.io/OWNER/breastcare-backend
+    newTag: latest
+  - name: ghcr.io/OWNER/breastcare-frontend
+    newTag: latest
+patches:
+  - target:
+      kind: Ingress
+      name: breastcare
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: test.breastcare.example.com
+      - op: replace
+        path: /spec/rules/0/host
+        value: test.breastcare.example.com
+  - target:
+      kind: ConfigMap
+      name: breastcare-config
+    patch: |-
+      - op: replace
+        path: /data/CORS_ORIGINS
+        value: https://test.breastcare.example.com

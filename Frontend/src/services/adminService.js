@@ -111,3 +111,72 @@ export async function getAdminAccount() {
   const { data } = await http.get('/api/admin/account')
   return data
 }
+
+// ---- Audit logs (F20) ----
+
+/** One page of audit events, newest first: { items, total, page, size }. Empty filters are left out. */
+export async function listAuditLogs(filters = {}, page = 0, size = 25) {
+  const params = { page, size }
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== '' && value != null) params[key] = value
+  }
+  const { data } = await http.get('/api/admin/audit-logs', { params })
+  return data
+}
+
+/** Counts by event type and blockchain status, and whether anchoring is on: { total, byType, byBlockchainStatus, blockchain }. */
+export async function getAuditStats() {
+  const { data } = await http.get('/api/admin/audit-logs/stats')
+  return data
+}
+
+/** One event with its hash check: { event, verification }. */
+export async function getAuditEvent(id) {
+  const { data } = await http.get(`/api/admin/audit-logs/${encodeURIComponent(id)}`)
+  return data
+}
+
+/** Walks the whole hash chain: { checked, status, firstBadSequence, problem }. */
+export async function verifyAuditChain() {
+  const { data } = await http.get('/api/admin/audit-logs/verify-chain')
+  return data
+}
+
+export async function anchorAuditEvent(id) {
+  const { data } = await http.post(`/api/admin/audit-logs/${encodeURIComponent(id)}/anchor`)
+  return data
+}
+
+export async function getBlockchainProof(id) {
+  const { data } = await http.get(`/api/admin/audit-logs/${encodeURIComponent(id)}/blockchain-proof`)
+  return data
+}
+
+// ---- Backups (F20) ----
+
+export async function getBackupStatus() {
+  const { data } = await http.get('/api/admin/backups/status')
+  return data
+}
+
+export async function listBackups() {
+  const { data } = await http.get('/api/admin/backups')
+  return data
+}
+
+/** Writing a large database can take a while. */
+export async function createBackup() {
+  const { data } = await http.post('/api/admin/backups', null, { timeout: 10 * 60 * 1000 })
+  return data
+}
+
+export async function verifyBackup(file) {
+  const { data } = await http.post(`/api/admin/backups/${encodeURIComponent(file)}/verify`, null, { timeout: 5 * 60 * 1000 })
+  return data
+}
+
+/** Restores into a separate *_restore_test database and checks it; the live database is never touched. */
+export async function runRestoreTest(file) {
+  const { data } = await http.post('/api/admin/backups/restore-test', { file }, { timeout: 10 * 60 * 1000 })
+  return data
+}

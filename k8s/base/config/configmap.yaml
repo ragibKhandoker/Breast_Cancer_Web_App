@@ -1,0 +1,34 @@
+# Non-secret settings, given to the backend as environment variables. Secrets are in the breastcare-secrets
+# Secret (see secret.example.yaml), never here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: breastcare-config
+data:
+  SERVER_PORT: "8080"
+  CORS_ORIGINS: "https://breastcare.example.com"
+  AUTH_COOKIE_SECURE: "true"
+  LOGGING_STRUCTURED_FORMAT_CONSOLE: "ecs"
+  JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -Djava.io.tmpdir=/tmp -Dpdfbox.fontcache=/tmp"
+  # Model files on the breastcare-models volume (read-only).
+  MODEL_PATH: "/models/model.onnx"
+  HEATMAP_PATH: "/models/heatmap.onnx"
+  GATE_PATH: "/models/gate/gate.onnx"
+  MAMMOSCREEN_DIR: "/models/mammoscreen"
+  ENSEMBLE_PATH: "/models/ensemble/ensemble.json"
+  FIRSTPLACE_PATH: "/models/firstplace/firstplace_fold0.onnx"
+  FINAL_PATH: "/models/final/final.json"
+  # Encrypted backups (F20): built-in daily schedule (the backend runs as one replica, so it runs once).
+  BACKUP_DIR: "/data/backups"
+  BACKUP_SCHEDULE: "0 0 2 * * *"
+  BACKUP_RETENTION_ENABLED: "true"
+  BACKUP_RETENTION_DAILY: "7"
+  BACKUP_RETENTION_WEEKLY: "4"
+  BACKUP_RETENTION_MONTHLY: "3"
+  BACKUP_RESTORE_ENABLED: "false"
+  # Audit proofs on a private/test chain (docs/BLOCKCHAIN_SETUP.md). Off until a node is available.
+  AUDIT_BLOCKCHAIN_ENABLED: "false"
+  AUDIT_BLOCKCHAIN_RPC_URL: ""
+  AUDIT_BLOCKCHAIN_ACCOUNT: ""
+  AUDIT_BLOCKCHAIN_CONTRACT: ""
+  AUDIT_BLOCKCHAIN_NETWORK: "private-test-network"

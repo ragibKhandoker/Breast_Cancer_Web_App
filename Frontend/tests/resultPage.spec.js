@@ -21,6 +21,8 @@ vi.mock('../src/services/predictionService', async (importOriginal) => ({
   listShares: vi.fn(),
   listDoctors: vi.fn(),
   downloadReport: vi.fn(),
+  getReportIntegrity: vi.fn().mockResolvedValue({ status: 'NO_REPORT', message: 'No PDF report has been made yet.' }),
+  verifyReportIntegrity: vi.fn(),
 }))
 
 // jsdom has no canvas; the overlay is checked through heatmapPixels instead.

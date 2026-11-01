@@ -32,6 +32,9 @@ import com.cancerweb.backend.service.AdminOverviewService;
 import com.cancerweb.backend.service.ContactService;
 import com.cancerweb.backend.service.PasswordHelpService;
 import com.cancerweb.backend.service.SiteSettingsService;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 import jakarta.validation.Valid;
 
@@ -47,9 +50,11 @@ public class AdminConsoleController {
     private final ContactService contact;
     private final SiteSettingsService settings;
     private final PasswordHelpService passwordHelp;
+    private final AuditService audit;
 
     public AdminConsoleController(AdminOverviewService overview, ContactService contact, SiteSettingsService settings,
-            PasswordHelpService passwordHelp) {
+            PasswordHelpService passwordHelp, AuditService audit) {
+        this.audit = audit;
         this.overview = overview;
         this.contact = contact;
         this.settings = settings;
@@ -114,6 +119,8 @@ public class AdminConsoleController {
     @PutMapping("/site-settings")
     public SiteSettingsResponse saveSiteSettings(@Valid @RequestBody SiteSettingsRequest request,
             @AuthenticationPrincipal CurrentUser admin) {
-        return SiteSettingsResponse.from(settings.save(request, admin.email()), true);
+        SiteSettingsResponse saved = SiteSettingsResponse.from(settings.save(request, admin.email()), true);
+        audit.record(AuditEventType.SITE_SETTINGS_UPDATED, Actor.of(admin), "SITE_SETTINGS", null);
+        return saved;
     }
 }

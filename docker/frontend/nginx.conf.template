@@ -1,0 +1,51 @@
+# Filled in at start-up by the nginx image (envsubst): ${BACKEND_URL} is the backend's address.
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;
+
+    # Mammogram uploads are up to 50 MB; analysing one can take a while.
+    client_max_body_size 51m;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    # Container / Kubernetes health of this web server itself.
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location /api/ {
+        proxy_pass ${BACKEND_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_request_buffering off;
+    }
+
+    # Only the health endpoints are public; everything else under /actuator stays inside the cluster.
+    location /actuator/health {
+        proxy_pass ${BACKEND_URL};
+    }
+
+    # Built assets have content hashes in their names: cache them for a long time.
+    # (expires, not add_header: an add_header here would drop the security headers above for these paths.)
+    location /assets/ {
+        expires 1y;
+        try_files $uri =404;
+    }
+
+    # Vue Router: every other path is the single-page app.
+    location / {
+        expires -1;
+        try_files $uri $uri/ /index.html;
+    }
+}

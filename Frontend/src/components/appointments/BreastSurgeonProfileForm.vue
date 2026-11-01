@@ -530,7 +530,7 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
 .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
 .photo-actions { display: grid; gap: 0.35rem; }
 .photo-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.btn-dark { background: var(--purple-900); color: #fff; border: 0; }
+.btn-dark { background: #6b3fb5; color: #fff; border: 0; }
 .btn-dark:hover { background: #3b2270; }
 .file-btn { position: relative; cursor: pointer; }
 .file-btn input, .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }

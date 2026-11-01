@@ -90,7 +90,7 @@ const shown = computed(() => props.appointments.filter((a) => filter.value === '
   background: var(--surface); color: var(--purple-900); font: 500 0.88rem 'Poppins', sans-serif; cursor: pointer;
 }
 .filters button:hover { border-color: var(--pink-300); }
-.filters button.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
+.filters button.on { background: #6b3fb5; border-color: #6b3fb5; color: #fff; }
 .count { min-width: 20px; padding: 0 0.35rem; border-radius: 999px; background: var(--pink-50); color: var(--pink-600); font-size: 0.72rem; font-weight: 700; text-align: center; }
 .filters button.on .count { background: rgba(255, 255, 255, 0.2); color: #fff; }
 .empty { padding: 2rem; text-align: center; border: 2px dashed var(--border); border-radius: 18px; }

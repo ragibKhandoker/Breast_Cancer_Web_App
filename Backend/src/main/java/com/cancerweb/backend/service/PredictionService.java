@@ -41,6 +41,9 @@ import com.cancerweb.backend.model.User;
 import com.cancerweb.backend.repository.PredictionRepository;
 import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.CurrentUser;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 /**
  * Mammogram analysis and the reports it produces. Every lookup includes the signed-in user in the MongoDB query
@@ -67,10 +70,12 @@ public class PredictionService {
     private final UserRepository users;
     private final HeatmapModel heatmapModel;
     private final NotificationService notifications;
+    private final AuditService audit;
 
     public PredictionService(PredictionRepository repository, MongoTemplate mongo, GridFsTemplate gridFs,
             CancerModel predictor, MammogramGate gate, UserRepository users, HeatmapModel heatmapModel,
-            NotificationService notifications) {
+            NotificationService notifications, AuditService audit) {
+        this.audit = audit;
         this.repository = repository;
         this.mongo = mongo;
         this.gridFs = gridFs;
@@ -124,7 +129,10 @@ public class PredictionService {
                 owner.id(), List.of(), uploadId, view == null || view.isBlank() ? null : view, result.threshold(),
                 result.lowConfidence(), null, null);
         try {
-            return repository.save(prediction);
+            Prediction saved = repository.save(prediction);
+            // The scan's id only: no file name, image, view or result goes into the audit log.
+            audit.record(AuditEventType.SCAN_CREATED, Actor.of(owner), "SCAN", saved.id());
+            return saved;
         } catch (DuplicateKeyException e) {
             // Two attempts of the same upload ran at once and the other one saved first: keep only its record.
             gridFs.delete(byFileId(imageId.toHexString()));
@@ -211,6 +219,7 @@ public class PredictionService {
             gridFs.delete(byFileId(prediction.reportFileId()));
         }
         repository.delete(prediction);
+        audit.record(AuditEventType.SCAN_DELETED, Actor.of(owner), "SCAN", id);
     }
 
     /** Doctors the owner has shared this report with. */
@@ -231,6 +240,7 @@ public class PredictionService {
         Prediction before = findOwned(id, owner);
         updateOwned(id, owner, new Update().addToSet(SHARED_WITH, doctorId));
         if (!before.sharedWithDoctorIds().contains(doctorId)) {
+            audit.record(AuditEventType.SCAN_SHARED, Actor.of(owner), "SCAN", id, Map.of("doctorId", doctorId));
             notifications.notify(doctorId, "REPORT_SHARED", "A patient shared a report",
                     owner.fullName() + " shared a mammogram report with you.", "/reports/" + id);
         }
@@ -239,6 +249,7 @@ public class PredictionService {
 
     public void unshare(String id, String doctorId, CurrentUser owner) {
         updateOwned(id, owner, new Update().pull(SHARED_WITH, doctorId));
+        audit.record(AuditEventType.SCAN_UNSHARED, Actor.of(owner), "SCAN", id, Map.of("doctorId", doctorId));
     }
 
     private Prediction findOwned(String id, CurrentUser owner) {

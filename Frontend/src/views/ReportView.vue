@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ResultCard from '../components/prediction/ResultCard.vue'
 import ScanViewer from '../components/report/ScanViewer.vue'
 import ReportStatus from '../components/report/ReportStatus.vue'
+import ReportIntegrity from '../components/report/ReportIntegrity.vue'
 import MedicalDisclaimer from '../components/report/MedicalDisclaimer.vue'
 import { authState, onSessionEnd } from '../auth/authStore'
 import {
@@ -31,6 +32,7 @@ const heatmap = ref(null)
 const heatmapState = ref('loading')
 const downloading = ref(false)
 const downloadError = ref('')
+const downloads = ref(0)
 
 // Sharing (owner only)
 const shares = ref([])
@@ -79,6 +81,7 @@ async function download() {
   downloadError.value = ''
   try {
     await downloadReport(report.value.id)
+    downloads.value++
   } catch (err) {
     downloadError.value = reportDownloadError(err)
   } finally {
@@ -165,6 +168,8 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
             </button>
             <p v-if="downloadError" class="error small" role="alert">{{ downloadError }}</p>
           </div>
+
+          <ReportIntegrity :scan-id="report.id" :refresh-key="downloads" />
 
           <div v-if="isOwner" class="card share">
             <h2>Share with a doctor</h2>

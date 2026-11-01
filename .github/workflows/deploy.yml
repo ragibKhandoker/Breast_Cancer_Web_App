@@ -1,0 +1,66 @@
+# Deploys the images CI published: automatically to the test cluster, then to production only after a person
+# approves the "production" environment (Settings > Environments > production > Required reviewers).
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Image tag to deploy (for example sha-1a2b3c4 or 1.2.0)
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-test:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: test
+      url: https://test.breastcare.example.com
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
+          else echo "tag=sha-${HEAD_SHA:0:7}" >> "$GITHUB_OUTPUT"; fi
+      - uses: ./.github/actions/deploy
+        with:
+          overlay: k8s/overlays/test
+          namespace: breastcare-test
+          tag: ${{ steps.tag.outputs.tag }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+  deploy-production:
+    needs: deploy-test
+    runs-on: ubuntu-latest
+    # The production environment requires a reviewer's approval before this job starts.
+    environment:
+      name: production
+      url: https://breastcare.example.com
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: ./.github/actions/deploy
+        with:
+          overlay: k8s/overlays/production
+          namespace: breastcare-production
+          tag: ${{ needs.deploy-test.outputs.tag }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}

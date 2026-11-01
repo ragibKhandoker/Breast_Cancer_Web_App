@@ -287,6 +287,42 @@ A chat button in the bottom-right corner of every page opens the *BreastCare Ass
 - **Privacy**: conversations are not saved on the server or in the browser, and are not logged. The widget forgets them on sign-out. The text is sent to Anthropic's API to get the answer.
 - **Cost**: every question is one Claude API call, billed to the key's account. The per-user limit above caps it.
 
+## Architecture and deployment
+
+```
+ Browser ──HTTPS──► Ingress (TLS) ──/──────────► frontend: nginx serving the Vue site ──/api──┐
+                                   ──/api──────► backend: Spring Boot API + ONNX models ◄─────┘
+                                                   │            │                    │
+                                     MongoDB Atlas (external)   Claude API (chat)    private/test chain (AuditIntegrity)
+```
+
+- **Frontend** (Vue 3, Vite) is served by nginx, which proxies `/api` to the backend.
+- **Backend** (Spring Boot 4, Java 21) is the API. It also runs the ML models itself (ONNX Runtime; `ML-Service/` only trains and exports them), so there is no separate inference service.
+- **MongoDB Atlas** holds all data, including the audit log.
+- **Blockchain (optional):** the `AuditIntegrity` contract on a local or test chain holds hash-only proofs of audit events.
+
+| Guide | |
+|---|---|
+| [docs/DOCKER_SETUP.md](docs/DOCKER_SETUP.md) | `docker compose up --build`: images, health checks, troubleshooting |
+| [docs/KUBERNETES_SETUP.md](docs/KUBERNETES_SETUP.md) | `k8s/` (Kustomize base + test/production overlays), ingress and TLS, secrets, network policies, probes |
+| [docs/CI_CD_SETUP.md](docs/CI_CD_SETUP.md) | GitHub Actions: tests, scans, GHCR images, test deploy, approved production deploy |
+| [docs/BLOCKCHAIN_SETUP.md](docs/BLOCKCHAIN_SETUP.md) | Hardhat, the contract, report integrity verification |
+| [docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md](docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md) | Audit log, hashing, backups, privacy |
+
+Health endpoints:
+- backend: `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness` (includes MongoDB)
+- website container: `/healthz`
+
+The backend logs JSON in containers (`LOGGING_STRUCTURED_FORMAT_CONSOLE=ecs`), and never logs passwords, tokens or medical data.
+
+## Audit logs, blockchain proofs, backup and privacy (F20)
+
+Full guide: [`docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md`](docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md).
+
+- **Audit log**: the backend records scans, report downloads, reviews, role changes, logins and admin and backup actions in `audit_logs`. The log is append-only and SHA-256 hash-chained. Administrators see it under Admin → Security → **Audit logs**, with filters, details, per-event and whole-chain verification.
+- **Blockchain proofs** (off by default): an event's hash, timestamp and opaque id can be anchored on a private or test Ethereum node (`AUDIT_BLOCKCHAIN_*`). Patient data never goes on chain.
+- **Backups**: encrypted (AES-256 + HMAC) backups of the whole database, from Admin → Security → **Backups**, from `scripts/backup.ps1` / `backup.sh`, or on a schedule. They need `BACKUP_ENCRYPTION_KEY`. Restore tests go into a separate `<db>_restore_test` database, only where `BACKUP_RESTORE_ENABLED=true`.
+
 ## Pages
 
 Public: `/` Home · `/about` · `/how-it-works` · `/faq` · `/contact` · `/login` · `/register`, plus Not Found and Access Denied pages.

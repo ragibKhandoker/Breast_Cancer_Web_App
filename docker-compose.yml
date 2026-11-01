@@ -1,0 +1,84 @@
+# BreastCare: the website (nginx) and the backend (Spring Boot, which also runs the ML models).
+#   docker compose up --build -d          start (http://localhost:8080)
+#   docker compose --profile blockchain up --build -d   also start a local Hardhat chain (see docs/BLOCKCHAIN_SETUP.md)
+#   docker compose ps | logs -f backend | restart backend | stop | down
+# MongoDB Atlas stays an external cloud database: its URI and every other secret come from Backend/.env
+# (git-ignored), never from this file. Compose settings (image tag, port, model folder) come from ./.env.
+name: breastcare
+
+services:
+  backend:
+    image: ${IMAGE_REGISTRY:-breastcare}/breastcare-backend:${IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      args:
+        VERSION: ${IMAGE_TAG:-local}
+    env_file:
+      - path: Backend/.env
+        required: true
+    environment:
+      # Container paths win over any local paths in Backend/.env.
+      SERVER_PORT: "8080"
+      CORS_ORIGINS: http://localhost:${FRONTEND_PORT:-8080}
+      MODEL_PATH: /models/model.onnx
+      HEATMAP_PATH: /models/heatmap.onnx
+      GATE_PATH: /models/gate/gate.onnx
+      MAMMOSCREEN_DIR: /models/mammoscreen
+      ENSEMBLE_PATH: /models/ensemble/ensemble.json
+      FIRSTPLACE_PATH: /models/firstplace/firstplace_fold0.onnx
+      FINAL_PATH: /models/final/final.json
+      BACKUP_DIR: /data/backups
+    volumes:
+      - ${MODELS_DIR:-./ML-Service/weights}:/models:ro
+      - backups:/data/backups
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 30s
+      timeout: 5s
+      start_period: 180s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  frontend:
+    image: ${IMAGE_REGISTRY:-breastcare}/breastcare-frontend:${IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      args:
+        VERSION: ${IMAGE_TAG:-local}
+    environment:
+      BACKEND_URL: http://backend:8080
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  # Optional local test blockchain for audit proofs. Its accounts are public Hardhat test keys: never use them
+  # with real funds or a public network.
+  hardhat:
+    profiles: ["blockchain"]
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install --no-audit --no-fund && npx hardhat node --hostname 0.0.0.0"
+    volumes:
+      - ./blockchain:/app
+    expose:
+      - "8545"
+    ports:
+      - "127.0.0.1:8545:8545"
+
+volumes:
+  backups:

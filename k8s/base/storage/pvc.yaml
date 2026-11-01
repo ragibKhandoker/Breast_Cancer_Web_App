@@ -1,0 +1,21 @@
+# Model weights (filled once, see KUBERNETES_SETUP.md) and encrypted backups. ReadWriteOnce suits a single-node
+# cluster (minikube, kind, k3s); with several nodes use a ReadWriteMany/ReadOnlyMany storage class for models.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: breastcare-models
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: breastcare-backups
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 20Gi

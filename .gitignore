@@ -1,0 +1,7 @@
+# F20: encrypted database backups and their metadata never go into git (see docs/F20_AUDIT_BLOCKCHAIN_BACKUP_PRIVACY.md).
+backups/
+*.bcbk
+*.bcbk.part
+
+# Docker Compose settings
+.env

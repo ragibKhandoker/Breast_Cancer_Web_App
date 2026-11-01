@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.index.PartialIndexFilter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Component;
 
+import com.cancerweb.backend.audit.AuditLog;
 import com.cancerweb.backend.model.Appointment;
 import com.cancerweb.backend.model.BreastSurgeonProfile;
 import com.cancerweb.backend.model.ContactMessage;
@@ -60,6 +61,14 @@ public class DatabaseInitializer implements ApplicationRunner {
     }
 
     void ensureIndexes() {
+        // Audit log: one event per position in the hash chain (a race between two writers fails here and is
+        // retried), and the dashboard's filters.
+        mongo.indexOps(AuditLog.class).createIndex(new Index().on("sequence", Direction.ASC).unique().named("sequence_unique"));
+        mongo.indexOps(AuditLog.class).createIndex(new Index().on("eventType", Direction.ASC).on("sequence", Direction.DESC).named("eventType_sequence"));
+        mongo.indexOps(AuditLog.class).createIndex(new Index().on("actorId", Direction.ASC).on("sequence", Direction.DESC).named("actorId_sequence"));
+        mongo.indexOps(AuditLog.class).createIndex(new Index().on("targetId", Direction.ASC).named("targetId"));
+        mongo.indexOps(AuditLog.class).createIndex(new Index().on("timestamp", Direction.DESC).named("timestamp"));
+        mongo.indexOps(AuditLog.class).createIndex(new Index().on("blockchainStatus", Direction.ASC).on("sequence", Direction.ASC).named("blockchainStatus_sequence"));
         mongo.indexOps(User.class).createIndex(new Index().on("email", Direction.ASC).unique().named("email_unique"));
         mongo.indexOps(Prediction.class).createIndex(
                 new Index().on("ownerId", Direction.ASC).on("createdAt", Direction.DESC).named("owner_createdAt"));

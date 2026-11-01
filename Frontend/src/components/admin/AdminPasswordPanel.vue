@@ -180,7 +180,7 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .chip { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--muted); font: 600 0.82rem 'Poppins', sans-serif; cursor: pointer; }
-.chip.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
+.chip.on { background: #6b3fb5; border-color: #6b3fb5; color: #fff; }
 
 .requests { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
 .request { padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); transition: box-shadow 0.2s; }

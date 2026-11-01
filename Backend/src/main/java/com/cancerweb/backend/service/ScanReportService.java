@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -25,6 +26,10 @@ import com.cancerweb.backend.model.Prediction;
 import com.cancerweb.backend.model.User;
 import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.CurrentUser;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditHasher;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 /**
  * The downloadable PDF report of a scan. Access is checked by {@link PredictionService#findAccessible}: the patient
@@ -42,16 +47,25 @@ public class ScanReportService {
     private final MongoTemplate mongo;
     private final GridFsTemplate gridFs;
     private final UserRepository users;
+    private final AuditService audit;
 
     public ScanReportService(PredictionService predictions, MongoTemplate mongo, GridFsTemplate gridFs,
-            UserRepository users) {
+            UserRepository users, AuditService audit) {
+        this.audit = audit;
         this.predictions = predictions;
         this.mongo = mongo;
         this.gridFs = gridFs;
         this.users = users;
     }
 
+    /** The report for an allowed viewer; every successful download is recorded in the audit log. */
     public byte[] report(String id, CurrentUser viewer) throws IOException {
+        byte[] pdf = build(id, viewer);
+        audit.record(AuditEventType.REPORT_DOWNLOADED, Actor.of(viewer), "SCAN", id);
+        return pdf;
+    }
+
+    private byte[] build(String id, CurrentUser viewer) throws IOException {
         Prediction prediction = predictions.findAccessible(id, viewer);
         byte[] stored = load(prediction.reportFileId());
         if (stored != null) {
@@ -68,6 +82,10 @@ public class ScanReportService {
                 Query.query(Criteria.where("id").is(prediction.id()).and("reportFileId").is(null)),
                 Update.update("reportFileId", fileId.toHexString()), Prediction.class).getMatchedCount() > 0;
         if (saved) {
+            // The off-chain integrity record: the PDF's SHA-256 (a fingerprint, not its contents). The event itself is
+            // hash-chained and, with a blockchain configured, anchored; ReportIntegrityService checks it later.
+            audit.record(AuditEventType.REPORT_GENERATED, Actor.of(viewer), "SCAN", prediction.id(),
+                    Map.of("reportSha256", AuditHasher.sha256Bytes(pdf)));
             return pdf;
         }
         // Another request stored a report first (or the scan was deleted meanwhile): keep only that one.
@@ -93,6 +111,11 @@ public class ScanReportService {
             log.warn("Report {}: no heatmap ({})", id, e.getMessage());
             return null;
         }
+    }
+
+    /** The stored PDF of a report the caller already checked access to, or null if none was made yet. */
+    public byte[] storedReport(Prediction prediction) throws IOException {
+        return load(prediction.reportFileId());
     }
 
     private byte[] load(String fileId) throws IOException {

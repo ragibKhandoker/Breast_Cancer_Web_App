@@ -27,8 +27,11 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.mock.web.MockMultipartFile;
 
+import com.cancerweb.backend.audit.AuditLog;
 import com.cancerweb.backend.model.Role;
 import com.cancerweb.backend.support.IntegrationTest;
 import com.jayway.jsonpath.JsonPath;
@@ -75,6 +78,14 @@ class PredictionWorkflowTest extends IntegrationTest {
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/predictions/" + id).cookie(patient)).andExpect(status().isNotFound());
         assertThat(mongo.getCollection("fs.files").countDocuments()).isZero();
+        // The backend recorded both actions in the audit log, with ids only.
+        assertThat(mongo.find(Query.query(Criteria.where("eventType").is("SCAN_CREATED")), AuditLog.class))
+                .singleElement().satisfies(e -> {
+                    assertThat(e.actorId()).isEqualTo(patientId);
+                    assertThat(e.targetId()).isEqualTo(id);
+                    assertThat(e.metadata()).isEmpty();
+                });
+        assertThat(mongo.find(Query.query(Criteria.where("eventType").is("SCAN_DELETED")), AuditLog.class)).hasSize(1);
     }
 
     @Test

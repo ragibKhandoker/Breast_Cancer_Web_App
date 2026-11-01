@@ -176,7 +176,7 @@ onMounted(load)
 .queue, .detail { border-radius: 20px; }
 .filters { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 .filters button { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1.5px solid var(--border); background: var(--surface); color: var(--purple-900); font: 500 0.8rem 'Poppins', sans-serif; cursor: pointer; }
-.filters button.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
+.filters button.on { background: #6b3fb5; border-color: #6b3fb5; color: #fff; }
 .count { font-size: 0.7rem; font-weight: 700; opacity: 0.8; }
 .search { display: flex; align-items: center; gap: 0.4rem; margin: 0.7rem 0; padding: 0 0.7rem; border: 1.5px solid var(--border); border-radius: 12px; color: var(--muted); }
 .search input { flex: 1; min-width: 0; border: 0; outline: none; padding: 0.5rem 0; font: inherit; background: transparent; }

@@ -27,6 +27,9 @@ import com.cancerweb.backend.repository.UserRepository;
 import com.cancerweb.backend.security.JwtService;
 import com.cancerweb.backend.security.SiteOwner;
 import com.cancerweb.backend.security.JwtService.IssuedToken;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 /**
  * The signed-in user editing their own account. Every change is a targeted {@code $set} on the user's own
@@ -45,9 +48,12 @@ public class ProfileService {
     private final JwtService jwtService;
     private final SiteOwner owner;
     private final NotificationService notifications;
+    private final AuditService audit;
 
     public ProfileService(UserRepository users, MongoTemplate mongo, PasswordEncoder passwordEncoder,
-            AuthService authService, JwtService jwtService, SiteOwner owner, NotificationService notifications) {
+            AuthService authService, JwtService jwtService, SiteOwner owner, NotificationService notifications,
+            AuditService audit) {
+        this.audit = audit;
         this.users = users;
         this.mongo = mongo;
         this.passwordEncoder = passwordEncoder;
@@ -136,7 +142,8 @@ public class ProfileService {
                 .unset("temporaryPasswordExpiresAt")
                 .unset("temporaryPasswordUsedAt")
                 .set("updatedAt", now));
-        authService.logout(currentToken);
+        authService.revoke(currentToken);
+        audit.record(AuditEventType.PASSWORD_CHANGED, Actor.of(updated), "USER", userId);
         notifications.notify(userId, "PASSWORD_CHANGED", "Password changed",
                 "Your password was changed and your other devices were signed out. If this was not you, ask an administrator for help.",
                 NotificationService.accountLink(user.role()));

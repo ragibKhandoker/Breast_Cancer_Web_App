@@ -14,13 +14,20 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.mongodb.MongoTimeoutException;
 
+import com.cancerweb.backend.audit.AuditEventNotFoundException;
+import com.cancerweb.backend.audit.BlockchainService.BlockchainException;
+import com.cancerweb.backend.backup.BackupException;
+
 /** Turns exceptions into RFC 9457 problem responses with a readable {@code detail}. */
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail badRequest(IllegalArgumentException e) {
@@ -143,6 +150,26 @@ public class ApiExceptionHandler {
                 "Cannot reach MongoDB. Check MONGODB_URI in Backend/.env and your Atlas IP access list.");
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail badParameter(MethodArgumentTypeMismatchException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid value for " + e.getName() + ".");
+    }
+
+    @ExceptionHandler(AuditEventNotFoundException.class)
+    public ProblemDetail auditEventNotFound(AuditEventNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(BlockchainException.class)
+    public ProblemDetail blockchain(BlockchainException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    }
+
+    @ExceptionHandler(BackupException.class)
+    public ProblemDetail backup(BackupException e) {
+        return ProblemDetail.forStatusAndDetail(e.status(), e.getMessage());
+    }
+
     @ExceptionHandler(ChatUnavailableException.class)
     public ProblemDetail chatUnavailable(ChatUnavailableException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
@@ -155,6 +182,8 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(MlServiceException.class)
     public ProblemDetail mlUnavailable(MlServiceException e) {
+        // The model's own message only: never the image, the patient or the request.
+        log.error("ML inference failed: {}", e.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
 }

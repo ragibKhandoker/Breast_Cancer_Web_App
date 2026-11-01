@@ -1,6 +1,7 @@
 package com.cancerweb.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,10 @@ import com.cancerweb.backend.dto.VerificationRequest;
 import com.cancerweb.backend.security.CurrentUser;
 import com.cancerweb.backend.service.UserService;
 import com.cancerweb.backend.service.UserService.PasswordReset;
+import com.cancerweb.backend.model.User;
+import com.cancerweb.backend.audit.AuditEventType;
+import com.cancerweb.backend.audit.AuditService;
+import com.cancerweb.backend.audit.AuditService.Actor;
 
 import jakarta.validation.Valid;
 
@@ -32,8 +37,10 @@ import jakarta.validation.Valid;
 public class AdminUserController {
 
     private final UserService userService;
+    private final AuditService audit;
 
-    public AdminUserController(UserService userService) {
+    public AdminUserController(UserService userService, AuditService audit) {
+        this.audit = audit;
         this.userService = userService;
     }
 
@@ -69,9 +76,11 @@ public class AdminUserController {
     /** The only way to create DOCTOR and ADMIN accounts. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse create(@Valid @RequestBody CreateUserRequest request) {
-        return UserResponse.from(
-                userService.createAccount(request.fullName(), request.email(), request.password(), request.role()));
+    public UserResponse create(@Valid @RequestBody CreateUserRequest request, @AuthenticationPrincipal CurrentUser admin) {
+        User created = userService.createAccount(request.fullName(), request.email(), request.password(), request.role());
+        audit.record(AuditEventType.ACCOUNT_CREATED_BY_ADMIN, Actor.of(admin), "USER", created.id(),
+                Map.of("role", created.role().name()));
+        return UserResponse.from(created);
     }
 
     /** Disable or re-enable an account. A disabled account cannot log in, and its current logins stop working. */

@@ -1,0 +1,16 @@
+{
+  "name": "breastcare-audit-blockchain",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AuditIntegrity smart contract: write-once SHA-256 proofs of BreastCare audit events (local/test chains only).",
+  "scripts": {
+    "node": "hardhat node",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.17"
+  }
+}

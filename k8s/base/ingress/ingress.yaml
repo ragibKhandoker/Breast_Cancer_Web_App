@@ -1,0 +1,44 @@
+# HTTPS entry point (ingress-nginx). /api and the health check go straight to the backend, everything else to the
+# website. TLS: cert-manager issues breastcare-tls from the ClusterIssuer named below (see KUBERNETES_SETUP.md), or
+# create the secret yourself. Overlays replace the host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: breastcare
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "51m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - breastcare.example.com
+      secretName: breastcare-tls
+  rules:
+    - host: breastcare.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: breastcare-backend
+                port:
+                  name: http
+          - path: /actuator/health
+            pathType: Prefix
+            backend:
+              service:
+                name: breastcare-backend
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: breastcare-frontend
+                port:
+                  name: http
