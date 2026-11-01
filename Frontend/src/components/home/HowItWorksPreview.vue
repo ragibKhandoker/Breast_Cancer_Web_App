@@ -9,7 +9,7 @@ const previewSteps = HOW_IT_WORKS_STEPS.slice(0, 4)
 
 <template>
   <section class="container preview">
-    <div v-reveal class="heading">
+    <div v-reveal class="heading dark-box">
       <span class="pill">How It Works</span>
       <h2>From upload to result in four steps</h2>
     </div>
@@ -24,7 +24,7 @@ const previewSteps = HOW_IT_WORKS_STEPS.slice(0, 4)
 .preview { padding-bottom: 3rem; }
 .heading {
   width: fit-content; margin: 0 auto 1.75rem; padding: 0.9rem 1.75rem; border-radius: 22px; text-align: center;
-  background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);
+  background: var(--surface); backdrop-filter: blur(8px);
 }
 .pill { display: inline-block; padding: 0.25rem 0.85rem; border-radius: 999px; background: var(--pink-100); color: var(--pink-600); font-weight: 600; font-size: 0.85rem; }
 h2 { margin: 0.5rem 0 0; color: var(--purple-900); font-size: clamp(1.4rem, 3vw, 1.8rem); }

@@ -117,7 +117,7 @@ onMounted(load)
         <p>{{ filter === 'OPEN' ? 'No one is waiting for a password reset.' : 'No requests here.' }}</p>
       </div>
       <ul v-else class="requests">
-        <li v-for="req in requests" :key="req.id" class="request" :data-status="req.status">
+        <li v-for="req in requests" :key="req.id" class="request dark-box" :data-status="req.status">
           <div class="req-main">
             <span class="req-icon"><AppIcon name="shield-check" :size="18" /></span>
             <div class="min0">
@@ -179,18 +179,18 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .min0 { min-width: 0; flex: 1; }
 .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
 .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.chip { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font: 600 0.82rem 'Poppins', sans-serif; cursor: pointer; }
+.chip { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--muted); font: 600 0.82rem 'Poppins', sans-serif; cursor: pointer; }
 .chip.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
 
 .requests { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
-.request { padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: #fff; transition: box-shadow 0.2s; }
+.request { padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); transition: box-shadow 0.2s; }
 .request[data-status='OPEN'] { border-left: 4px solid var(--pink-600); }
 .request:hover { box-shadow: 0 8px 22px rgba(42, 22, 80, 0.08); }
 .req-main { display: flex; gap: 0.8rem; align-items: flex-start; }
 .req-icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--pink-50); color: var(--pink-600); }
 .req-main strong { display: block; color: var(--purple-900); }
 .email { display: block; color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
-.msg { margin: 0.4rem 0 0; padding: 0.5rem 0.7rem; border-radius: 10px; background: #fbf8fd; color: var(--text); font-size: 0.88rem; overflow-wrap: anywhere; }
+.msg { margin: 0.4rem 0 0; padding: 0.5rem 0.7rem; border-radius: 10px; background: var(--pink-50); color: var(--text); font-size: 0.88rem; overflow-wrap: anywhere; }
 .meta { display: block; margin-top: 0.35rem; color: var(--muted); font-size: 0.78rem; }
 .pill { flex: none; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.74rem; font-weight: 600; background: #fff4e5; color: #9a3412; }
 .pill[data-status='RESOLVED'] { background: #e8f5e9; color: #1b5e20; }

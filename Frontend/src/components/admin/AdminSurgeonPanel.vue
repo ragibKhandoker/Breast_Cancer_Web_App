@@ -2,7 +2,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import AppIcon from '../common/AppIcon.vue'
 import SurgeonAvatar from '../appointments/SurgeonAvatar.vue'
-import { listSurgeonProfiles, reviewSurgeon, surgeonDocumentUrl } from '../../services/adminService'
+import { listSurgeonProfiles, reviewSurgeon, surgeonDocumentUrl, listUsers } from '../../services/adminService'
 import { errorMessage, fieldErrors } from '../../services/http'
 import { dayLabels, formatFee, formatTime, formatDateTime } from '../../appointments/format'
 
@@ -17,6 +17,12 @@ const STATUS = {
 }
 
 const profiles = ref([])
+// Doctor accounts that have not created a Breast Surgeon profile yet, so they cannot be reviewed here.
+const doctors = ref([])
+const withoutProfile = computed(() => {
+  const owners = new Set(profiles.value.map((p) => p.userId))
+  return doctors.value.filter((d) => !owners.has(d.id))
+})
 const loading = ref(true)
 const listError = ref('')
 const filter = ref('PENDING')
@@ -39,7 +45,9 @@ async function load() {
   loading.value = true
   listError.value = ''
   try {
-    profiles.value = await listSurgeonProfiles()
+    const [list, users] = await Promise.all([listSurgeonProfiles(), listUsers()])
+    profiles.value = list
+    doctors.value = users.filter((u) => u.role === 'DOCTOR' && !u.disabled)
     if (selected.value) selected.value = profiles.value.find((p) => p.id === selected.value.id) ?? null
   } catch (err) {
     listError.value = errorMessage(err)
@@ -97,6 +105,14 @@ onMounted(load)
           </button>
         </li>
       </ul>
+
+      <div v-if="!loading && withoutProfile.length" class="no-profile">
+        <h4>Profile not created yet <span class="count">{{ withoutProfile.length }}</span></h4>
+        <p class="muted">They must sign in and fill <strong>My Profile</strong> first.</p>
+        <ul>
+          <li v-for="d in withoutProfile" :key="d.id"><strong>{{ d.fullName }}</strong><span class="muted">{{ d.email }}</span></li>
+        </ul>
+      </div>
     </div>
 
     <div class="detail card">
@@ -159,7 +175,7 @@ onMounted(load)
 .surgeon-review { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 1rem; align-items: start; }
 .queue, .detail { border-radius: 20px; }
 .filters { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-.filters button { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1.5px solid var(--border); background: #fff; color: var(--purple-900); font: 500 0.8rem 'Poppins', sans-serif; cursor: pointer; }
+.filters button { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1.5px solid var(--border); background: var(--surface); color: var(--purple-900); font: 500 0.8rem 'Poppins', sans-serif; cursor: pointer; }
 .filters button.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
 .count { font-size: 0.7rem; font-weight: 700; opacity: 0.8; }
 .search { display: flex; align-items: center; gap: 0.4rem; margin: 0.7rem 0; padding: 0 0.7rem; border: 1.5px solid var(--border); border-radius: 12px; color: var(--muted); }
@@ -183,21 +199,28 @@ onMounted(load)
 .top h3 { margin: 0; color: var(--purple-900); font-size: 1.2rem; }
 .top p { margin: 0.1rem 0 0; font-size: 0.88rem; }
 .pink { color: var(--pink-600); font-weight: 600; }
-.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem 1.2rem; margin: 1.2rem 0; padding: 1rem; border-radius: 14px; background: #fbf8fc; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem 1.2rem; margin: 1.2rem 0; padding: 1rem; border-radius: 14px; background: var(--pink-50); }
 .facts .wide { grid-column: 1 / -1; }
 .facts dt { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .facts dd { margin: 0.15rem 0 0; font-size: 0.9rem; overflow-wrap: anywhere; }
 .bio { white-space: pre-line; line-height: 1.55; }
 h4 { margin: 0 0 0.5rem; color: var(--purple-900); }
 .docs { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.35rem; }
-.docs li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: #f6f0ff; font-size: 0.88rem; }
+.docs li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: var(--pink-50); font-size: 0.88rem; }
 .docs li :deep(svg) { color: #6b3fb5; }
 .docs a { color: #4a2a8a; font-weight: 600; text-decoration: underline; }
-.prev-note { padding: 0.6rem 0.8rem; border-radius: 10px; background: #fff7e6; font-size: 0.88rem; }
+.prev-note { padding: 0.6rem 0.8rem; border-radius: 10px; background: #fff7e6; color: #8a5300; font-size: 0.88rem; }
 textarea { width: 100%; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 12px; font: 400 0.92rem 'Poppins', sans-serif; color: var(--text); resize: vertical; }
 textarea:focus { outline: none; border-color: var(--pink-600); box-shadow: 0 0 0 4px rgba(216, 27, 106, 0.15); }
 .decide { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
-.reject { background: #fff; border-color: #f5b5b0; color: var(--high); }
+.reject { background: var(--surface); border-color: #f5b5b0; color: var(--high); }
 .reject:hover { background: #fdecea; box-shadow: none; }
 @media (max-width: 960px) { .surgeon-review { grid-template-columns: 1fr; } .facts { grid-template-columns: 1fr; } }
+.no-profile { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px dashed var(--border); }
+.no-profile h4 { display: flex; align-items: center; gap: 0.4rem; margin: 0; font-size: 0.92rem; color: var(--purple-900); }
+.no-profile > p { margin: 0.2rem 0 0.5rem; font-size: 0.82rem; }
+.no-profile ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.no-profile li { display: grid; padding: 0.45rem 0.65rem; border-radius: 10px; background: var(--pink-50); font-size: 0.86rem; min-width: 0; }
+.no-profile li strong { color: var(--purple-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.no-profile li .muted { font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>

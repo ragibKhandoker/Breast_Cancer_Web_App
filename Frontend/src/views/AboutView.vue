@@ -50,7 +50,7 @@ const stack = [
   </section>
 
   <section class="container section problem">
-    <div v-reveal class="card-block">
+    <div v-reveal class="card-block dark-box">
       <h2>The problem</h2>
       <p>
         Breast cancer is one of the most common cancers among women worldwide, and finding it early makes treatment
@@ -58,7 +58,7 @@ const stack = [
         they wait a long time to have images reviewed.
       </p>
     </div>
-    <div v-reveal="120" class="card-block">
+    <div v-reveal="120" class="card-block dark-box">
       <h2>Our motivation</h2>
       <p>
         We wanted to see how modern image models can support, not replace, the people who read mammograms, and to
@@ -70,7 +70,7 @@ const stack = [
   <section class="container section">
     <h2 v-reveal class="center">Goals</h2>
     <ul class="goals">
-      <li v-for="(goal, i) in goals" :key="goal" v-reveal="i * 80">
+      <li v-for="(goal, i) in goals" :key="goal" v-reveal="i * 80" class="dark-box">
         <AppIcon name="shield-check" :size="22" class="check" />
         <span>{{ goal }}</span>
       </li>
@@ -80,7 +80,7 @@ const stack = [
   <section class="container section">
     <h2 v-reveal class="center">Technology</h2>
     <div class="stack">
-      <div v-for="(item, i) in stack" :key="item.name" v-reveal="i * 100" class="tech">
+      <div v-for="(item, i) in stack" :key="item.name" v-reveal="i * 100" class="tech dark-box">
         <span class="tech-icon"><AppIcon :name="item.icon" :size="24" /></span>
         <h3>{{ item.name }}</h3>
         <p>{{ item.text }}</p>
@@ -89,7 +89,7 @@ const stack = [
   </section>
 
   <section class="container section">
-    <div v-reveal class="notice">
+    <div v-reveal class="notice dark-box">
       <h2>Important</h2>
       <p>
         BreastCare is for research and education only. It is not a medical device, its results can be wrong, and it
@@ -113,22 +113,22 @@ p { line-height: 1.75; margin: 0 0 1rem; }
 .photo { width: 100%; height: auto; border-radius: 22px; box-shadow: var(--shadow); }
 
 .problem { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-.card-block { padding: 1.75rem; background: #fff; border: 1px solid var(--border); border-radius: 20px; }
+.card-block { padding: 1.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; }
 
 .goals { list-style: none; margin: 0 auto; padding: 0; max-width: 760px; display: grid; gap: 0.85rem; }
 .goals li {
   display: flex; gap: 0.8rem; align-items: flex-start; padding: 1rem 1.25rem;
-  background: #fff; border: 1px solid var(--border); border-radius: 14px; line-height: 1.6;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; line-height: 1.6;
 }
 .check { flex: none; color: var(--pink-600); margin-top: 2px; }
 
 .stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.25rem; }
-.tech { padding: 1.5rem; background: #fff; border: 1px solid var(--border); border-radius: 18px; }
+.tech { padding: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; }
 .tech-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--pink-100); color: var(--pink-600); }
 .tech h3 { margin: 0.9rem 0 0.4rem; color: var(--purple-900); font-size: 1.05rem; }
 .tech p { margin: 0; font-size: 0.93rem; line-height: 1.6; }
 
-.notice { padding: 2rem; border-radius: 22px; background: var(--pink-50); border: 1px solid var(--pink-300); text-align: center; }
+.notice { padding: 2rem; border-radius: 22px; background: var(--surface); border: 1px solid var(--border); text-align: center; }
 .notice p { max-width: 640px; margin: 0 auto 1.5rem; }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
 

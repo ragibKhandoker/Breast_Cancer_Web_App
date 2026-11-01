@@ -249,7 +249,7 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 th, td { text-align: left; padding: 0.65rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
 th { color: var(--muted); font-weight: 600; font-size: 0.82rem; }
-tr.off td { background: #fbf7f9; }
+tr.off td { background: var(--pink-50); }
 .name { display: block; color: var(--purple-900); }
 .email { display: block; font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
 .you { margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 4px; background: var(--pink-100); color: var(--pink-600); font-size: 0.72rem; font-weight: 600; }

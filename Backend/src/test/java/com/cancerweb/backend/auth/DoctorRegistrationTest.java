@@ -167,13 +167,16 @@ class DoctorRegistrationTest extends IntegrationTest {
         mvc.perform(get("/api/auth/me").cookie(doctor)).andExpect(jsonPath("$.verificationStatus").value("VERIFIED"));
         mvc.perform(get("/api/doctors/breast-surgeons")).andExpect(jsonPath("$.length()").value(1));
 
-        // An account the administrator rejects leaves the listing, and its profile cannot be approved again.
+        // An account the administrator rejects leaves the listing. Approving the profile again (in the Breast
+        // Surgeons tab, where doctors are checked) verifies the account again and lists it.
         String doctorId = users.findByEmail("nasrin@example.com").orElseThrow().id();
         mvc.perform(withJson(patch("/api/admin/users/" + doctorId + "/verification"),
                         "{\"status\":\"REJECTED\",\"note\":\"Registration lapsed.\"}").cookie(admin))
                 .andExpect(status().isOk());
         mvc.perform(get("/api/doctors/breast-surgeons")).andExpect(jsonPath("$.length()").value(0));
         mvc.perform(withJson(patch("/api/admin/breast-surgeons/" + profileId + "/review"), "{\"status\":\"APPROVED\"}").cookie(admin))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/auth/me").cookie(doctor)).andExpect(jsonPath("$.verificationStatus").value("VERIFIED"));
+        mvc.perform(get("/api/doctors/breast-surgeons")).andExpect(jsonPath("$.length()").value(1));
     }
 }

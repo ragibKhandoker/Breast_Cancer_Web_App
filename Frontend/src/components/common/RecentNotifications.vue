@@ -72,11 +72,11 @@ async function open(item) {
   display: flex; align-items: flex-start; gap: 0.75rem; width: 100%; padding: 0.7rem 0.8rem; border: 1px solid transparent;
   border-radius: 14px; background: transparent; text-align: left; font: inherit; color: var(--text); cursor: pointer;
 }
-.entry:hover { background: #fbf6fa; border-color: var(--border); }
+.entry:hover { background: var(--pink-50); border-color: var(--border); }
 .entry:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 1px; }
 .unread .entry { background: var(--pink-50); }
 .entry-icon { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #f3eef8; color: var(--purple-900); }
-.unread .entry-icon { background: #fff; color: var(--pink-600); }
+.unread .entry-icon { background: var(--surface); color: var(--pink-600); }
 .entry-text { flex: 1; min-width: 0; display: grid; gap: 0.15rem; }
 .entry-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; }
 .entry-top strong { font-size: 0.9rem; color: var(--purple-900); }

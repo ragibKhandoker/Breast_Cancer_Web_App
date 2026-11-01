@@ -41,7 +41,7 @@ async function copy() {
 .temp { margin-top: 0.75rem; padding: 1rem 1.1rem; border-radius: 14px; background: #ecfdf3; border: 1px solid #a7f3d0; color: #14532d; }
 .title { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.6rem; font-weight: 600; overflow-wrap: anywhere; }
 .code { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.4rem 0.4rem 0.9rem; border-radius: 10px; background: #fff; border: 1px dashed #34d399; }
-.code code { flex: 1; font: 600 1.1rem ui-monospace, 'Cascadia Code', Consolas, monospace; letter-spacing: 0.06em; color: var(--purple-900); user-select: all; overflow-wrap: anywhere; }
+.code code { flex: 1; font: 600 1.1rem ui-monospace, 'Cascadia Code', Consolas, monospace; letter-spacing: 0.06em; color: #2a1650; user-select: all; overflow-wrap: anywhere; }
 .copy, .done { padding: 0.4rem 0.85rem; border: 0; border-radius: 8px; font: 600 0.85rem 'Poppins', sans-serif; cursor: pointer; }
 .copy { background: #16a34a; color: #fff; }
 .done { margin-top: 0.6rem; background: none; color: #166534; padding-left: 0; }

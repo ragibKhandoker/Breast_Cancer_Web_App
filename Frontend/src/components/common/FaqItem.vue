@@ -11,7 +11,7 @@ const id = useId()
 </script>
 
 <template>
-  <div class="faq-item" :class="{ open }">
+  <div class="faq-item dark-box" :class="{ open }">
     <h3 class="question">
       <button
         :id="`${id}-q`"
@@ -35,7 +35,7 @@ const id = useId()
 
 <style scoped>
 .faq-item {
-  background: #fff; border: 1px solid var(--border); border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
 .faq-item.open { border-color: var(--pink-300); box-shadow: var(--shadow); }

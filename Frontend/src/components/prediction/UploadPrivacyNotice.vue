@@ -7,7 +7,7 @@ defineProps({ id: { type: String, default: 'upload-privacy' } })
 </script>
 
 <template>
-  <section class="privacy card" :aria-labelledby="`${id}-title`">
+  <section class="privacy card dark-box" :aria-labelledby="`${id}-title`">
     <h2 :id="`${id}-title`" class="privacy-title">
       <AppIcon name="shield-check" :size="20" />
       Privacy notice
@@ -23,7 +23,7 @@ defineProps({ id: { type: String, default: 'upload-privacy' } })
 </template>
 
 <style scoped>
-.privacy { background: rgba(255, 255, 255, 0.9); }
+.privacy { background: var(--surface); }
 .privacy-title {
   display: flex; align-items: center; gap: 0.5rem;
   margin: 0 0 0.6rem; font-size: 1.05rem; color: var(--purple-900);

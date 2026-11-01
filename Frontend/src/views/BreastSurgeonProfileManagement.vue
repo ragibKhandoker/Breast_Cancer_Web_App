@@ -308,7 +308,7 @@ onMounted(load)
 .status-icon { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; }
 .status-card.pending { border-left-color: #f0b44c; } .pending .status-icon { background: #fff7e6; color: #8a5300; }
 .status-card.approved { border-left-color: #43a047; } .approved .status-icon { background: #e8f5e9; color: #2e7d32; }
-.status-card.rejected { border-left-color: var(--high); } .rejected .status-icon { background: #fdecea; color: var(--high); }
+.status-card.rejected { border-left-color: var(--high); } .rejected .status-icon { background: #fdecea; color: #c62828; }
 .review-note { padding: 0.6rem 0.8rem; border-radius: 10px; background: #fdecea; color: #8e1c1c; }
 .grid-view { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.2rem; align-items: start; }
 .summary, .docs { border-radius: 22px; padding: 1.5rem; }
@@ -327,7 +327,7 @@ onMounted(load)
 .docs h2 { margin: 0; font-size: 1.1rem; color: var(--purple-900); }
 .small { margin: 0.2rem 0 0.9rem; font-size: 0.85rem; }
 .doc-list { list-style: none; margin: 0 0 0.9rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.45rem; }
-.doc-list li { min-width: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.7rem; border-radius: 12px; background: #f8f6fa; font-size: 0.88rem; }
+.doc-list li { min-width: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.7rem; border-radius: 12px; background: var(--pink-50); font-size: 0.88rem; }
 .doc-list li > :deep(svg) { flex: none; color: var(--pink-600); }
 .doc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--purple-900); font-weight: 500; text-decoration: underline; }
 .doc-list .muted, .doc-list .remove { flex: none; white-space: nowrap; }

@@ -208,6 +208,23 @@ class BreastSurgeonAppointmentTest extends IntegrationTest {
     }
 
     @Test
+    void approvingAProfileVerifiesTheDoctorAccountEvenIfItWasRejected() throws Exception {
+        Cookie admin = signedIn(Role.ADMIN, "a@example.com");
+        Cookie doctor = signedIn(Role.DOCTOR, "d@example.com");
+        String doctorId = mongo.findOne(Query.query(Criteria.where("email").is("d@example.com")), User.class).id();
+        // Doctors are no longer checked in the patient verification queue, so a rejected account must not block approval.
+        mvc.perform(withJson(patch("/api/admin/users/" + doctorId + "/verification"),
+                        "{\"status\":\"REJECTED\",\"note\":\"Upload your BMDC certificate\"}").cookie(admin))
+                .andExpect(status().isOk());
+        String id = createProfile(doctor, "Dr. Nasrin Akter", "BMDC-A-1234");
+        uploadDocument(doctor);
+        review(admin, id, "APPROVED", null);
+        assertThat(mongo.findOne(Query.query(Criteria.where("email").is("d@example.com")), User.class).verificationStatus())
+                .hasToString("VERIFIED");
+        mvc.perform(get(BASE)).andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
     void surgeonManagesOwnProfilePhotoDocumentsAndAvailability() throws Exception {
         Cookie admin = signedIn(Role.ADMIN, "a@example.com");
         Cookie doctor = signedIn(Role.DOCTOR, "d@example.com");

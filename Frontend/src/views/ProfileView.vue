@@ -16,6 +16,7 @@ import {
 } from '../auth/validation'
 import { getProfile, updateProfile, changeEmail, changePassword } from '../services/profileService'
 import { errorMessage, fieldErrors } from '../services/http'
+import { APP_ROUTES } from '../config/appRoutes'
 
 const profile = ref(null)
 const loading = ref(true)
@@ -270,6 +271,11 @@ onMounted(load)
         </ul>
       </div>
 
+      <p v-if="isDoctor" class="alert info notice">
+        <AppIcon name="heart" :size="20" />
+        <span>Your Breast Surgeon profile is on <RouterLink :to="APP_ROUTES.profile">My Profile</RouterLink>. Admins review it there.</span>
+      </p>
+
       <div v-if="profile.mustChangePassword" class="alert error notice" role="alert">
         <AppIcon name="shield-check" :size="20" />
         <span>
@@ -426,7 +432,7 @@ onMounted(load)
 
 /* Frosted cards over the radiologist photo: the photo shows through softly and the forms stay readable. */
 .profile-page .card {
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--surface);
   backdrop-filter: blur(14px) saturate(1.15);
   -webkit-backdrop-filter: blur(14px) saturate(1.15);
   border: 1px solid rgba(255, 255, 255, 0.75);
@@ -444,7 +450,7 @@ onMounted(load)
   padding: 2rem 2rem 1.85rem; color: #fff;
   background:
     radial-gradient(circle at 8% 120%, rgba(255, 255, 255, 0.22), transparent 45%),
-    linear-gradient(110deg, rgba(150, 12, 80, 0.95) 0%, rgba(196, 22, 120, 0.86) 42%, rgba(107, 63, 181, 0.7) 100%),
+    linear-gradient(110deg, rgba(130, 10, 70, 0.97) 0%, rgba(170, 18, 104, 0.94) 45%, rgba(92, 52, 160, 0.9) 100%),
     url('../assets/images/profile-radiologist-bg.jpg') center 38% / cover no-repeat;
 }
 
@@ -465,18 +471,18 @@ onMounted(load)
 
 .eyebrow {
   margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.92);
 }
 .identity h1 {
   margin: 0.2rem 0 0.2rem; font-size: 1.95rem; line-height: 1.2; color: #fff;
   text-shadow: 0 2px 14px rgba(60, 0, 40, 0.35); overflow-wrap: anywhere;
 }
-.email { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.9rem; color: rgba(255, 255, 255, 0.88); overflow-wrap: anywhere; }
+.email { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.9rem; color: #fff; overflow-wrap: anywhere; }
 .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .badge {
   display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.85rem; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35); color: #fff;
-  font-size: 0.8rem; font-weight: 500; backdrop-filter: blur(6px);
+  background: rgba(255, 255, 255, 0.24); border: 1px solid rgba(255, 255, 255, 0.5); color: #fff;
+  font-size: 0.84rem; font-weight: 600; backdrop-filter: blur(6px);
 }
 .badge.role { background: #fff; border-color: #fff; color: var(--pink-600); font-weight: 600; }
 .badge.role[data-role='DOCTOR'] { color: #6b3fb5; }
@@ -501,24 +507,24 @@ onMounted(load)
 .ring-value { stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
 .ring-label { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; line-height: 1.1; }
 .ring-label strong { font-size: 1.35rem; }
-.ring-label span { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+.ring-label span { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .completion-title { font-weight: 600; font-size: 0.95rem; }
-.completion-text p { margin: 0.2rem 0 0; font-size: 0.82rem; color: rgba(255, 255, 255, 0.85); }
+.completion-text p { margin: 0.2rem 0 0; font-size: 0.88rem; color: #fff; }
 
 /* Quick facts strip */
 .facts {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.25rem 0.5rem;
   margin: 0; padding: 1rem 1.5rem; list-style: none;
 }
-.facts li { display: flex; align-items: center; gap: 0.7rem; min-width: 0; padding: 0.35rem 0.25rem; }
+.facts li { display: flex; align-items: flex-start; gap: 0.7rem; min-width: 0; padding: 0.35rem 0.25rem; }
 .fact-icon {
   flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px;
   background: var(--pink-50); color: var(--pink-500); border: 1px dashed var(--pink-300);
 }
 .fact-icon.filled { background: linear-gradient(135deg, var(--pink-600), #b5179e); color: #fff; border-color: transparent; }
 .fact-text { display: grid; min-width: 0; }
-.fact-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-.fact-value { color: var(--purple-900); font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fact-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.fact-value { color: var(--purple-900); font-weight: 600; font-size: 0.95rem; line-height: 1.35; overflow-wrap: anywhere; }
 .fact-add {
   justify-self: start; padding: 0; border: 0; background: none; cursor: pointer;
   color: var(--pink-600); font: 500 0.88rem 'Poppins', sans-serif;
@@ -542,16 +548,18 @@ onMounted(load)
   box-shadow: 0 8px 18px rgba(216, 27, 106, 0.28);
 }
 .section-head h2 { margin: 0; font-size: 1.15rem; color: var(--purple-900); }
-.section-head .muted { margin: 0.15rem 0 0; overflow-wrap: anywhere; }
+.section-head .muted { margin: 0.15rem 0 0; overflow-wrap: anywhere; color: var(--muted); }
+.section .form-field label { color: var(--purple-900); font-weight: 600; }
+.profile-page .muted { color: var(--muted); }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .optional {
-  margin-left: 0.3rem; padding: 0.05rem 0.5rem; border-radius: 999px; background: var(--pink-50);
-  font-weight: 500; font-size: 0.72rem; color: var(--muted); vertical-align: middle;
+  margin-left: 0.3rem; padding: 0.05rem 0.5rem; border-radius: 999px; background: #f1eff5;
+  font-weight: 500; font-size: 0.75rem; color: var(--muted); vertical-align: middle;
 }
 .section :deep(.form-field input),
 .section .form-field select,
 .section .form-field textarea {
-  background: #fffafc; transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  background: var(--pink-50); transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 .section :deep(.form-field input:focus),
 .section .form-field select:focus,

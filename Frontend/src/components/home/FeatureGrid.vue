@@ -12,9 +12,9 @@ const features = [
 
 <template>
   <section class="container features">
-    <h2 v-reveal class="title"><span class="rule"></span>Explore Our Features<span class="rule"></span></h2>
+    <h2 v-reveal class="title dark-box"><span class="rule"></span>Explore Our Features<span class="rule"></span></h2>
     <div class="cards">
-      <RouterLink v-for="(f, i) in features" :key="f.title" v-reveal="i * 120" :to="f.to" class="feature">
+      <RouterLink v-for="(f, i) in features" :key="f.title" v-reveal="i * 120" :to="f.to" class="feature dark-box">
         <AppIcon :name="f.icon" :size="44" :stroke-width="1.8" class="icon" />
         <h3>{{ f.title }}</h3>
         <p>{{ f.text }}</p>
@@ -28,7 +28,7 @@ const features = [
 .title {
   display: flex; align-items: center; justify-content: center; gap: 1rem; width: fit-content;
   margin: 0 auto 1.75rem; padding: 0.5rem 1.5rem; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(8px);
+  background: var(--surface); backdrop-filter: blur(8px);
   color: var(--purple-900); font-size: clamp(1.4rem, 3vw, 1.8rem);
 }
 .rule { width: 70px; height: 2px; background: var(--pink-500); }
@@ -37,7 +37,7 @@ const features = [
 .feature {
   display: flex; flex-direction: column; align-items: center; text-align: center;
   padding: 1.75rem 1.25rem; border: 1px solid var(--border); border-radius: 18px;
-  background: linear-gradient(180deg, #fff 0%, var(--pink-50) 100%);
+  background: var(--surface);
   /* Includes the scroll-reveal fade (v-reveal) as well as the hover lift. */
   transition: opacity 0.7s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s;
 }

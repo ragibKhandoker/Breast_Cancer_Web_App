@@ -6,9 +6,9 @@ import { GENDER_OPTIONS } from '../../auth/validation'
 import { listUsers, getUserDetail, setVerification, resetPassword } from '../../services/adminService'
 import { errorMessage, fieldErrors } from '../../services/http'
 
-// Checking patients' and doctors' details: a queue on the left (Patients or Doctors), the selected person's
-// details and the Verify / Reject decision on the right. Self-registered doctors start pending; patients cannot
-// share reports with a doctor until they are verified.
+// Checking patients' details: a queue on the left, the selected patient's details and the Verify / Reject
+// decision on the right. Doctors are checked in the Breast Surgeons tab instead: approving a surgeon's profile
+// verifies their account too.
 const emit = defineEmits(['counts-changed'])
 
 const STATUS = {
@@ -17,18 +17,8 @@ const STATUS = {
   REJECTED: { label: 'Rejected', icon: 'alert-circle' },
 }
 
-const accounts = ref([])
-const who = ref('PATIENT') // which queue: PATIENT or DOCTOR
-const noun = computed(() => (who.value === 'DOCTOR' ? 'doctor' : 'patient'))
-const patients = computed(() => accounts.value.filter((u) => u.role === who.value))
-const pendingBy = computed(() => ({
-  PATIENT: accounts.value.filter((u) => u.role === 'PATIENT' && u.verificationStatus === 'PENDING').length,
-  DOCTOR: accounts.value.filter((u) => u.role === 'DOCTOR' && u.verificationStatus === 'PENDING').length,
-}))
-function switchQueue(role) {
-  who.value = role
-  selected.value = null
-}
+const patients = ref([])
+const noun = 'patient'
 const loading = ref(true)
 const listError = ref('')
 const filter = ref('PENDING')
@@ -53,7 +43,7 @@ async function load() {
   loading.value = true
   listError.value = ''
   try {
-    accounts.value = (await listUsers()).filter((u) => u.role === 'PATIENT' || u.role === 'DOCTOR')
+    patients.value = (await listUsers()).filter((u) => u.role === 'PATIENT')
   } catch (err) {
     listError.value = errorMessage(err)
   } finally {
@@ -97,14 +87,6 @@ const fmtDateTime = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { da
 const details = computed(() => {
   const d = selected.value
   if (!d || detailLoading.value) return []
-  if (d.role === 'DOCTOR') {
-    return [
-      { label: 'Phone', value: d.phone, icon: 'phone' },
-      { label: 'Specialization', value: d.specialization, icon: 'award' },
-      { label: 'Hospital', value: d.hospital, icon: 'building' },
-      { label: 'Last login', value: fmtDateTime(d.lastLoginAt), icon: 'shield-check' },
-    ]
-  }
   return [
     { label: 'Phone', value: d.phone, icon: 'phone' },
     { label: 'Date of birth', value: d.dateOfBirth && `${fmtDate(d.dateOfBirth)} · ${age(d.dateOfBirth)}`, icon: 'calendar' },
@@ -120,19 +102,19 @@ async function decide(status) {
   decision.error = ''
   decision.message = ''
   if (status === 'REJECTED' && !decision.note.trim()) {
-    decision.error = `Tell the ${noun.value} what needs to be corrected.`
+    decision.error = `Tell the ${noun} what needs to be corrected.`
     return
   }
   decision.saving = true
   try {
     selected.value = await setVerification(selected.value.id, status, decision.note.trim())
-    const row = accounts.value.find((p) => p.id === selected.value.id)
+    const row = patients.value.find((p) => p.id === selected.value.id)
     if (row) row.verificationStatus = selected.value.verificationStatus
     decision.note = ''
     decision.ok = true
     decision.message = {
-      VERIFIED: who.value === 'DOCTOR' ? 'Doctor verified. Patients can now share reports with them.' : 'Patient verified.',
-      REJECTED: `Sent back to the ${noun.value} for correction.`,
+      VERIFIED: 'Patient verified.',
+      REJECTED: `Sent back to the ${noun} for correction.`,
       PENDING: 'Moved back to pending.',
     }[status]
     emit('counts-changed')
@@ -171,16 +153,9 @@ onMounted(load)
     <!-- Queue -->
     <section class="card queue" aria-labelledby="queue-title">
       <header class="queue-head">
-        <h3 id="queue-title">{{ who === 'DOCTOR' ? 'Doctors' : 'Patients' }}</h3>
+        <h3 id="queue-title">Patients</h3>
         <input v-model="search" type="search" placeholder="Search name or email" :aria-label="`Search ${noun}s`" />
       </header>
-      <div class="queue-tabs" role="tablist" aria-label="Whose details to check">
-        <button v-for="r in ['PATIENT', 'DOCTOR']" :key="r" type="button" role="tab" class="queue-tab"
-          :class="{ on: who === r }" :aria-selected="who === r" @click="switchQueue(r)">
-          {{ r === 'DOCTOR' ? 'Doctors' : 'Patients' }}
-          <span v-if="pendingBy[r]" class="n">{{ pendingBy[r] }}</span>
-        </button>
-      </div>
       <div class="chips" role="group" aria-label="Filter by verification">
         <button v-for="key in ['PENDING', 'VERIFIED', 'REJECTED', 'ALL']" :key="key" type="button" class="chip"
           :class="{ on: filter === key }" :aria-pressed="filter === key" @click="filter = key">
@@ -253,7 +228,7 @@ onMounted(load)
           <div class="decide">
             <label for="verify-note">Note to the {{ noun }} <span class="opt">needed when rejecting</span></label>
             <textarea id="verify-note" v-model="decision.note" rows="2" maxlength="300"
-              :placeholder="who === 'DOCTOR' ? 'e.g. Please add your BMDC registration certificate to your doctor profile.' : 'e.g. Please add your full date of birth.'" :aria-invalid="!!decision.error"></textarea>
+              placeholder="e.g. Please add your full date of birth." :aria-invalid="!!decision.error"></textarea>
             <p class="field-error" aria-live="polite">{{ decision.error }}</p>
             <div class="decide-actions">
               <button type="button" class="btn btn-sm approve" :disabled="decision.saving || selected.verificationStatus === 'VERIFIED'" @click="decide('VERIFIED')">
@@ -287,14 +262,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.queue-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; padding: 0.25rem; margin-bottom: 0.7rem; border-radius: 12px; background: #f6f1f8; }
-.queue-tab {
-  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.45rem; border: 0; border-radius: 9px;
-  background: transparent; color: var(--muted); font: 600 0.88rem 'Poppins', sans-serif; cursor: pointer;
-}
-.queue-tab.on { background: #fff; color: var(--pink-600); box-shadow: 0 2px 8px rgba(42, 22, 80, 0.08); }
-.queue-tab .n { padding: 0 0.45rem; border-radius: 999px; background: var(--pink-600); color: #fff; font-size: 0.72rem; }
-.queue-tab:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }
 .verify-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 1rem; align-items: start; }
 h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .small { font-size: 0.85rem; margin: 0.1rem 0 0; }
@@ -304,7 +271,7 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .queue-head input { flex: 1; min-width: 160px; max-width: 240px; padding: 0.45rem 0.7rem; border: 1.5px solid var(--border); border-radius: 10px; font: inherit; font-size: 0.88rem; }
 .queue-head input:focus { outline: none; border-color: var(--pink-600); }
 .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.9rem 0; }
-.chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 999px; background: #fff; color: var(--muted); font: 600 0.82rem 'Poppins', sans-serif; cursor: pointer; }
+.chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--muted); font: 600 0.82rem 'Poppins', sans-serif; cursor: pointer; }
 .chip .n { padding: 0 0.4rem; border-radius: 999px; background: var(--pink-50); color: var(--pink-600); font-size: 0.72rem; }
 .chip.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
 .chip.on .n { background: rgba(255, 255, 255, 0.2); color: #fff; }
@@ -339,7 +306,7 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .tag.warn { background: #ede9fe; color: #5b21b6; }
 
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; margin: 1rem 0 0; }
-.fact { padding: 0.65rem 0.8rem; border-radius: 12px; background: #fbf8fd; border: 1px solid var(--border); }
+.fact { padding: 0.65rem 0.8rem; border-radius: 12px; background: var(--pink-50); border: 1px solid var(--border); }
 .fact dt { display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 .fact dd { margin: 0.2rem 0 0; color: var(--purple-900); font-weight: 500; overflow-wrap: anywhere; }
 .fact.empty dd { color: #b45309; font-style: italic; font-weight: 400; }
@@ -355,10 +322,10 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .decide-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .decide-actions .btn { display: inline-flex; align-items: center; gap: 0.35rem; }
 .approve { background: #16a34a; border-color: #16a34a; color: #fff; }
-.reject { background: #fff; border-color: #dc2626; color: #dc2626; }
+.reject { background: var(--surface); border-color: #dc2626; color: #dc2626; }
 .link { padding: 0; border: 0; background: none; color: var(--muted); font: 600 0.85rem 'Poppins', sans-serif; text-decoration: underline; cursor: pointer; }
 
-.password-help { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem; padding: 0.9rem 1rem; border-radius: 14px; background: #f6f0ff; border: 1px solid #e4d8fb; }
+.password-help { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem; padding: 0.9rem 1rem; border-radius: 14px; background: var(--pink-50); border: 1px solid var(--border); }
 .password-help h4 { margin: 0; color: var(--purple-900); font-size: 0.95rem; }
 
 @media (max-width: 1000px) { .verify-layout { grid-template-columns: 1fr; } .people { max-height: 340px; } }

@@ -163,7 +163,7 @@ async function submit() {
   <section class="login-page" :class="{ admin: asAdmin }">
     <ToastNotice v-if="notice" v-model:open="noticeOpen" :tone="notice.tone" :title="notice.title" :message="notice.text" />
     <div class="container">
-      <div v-reveal class="shell">
+      <div v-reveal class="shell dark-box">
         <!-- Photo panel: the photo on top, a deep purple area below with what the site offers. -->
         <aside class="visual" aria-hidden="true">
           <div class="visual-frame"><div class="visual-photo"></div></div>
@@ -194,7 +194,7 @@ async function submit() {
           </header>
 
           <!-- A password reset requested from this browser -->
-          <div v-if="reset.state === 'ready'" class="reset-card ready" role="status">
+          <div v-if="reset.state === 'ready'" class="reset-card ready dark-box" role="status">
             <p class="reset-title"><AppIcon name="check-circle" :size="18" /> Your password reset was approved</p>
             <p class="reset-text">Your temporary password (shown only once, keep it until you have logged in):</p>
             <div class="reset-pw">
@@ -203,14 +203,14 @@ async function submit() {
             </div>
             <p class="reset-text">It is already filled in below. Press <strong>Log In</strong>, then choose your own password.</p>
           </div>
-          <div v-else-if="reset.state === 'waiting'" class="reset-card waiting" role="status">
+          <div v-else-if="reset.state === 'waiting'" class="reset-card waiting dark-box" role="status">
             <p class="reset-title"><AppIcon name="refresh" :size="17" /> Password reset requested</p>
             <p class="reset-text">Waiting for an administrator to approve it. Your temporary password will appear right here; this page checks by itself.</p>
           </div>
-          <div v-else-if="reset.state === 'shown'" class="reset-card closed" role="status">
+          <div v-else-if="reset.state === 'shown'" class="reset-card closed dark-box" role="status">
             <p class="reset-text">A temporary password works only once, and yours has already been shown or used. Need to log in again without your password? <RouterLink :to="APP_ROUTES.forgotPassword">Ask the administrator again</RouterLink>.</p>
           </div>
-          <div v-else-if="reset.state === 'closed'" class="reset-card closed" role="status">
+          <div v-else-if="reset.state === 'closed'" class="reset-card closed dark-box" role="status">
             <p class="reset-text">Your earlier password request is closed. Still locked out? <RouterLink :to="APP_ROUTES.forgotPassword">Ask again</RouterLink>.</p>
           </div>
 
@@ -267,11 +267,11 @@ async function submit() {
             <div class="divider"><span>New to BreastCare?</span></div>
             <p class="switch-text">Create an account</p>
             <div class="join">
-              <RouterLink :to="APP_ROUTES.register" class="join-card">
+              <RouterLink :to="APP_ROUTES.register" class="join-card dark-box">
                 <AppIcon name="heart" :size="18" />
                 <span><strong>As a patient</strong><small>Analyse scans, book surgeons</small></span>
               </RouterLink>
-              <RouterLink :to="{ path: APP_ROUTES.register, query: { as: 'doctor' } }" class="join-card">
+              <RouterLink :to="{ path: APP_ROUTES.register, query: { as: 'doctor' } }" class="join-card dark-box">
                 <AppIcon name="award" :size="18" />
                 <span><strong>As a doctor</strong><small>Set up your doctor profile</small></span>
               </RouterLink>
@@ -285,10 +285,10 @@ async function submit() {
 
 <style scoped>
 /* Password reset card */
-.reset-card { margin: -0.4rem 0 1.1rem; padding: 0.9rem 1rem; border-radius: 16px; border: 1px solid var(--border); background: #fff; }
+.reset-card { margin: -0.4rem 0 1.1rem; padding: 0.9rem 1rem; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); }
 .reset-card.ready { background: #ecfdf3; border-color: #a7f3d0; }
 .reset-card.waiting { background: var(--pink-50); border-color: var(--pink-300); }
-.reset-card.closed { background: #f7f5fa; }
+.reset-card.closed { background: var(--pink-50); }
 .reset-title { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.3rem; font-weight: 700; color: var(--purple-900); font-size: 0.92rem; }
 .ready .reset-title { color: #14532d; }
 .waiting .reset-title :deep(svg) { color: var(--pink-600); animation: spin-slow 2.4s linear infinite; }
@@ -321,7 +321,7 @@ async function submit() {
 .shell {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   max-width: 1000px; margin: 0 auto; border-radius: 28px; overflow: hidden;
-  background: rgba(255, 255, 255, 0.94); border: 1px solid rgba(255, 255, 255, 0.8);
+  background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 30px 80px rgba(42, 22, 80, 0.22), 0 4px 14px rgba(216, 27, 106, 0.08);
   transition: box-shadow 0.3s;
 }
@@ -381,20 +381,20 @@ async function submit() {
 /* "Log in as administrator", drawn as a card so it is easy to spot and tap. */
 .admin-toggle {
   position: relative; display: flex; align-items: center; gap: 0.75rem; margin: 0.3rem 0 0.2rem; padding: 0.7rem 0.9rem;
-  border: 1.5px solid var(--border); border-radius: 14px; background: #fffafc; cursor: pointer; user-select: none;
+  border: 1.5px solid var(--border); border-radius: 14px; background: var(--pink-50); cursor: pointer; user-select: none;
   transition: border-color 0.2s, background-color 0.2s;
 }
 .admin-toggle:hover { border-color: var(--pink-300); }
 .admin-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .box {
   flex: none; display: grid; place-items: center; width: 22px; height: 22px; border: 2px solid var(--pink-300); border-radius: 7px;
-  background: #fff; color: transparent; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  background: var(--surface); color: transparent; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 .toggle-text { flex: 1; display: grid; line-height: 1.3; }
 .toggle-text strong { color: var(--purple-900); font-size: 0.92rem; }
 .toggle-text span { color: var(--muted); font-size: 0.79rem; }
 .toggle-icon { flex: none; color: var(--pink-300); }
-.admin-toggle.on { border-color: #6b3fb5; background: #f6f0ff; }
+.admin-toggle.on { border-color: #a78bfa; background: rgba(107, 63, 181, 0.3); }
 .admin-toggle.on .box { background: #6b3fb5; border-color: #6b3fb5; color: #fff; }
 .admin-toggle.on .toggle-icon { color: #6b3fb5; }
 .admin-toggle:has(input:focus-visible) { outline: 3px solid var(--pink-300); outline-offset: 2px; }
@@ -417,7 +417,7 @@ async function submit() {
 .join { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
 .join-card {
   display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.8rem; border-radius: 14px;
-  border: 1.5px solid var(--border); background: #fff; color: var(--pink-600); transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  border: 1.5px solid var(--border); background: var(--surface); color: var(--pink-600); transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .join-card:hover { border-color: var(--pink-600); transform: translateY(-1px); box-shadow: 0 8px 18px rgba(216, 27, 106, 0.12); }
 .join-card:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }

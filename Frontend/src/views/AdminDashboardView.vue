@@ -162,18 +162,18 @@ onMounted(refreshCounts)
 }
 .avatar {
   display: grid; place-items: center; width: 74px; height: 74px; border-radius: 50%;
-  background: #fff; color: var(--purple-900); font-size: 1.6rem; font-weight: 700;
+  background: #fff; color: #2a1650; font-size: 1.6rem; font-weight: 700;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 .eyebrow { margin: 0; font-size: 0.78rem; font-weight: 600; color: rgba(255, 255, 255, 0.75); text-transform: uppercase; letter-spacing: 0.1em; }
 .who h1 { margin: 0.15rem 0 0.25rem; font-size: 1.65rem; color: #fff; overflow-wrap: anywhere; }
 .sub { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; color: rgba(255, 255, 255, 0.85); overflow-wrap: anywhere; }
-.badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.65rem; border-radius: 999px; background: #fff; color: var(--purple-900); font-size: 0.76rem; font-weight: 600; }
+.badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.65rem; border-radius: 999px; background: #fff; color: #2a1650; font-size: 0.76rem; font-weight: 600; }
 .header-side { display: grid; justify-items: end; gap: 0.6rem; }
 .waiting { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; border-radius: 999px; background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.84rem; font-weight: 600; }
 .waiting.calm { background: rgba(34, 197, 94, 0.25); border-color: rgba(134, 239, 172, 0.5); }
 .admin-card .btn-outline { background: transparent; border-color: rgba(255, 255, 255, 0.7); color: #fff; }
-.admin-card .btn-outline:hover { background: #fff; color: var(--purple-900); }
+.admin-card .btn-outline:hover { background: var(--surface); color: var(--purple-900); }
 
 .portal { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 1.25rem; margin-top: 1.25rem; align-items: start; }
 .sidebar { position: sticky; top: 90px; padding: 0.9rem; }

@@ -48,7 +48,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="card performance" aria-labelledby="model-performance-title">
+  <section class="card performance dark-box" aria-labelledby="model-performance-title">
     <h2 id="model-performance-title">How accurate is this model?</h2>
     <p v-if="loading" class="muted">Loading model results…</p>
     <p v-else-if="error" class="error">Could not load the model's results. {{ error }}</p>
@@ -115,14 +115,14 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.performance { background: rgba(255, 255, 255, 0.92); }
+.performance { background: var(--surface); }
 h2 { margin: 0 0 0.5rem; font-size: 1.2rem; color: var(--purple-900); }
 h3 { margin: 0; font-size: 1.02rem; color: var(--purple-900); }
 .intro { margin: 0 0 1rem; line-height: 1.55; }
 .test { padding: 1rem 0 0.5rem; border-top: 1px solid var(--border); }
 .test-meta { margin: 0.25rem 0 0.75rem; font-size: 0.85rem; color: var(--muted); line-height: 1.45; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 0.75rem; margin: 0 0 1rem; padding: 0; list-style: none; }
-.tile { display: grid; gap: 0.15rem; padding: 0.85rem 0.9rem; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+.tile { display: grid; gap: 0.15rem; padding: 0.85rem 0.9rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .tile-name { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .tile-value { font-size: 1.5rem; font-weight: 700; color: var(--purple-900); }
 .tile-ci { font-size: 0.78rem; color: var(--muted); }

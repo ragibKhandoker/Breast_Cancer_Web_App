@@ -96,7 +96,7 @@ legend { padding: 0; margin-bottom: 0.5rem; font-weight: 600; color: var(--purpl
 legend .muted { font-weight: 400; font-size: 0.82rem; }
 .days { display: flex; flex-wrap: wrap; gap: 0.45rem; }
 .day-chip {
-  position: relative; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1.5px solid var(--border); background: #fff;
+  position: relative; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1.5px solid var(--border); background: var(--surface);
   color: var(--purple-900); font-size: 0.86rem; font-weight: 500; cursor: pointer; user-select: none; transition: all 0.15s;
 }
 .day-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -116,7 +116,7 @@ legend .muted { font-weight: 400; font-size: 0.82rem; }
 .add-row input { padding: 0.5rem 0.7rem; border: 1.5px solid var(--border); border-radius: 10px; font: inherit; color: var(--text); }
 .add-row input:focus { outline: none; border-color: var(--pink-600); box-shadow: 0 0 0 4px rgba(216, 27, 106, 0.15); }
 .preset { border: 1px dashed var(--pink-300); background: var(--pink-50); color: var(--pink-600); border-radius: 999px; padding: 0.35rem 0.8rem; font: 500 0.8rem 'Poppins', sans-serif; cursor: pointer; }
-.preset:hover { background: #fff; }
+.preset:hover { background: var(--surface); }
 @media (max-width: 560px) {
   .full { display: none; }
   .short { display: inline; }

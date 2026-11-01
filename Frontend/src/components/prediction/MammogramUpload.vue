@@ -233,7 +233,7 @@ onBeforeUnmount(() => {
         @dragleave.prevent="onDragLeave"
         @drop.prevent="onDrop"
       >
-        <div v-if="!file" class="drop-area" :class="{ dragging, 'has-error': fileError }" data-testid="drop-area">
+        <div v-if="!file" class="drop-area dark-box" :class="{ dragging, 'has-error': fileError }" data-testid="drop-area">
           <span class="drop-icon"><AppIcon name="upload" :size="30" /></span>
           <p class="drop-title">{{ dragging ? 'Release to add your mammogram' : 'Drag and drop your mammogram here' }}</p>
           <p class="drop-or">or</p>
@@ -384,7 +384,7 @@ onBeforeUnmount(() => {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;
   min-height: 300px; padding: 2rem 1.25rem; text-align: center;
   border: 2px dashed var(--pink-300); border-radius: 18px;
-  background: rgba(255, 255, 255, 0.88); color: var(--text);
+  background: var(--surface); color: var(--text);
   transition: border-color 0.15s, background-color 0.15s;
 }
 .drop-area.dragging { border-color: var(--pink-600); background: var(--pink-50); }
@@ -425,7 +425,7 @@ onBeforeUnmount(() => {
 /* Consent and upload */
 .consent {
   display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.9rem 1rem;
-  border: 1.5px solid var(--border); border-radius: 12px; background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface);
 }
 .consent.has-error { border-color: var(--high); }
 .consent input { flex: none; width: 1.2rem; height: 1.2rem; margin: 0.15rem 0 0; accent-color: var(--pink-600); cursor: pointer; }
@@ -442,7 +442,7 @@ onBeforeUnmount(() => {
 .failure-next { font-weight: 400; font-size: 0.9rem; }
 
 /* Progress */
-.progress { padding: 0.9rem 1rem; border-radius: 12px; background: rgba(255, 255, 255, 0.92); border: 1px solid var(--border); }
+.progress { padding: 0.9rem 1rem; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
 .progress-head { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; color: var(--purple-900); }
 .progress-track { height: 10px; border-radius: 5px; background: var(--pink-100); overflow: hidden; }
 .progress-fill { height: 100%; width: 0; border-radius: 5px; background: var(--pink-600); transition: width 0.2s ease; }

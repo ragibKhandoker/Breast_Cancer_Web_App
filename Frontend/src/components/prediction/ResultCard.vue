@@ -54,9 +54,9 @@ const viewLabel = computed(() => VIEWS.find((v) => v.value === props.prediction.
 .risk { display: grid; gap: 0.15rem; margin: 0 0 0.9rem; padding: 0.6rem 0.85rem; border-radius: 12px; border-left: 4px solid; }
 .risk-label { font-weight: 700; }
 .risk-hint { font-size: 0.88rem; color: var(--text); }
-.risk--low { border-color: var(--low); background: #edf7ee; color: var(--low); }
+.risk--low { border-color: var(--low); background: rgba(46, 125, 50, 0.18); color: var(--low); }
 .risk--intermediate { border-color: var(--warn-text); background: var(--warn-bg); color: var(--warn-text); }
-.risk--high { border-color: var(--high); background: #fdecea; color: var(--high); }
+.risk--high { border-color: var(--high); background: rgba(198, 40, 40, 0.2); color: var(--high); }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.6rem; }
 .side { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; border: 1.5px solid var(--border); border-radius: 12px; }
 .side.larger { border-color: currentColor; background: var(--pink-50); }

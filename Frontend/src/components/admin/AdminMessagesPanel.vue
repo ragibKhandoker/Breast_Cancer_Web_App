@@ -119,7 +119,7 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .count { margin-left: 0.35rem; padding: 0.1rem 0.55rem; border-radius: 999px; background: var(--pink-600); color: #fff; font-size: 0.76rem; }
 .segmented { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--pink-50); border: 1px solid var(--border); }
 .segmented button { padding: 0.35rem 0.9rem; border: 0; border-radius: 999px; background: none; color: var(--muted); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-.segmented button.on { background: #fff; color: var(--pink-600); box-shadow: 0 2px 6px rgba(216, 27, 106, 0.15); }
+.segmented button.on { background: var(--surface); color: var(--pink-600); box-shadow: 0 2px 6px rgba(216, 27, 106, 0.15); }
 .empty { display: grid; justify-items: center; gap: 0.25rem; padding: 2rem 0; color: var(--pink-300); }
 .list { list-style: none; margin: 0; padding: 0; }
 .list li { border-bottom: 1px solid var(--border); }

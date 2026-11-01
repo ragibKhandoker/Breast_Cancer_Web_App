@@ -435,8 +435,8 @@ describe('Breast Surgeon profile form', () => {
     await set('#bs-phone', '+8801712345678')
     await set('#bs-gender', 'FEMALE')
     await set('#bs-dob', '1980-05-17')
-    // Pick two common languages and type one more.
-    for (const chip of wrapper.findAll('.chip')) if (['Bangla', 'English'].includes(chip.text())) await chip.trigger('click')
+    // Bangla is chosen by default; pick English and type one more.
+    for (const chip of wrapper.findAll('.chip')) if (chip.text() === 'English') await chip.trigger('click')
     await set('#bs-language-input', 'Chakma')
     await wrapper.find('#bs-language-input').trigger('keydown', { key: 'Enter' })
     await set('#bs-designation', 'Consultant Breast Surgeon')

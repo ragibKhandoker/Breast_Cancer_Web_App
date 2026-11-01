@@ -321,8 +321,8 @@ public class BreastSurgeonService {
     /**
      * Approves or rejects a profile, or puts it back to PENDING. Approval needs at least one verification
      * document and an enabled doctor account; a rejection must say what is wrong, since the surgeon sees it.
-     * Approving checks the same credentials as verifying the account, so a self-registered doctor still
-     * waiting for verification is verified too. An account an administrator rejected must be fixed first.
+     * Approving checks the same credentials as verifying the account, so the doctor's account is verified too
+     * (pending or previously rejected): doctors are checked here, not in the patient verification queue.
      */
     public BreastSurgeonProfile review(String adminEmail, String id, SurgeonProfileStatus status, String note) {
         BreastSurgeonProfile profile = get(id);
@@ -339,10 +339,7 @@ public class BreastSurgeonService {
             User account = users.findById(profile.userId())
                     .filter(u -> u.role() == Role.DOCTOR && !u.isDisabled())
                     .orElseThrow(() -> new IllegalArgumentException("This account is no longer an active doctor account."));
-            if (account.verificationStatus() == VerificationStatus.REJECTED) {
-                throw new IllegalArgumentException("This doctor's account was rejected. Verify the account first.");
-            }
-            if (account.verificationStatus() == VerificationStatus.PENDING) {
+            if (account.verificationStatus() != VerificationStatus.VERIFIED) {
                 mongo.updateFirst(Query.query(Criteria.where("id").is(account.id())),
                         new Update().set("verification", new Verification(VerificationStatus.VERIFIED,
                                 "Verified with the Breast Surgeon profile", adminEmail, Instant.now()))

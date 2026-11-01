@@ -160,7 +160,7 @@ async function doCancel(reason) {
 .views { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .views button {
   display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1.5px solid var(--border);
-  background: #fff; color: var(--purple-900); font: 500 0.88rem 'Poppins', sans-serif; cursor: pointer;
+  background: var(--surface); color: var(--purple-900); font: 500 0.88rem 'Poppins', sans-serif; cursor: pointer;
 }
 .views button.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
 .count { min-width: 20px; padding: 0 0.35rem; border-radius: 999px; background: var(--pink-50); color: var(--pink-600); font-size: 0.72rem; font-weight: 700; text-align: center; }
@@ -188,7 +188,7 @@ async function doCancel(reason) {
 .details dt { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .details dd { margin: 0.1rem 0 0; font-size: 0.9rem; overflow-wrap: anywhere; }
 .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.8rem; }
-.reject { background: #fff; border-color: #f5b5b0; color: var(--high); }
+.reject { background: var(--surface); border-color: #f5b5b0; color: var(--high); }
 .reject:hover { background: #fdecea; box-shadow: none; }
 .inline { margin: 0; padding: 0.4rem 0.7rem; font-size: 0.85rem; }
 @media (max-width: 760px) {

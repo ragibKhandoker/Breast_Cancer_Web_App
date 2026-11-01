@@ -18,7 +18,7 @@ import { APP_ROUTES } from '../config/appRoutes'
   </section>
 
   <section class="container section">
-    <div v-reveal class="cta">
+    <div v-reveal class="cta dark-box">
       <div>
         <h2>Ready to try it?</h2>
         <p>Upload a PNG or JPG mammogram and see the model's estimate in a few seconds.</p>
@@ -35,7 +35,7 @@ import { APP_ROUTES } from '../config/appRoutes'
 .section { padding-top: 2rem; padding-bottom: 1rem; }
 .cta {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem;
-  padding: 2rem 2.25rem; border-radius: 22px; background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow);
+  padding: 2rem 2.25rem; border-radius: 22px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
 }
 h2 { margin: 0 0 0.4rem; color: var(--purple-900); }
 p { margin: 0; color: var(--text); }

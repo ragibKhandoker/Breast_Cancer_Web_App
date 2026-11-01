@@ -29,6 +29,9 @@ const GENDERS = [
 ]
 const COMMON_LANGUAGES = ['Bangla', 'English', 'Hindi', 'Urdu', 'Arabic']
 const MAX_LANGUAGES = 10
+// Filled in on a new profile so a doctor can sign up quickly; every value stays editable before saving.
+const NEW_PROFILE_DEFAULTS = { consultationFee: 1000 }
+const NEW_PROFILE_LANGUAGES = ['Bangla']
 
 const STEPS = [
   { id: 'basic', label: 'Basic Information', icon: 'user' },
@@ -55,12 +58,12 @@ function splitName(fullName) {
 
 function fromProfile(p) {
   const f = splitName(p?.fullName ?? props.defaults.fullName)
-  TEXT_FIELDS.forEach((k) => (f[k] = p?.[k] ?? props.defaults[k] ?? ''))
+  TEXT_FIELDS.forEach((k) => (f[k] = p?.[k] ?? props.defaults[k] ?? (p ? '' : NEW_PROFILE_DEFAULTS[k] ?? '')))
   return f
 }
 
 const fields = reactive(fromProfile(props.initial))
-const languages = ref([...(props.initial?.languages ?? [])])
+const languages = ref([...(props.initial ? props.initial.languages ?? [] : NEW_PROFILE_LANGUAGES)])
 const availability = ref({
   availableDays: props.initial?.availableDays ?? ['SATURDAY', 'SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY'],
   timeSlots: props.initial?.timeSlots ?? ['17:00', '17:30', '18:00', '18:30', '19:00'],
@@ -477,7 +480,7 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
 .steps { position: sticky; top: 96px; display: grid; gap: 0.7rem; }
 .step-tab {
   display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.85rem 1rem; border-radius: 12px;
-  border: 1.5px solid var(--border); background: #fff; color: var(--text); font: 500 0.95rem 'Poppins', sans-serif;
+  border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font: 500 0.95rem 'Poppins', sans-serif;
   cursor: pointer; text-align: left; transition: border-color 0.15s, box-shadow 0.15s;
 }
 .step-tab:hover { border-color: var(--pink-300); }
@@ -492,7 +495,7 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
 .card-head { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); }
 .card-head h2 { margin: 0; font-size: 1.1rem; color: var(--purple-900); }
 .card-body { padding: 1.4rem 1.5rem 0.4rem; }
-.card-foot { display: flex; justify-content: flex-end; gap: 0.7rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: #fdfafc; }
+.card-foot { display: flex; justify-content: flex-end; gap: 0.7rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--pink-50); }
 .next-btn { gap: 0.4rem; }
 
 .label, .form-field label { font-weight: 600; color: var(--purple-900); font-size: 0.9rem; }
@@ -515,7 +518,7 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
   display: flex; align-items: center; gap: 0.45rem; padding: 0.7rem 0.9rem; border-radius: 12px; border: 1.5px dashed var(--pink-300);
   background: var(--pink-50); color: var(--pink-600); font-weight: 600; font-size: 0.95rem;
 }
-.lock { margin-left: auto; padding: 0.05rem 0.5rem; border-radius: 6px; background: #fff; color: var(--muted); font-size: 0.7rem; font-weight: 600; }
+.lock { margin-left: auto; padding: 0.05rem 0.5rem; border-radius: 6px; background: #fff; color: #6f6787; font-size: 0.7rem; font-weight: 600; }
 
 /* Picture */
 .photo-block { display: grid; gap: 0.5rem; margin-bottom: 1.1rem; }
@@ -543,7 +546,7 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
 .chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: -0.4rem 0 0.9rem; }
 .chip {
   display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.85rem; border-radius: 999px;
-  border: 1.5px solid var(--border); background: #fff; color: var(--text); font: 500 0.85rem 'Poppins', sans-serif; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font: 500 0.85rem 'Poppins', sans-serif; cursor: pointer;
 }
 .chip:hover { border-color: var(--pink-300); }
 .chip.on { border-color: var(--pink-600); background: var(--pink-50); color: var(--pink-600); }
@@ -560,7 +563,7 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
 .dropzone.invalid { border-color: var(--high); }
 .dropzone:has(input:focus-visible) { outline: 3px solid var(--pink-300); outline-offset: 2px; }
 .doc-list { list-style: none; margin: 0.7rem 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
-.doc-list li { min-width: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: #f8f6fa; font-size: 0.88rem; }
+.doc-list li { min-width: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: var(--pink-50); font-size: 0.88rem; }
 .doc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .doc-list .muted, .doc-list .remove { flex: none; white-space: nowrap; }
 .remove { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }

@@ -135,7 +135,7 @@ function book() {
 .who h1 { margin: 0.5rem 0 0.1rem; font-size: clamp(1.5rem, 3vw, 2rem); }
 .designation { margin: 0; color: var(--pink-600); font-weight: 600; }
 .qual { margin: 0.4rem 0 0; color: var(--text); }
-.book-box { display: grid; justify-items: center; gap: 0.2rem; min-width: 210px; padding: 1.1rem; border-radius: 20px; background: #fff; border: 1px solid var(--border); text-align: center; }
+.book-box { display: grid; justify-items: center; gap: 0.2rem; min-width: 210px; padding: 1.1rem; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); text-align: center; }
 .fee-label { margin: 0; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
 .fee { margin: 0 0 0.5rem; font-size: 1.7rem; font-weight: 700; color: var(--purple-900); }
 .book-btn { width: 100%; justify-content: center; }
@@ -154,10 +154,51 @@ function book() {
 .facts span { display: block; font-size: 0.76rem; color: var(--muted); }
 .facts strong { color: var(--purple-900); font-weight: 600; overflow-wrap: anywhere; }
 .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; }
-.week span { padding: 0.35rem 0; border-radius: 8px; text-align: center; font-size: 0.74rem; font-weight: 600; background: #f6f3f8; color: #b3abc4; }
+.week span { padding: 0.35rem 0; border-radius: 8px; text-align: center; font-size: 0.74rem; font-weight: 600; background: var(--pink-50); color: #b3abc4; }
 .week span.on { background: var(--pink-600); color: #fff; }
 .times { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.8rem; }
 .times span { padding: 0.2rem 0.6rem; border-radius: 999px; background: #f6f0ff; color: #4a2a8a; font-size: 0.78rem; font-weight: 600; }
+/* Dark boxes: the profile's cards in deep navy-purple (the same as the Find a Breast Surgeon cards), with light
+   text, so they stand out from the pale page. */
+.details-page .card {
+  background: #1b1530; color: #e4dff0; border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 16px 36px rgba(27, 21, 48, 0.22);
+}
+.details-page .hero {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(216, 27, 106, 0.45), transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(107, 63, 181, 0.4), transparent 55%),
+    #1b1530;
+}
+.details-page .card h1, .details-page .section h2, .details-page .card h2 { color: #fff; }
+.details-page .designation { color: #f7a8c8; }
+.details-page .qual, .details-page .bio { color: #e4dff0; }
+.details-page .card .muted, .details-page .small { color: #b9b1cf; }
+.details-page .book-box { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.14); }
+.details-page .fee-label { color: #b9b1cf; }
+.details-page .fee { color: #fff; }
+.details-page .facts li > :deep(svg) { color: #f7a8c8; }
+.details-page .facts span { color: #b9b1cf; }
+.details-page .facts strong { color: #fff; }
+.details-page .week span { background: rgba(255, 255, 255, 0.07); color: #7d7596; }
+.details-page .week span.on { background: var(--pink-600); color: #fff; }
+.details-page .times span { background: rgba(247, 168, 200, 0.14); color: #f7c6dc; }
+.details-page .chosen { background: rgba(74, 222, 128, 0.12); color: #86efac; }
+
+/* The booking calendar inside the dark card. */
+.details-page :deep(.weekdays span), .details-page :deep(.legend), .details-page :deep(.group-name) { color: #b9b1cf; }
+.details-page :deep(.times h4) { color: #fff; }
+.details-page :deep(.day) { background: rgba(255, 255, 255, 0.04); color: #6f6889; }
+.details-page :deep(.day.offered) { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.16); color: #fff; }
+.details-page :deep(.day.offered:hover) { border-color: #f7a8c8; }
+.details-page :deep(.day.full) { background: rgba(255, 255, 255, 0.04); color: #8d86a0; }
+.details-page :deep(.day.active) { background: linear-gradient(135deg, var(--pink-600), #b5179e); color: #fff; }
+.details-page :deep(.sw.off) { background: rgba(255, 255, 255, 0.15); }
+.details-page :deep(.slot) { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.16); color: #fff; }
+.details-page :deep(.slot:hover:not(:disabled)) { background: rgba(216, 27, 106, 0.2); border-color: var(--pink-500); }
+.details-page :deep(.slot:disabled) { background: rgba(255, 255, 255, 0.03); color: #6f6889; }
+.details-page :deep(.slot.chosen) { background: var(--pink-600); border-color: var(--pink-600); }
+.details-page :deep(.state) { background: rgba(255, 255, 255, 0.06); color: #b9b1cf; }
 @media (max-width: 900px) {
   .hero { grid-template-columns: auto minmax(0, 1fr); }
   .book-box { grid-column: 1 / -1; }

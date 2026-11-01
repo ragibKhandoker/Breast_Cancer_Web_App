@@ -176,7 +176,7 @@ onMounted(() => {
 
       <!-- Activity -->
       <section v-reveal="80" class="stats" aria-label="Your activity">
-        <div v-for="item in activity" :key="item.label" class="stat" :data-tone="item.tone">
+        <div v-for="item in activity" :key="item.label" class="stat dark-box" :data-tone="item.tone">
           <span class="stat-icon"><AppIcon :name="item.icon" :size="20" /></span>
           <strong>{{ item.value }}</strong>
           <span>{{ item.label }}</span>
@@ -283,7 +283,7 @@ onMounted(() => {
 }
 .avatar-wrap { position: relative; }
 .avatar {
-  display: grid; place-items: center; width: 104px; height: 104px; border-radius: 50%; background: #fff; color: var(--purple-900);
+  display: grid; place-items: center; width: 104px; height: 104px; border-radius: 50%; background: #fff; color: #2a1650;
   font-size: 2.2rem; font-weight: 700; box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.22), 0 14px 30px rgba(0, 0, 0, 0.3);
 }
 .crown {
@@ -296,11 +296,11 @@ onMounted(() => {
 .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.8rem; }
 .badge.solid { background: linear-gradient(135deg, #fbbf24, #f59e0b); border-color: transparent; color: #3b2300; font-weight: 700; }
-.portal-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border-color: #fff; color: var(--purple-900); }
+.portal-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--surface); border-color: #fff; color: var(--purple-900); }
 
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
 .recent-block { margin-top: 1.25rem; }
-.stat { display: grid; gap: 0.1rem; padding: 1.1rem 1.2rem; border-radius: 18px; background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.stat { display: grid; gap: 0.1rem; padding: 1.1rem 1.2rem; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); }
 .stat-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 0.4rem; border-radius: 12px; background: var(--pink-50); color: var(--pink-600); }
 .stat[data-tone='green'] .stat-icon { background: #e8f5e9; color: #16a34a; }
 .stat[data-tone='amber'] .stat-icon { background: #fff4e5; color: #c2410c; }
@@ -318,7 +318,7 @@ onMounted(() => {
 .section-icon { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: linear-gradient(135deg, var(--purple-900), #6b3fb5); color: #fff; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .optional { font-weight: 400; font-size: 0.78rem; color: var(--muted); }
-.form-field input[readonly] { background: #f6f4fa; color: var(--muted); cursor: not-allowed; }
+.form-field input[readonly] { background: var(--pink-50); color: var(--muted); cursor: not-allowed; }
 .locked { display: flex; align-items: center; gap: 0.35rem; margin: 0.35rem 0 0.5rem; }
 .actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.25rem; }
 
@@ -329,7 +329,7 @@ onMounted(() => {
 .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; font-size: 0.9rem; line-height: 1.45; }
 .checks li { display: flex; gap: 0.5rem; align-items: flex-start; }
 .checks :deep(svg) { flex: none; margin-top: 0.15rem; color: #16a34a; }
-.protect { background: linear-gradient(160deg, #fff 0%, #f3fbf5 100%); }
+.protect { background: var(--surface); }
 
 @media (max-width: 960px) {
   .owner-card { grid-template-columns: auto minmax(0, 1fr); }

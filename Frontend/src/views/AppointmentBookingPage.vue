@@ -150,7 +150,7 @@ async function submit() {
 .flip { transform: rotate(180deg); }
 .empty { display: grid; justify-items: start; gap: 0.6rem; margin-top: 1rem; }
 .stepper { display: flex; gap: 0.6rem; list-style: none; margin: 1rem 0; padding: 0; }
-.stepper li { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem 0.4rem 0.4rem; border-radius: 999px; background: #fff; border: 1.5px solid var(--border); color: var(--muted); font-weight: 500; font-size: 0.9rem; }
+.stepper li { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem 0.4rem 0.4rem; border-radius: 999px; background: var(--surface); border: 1.5px solid var(--border); color: var(--muted); font-weight: 500; font-size: 0.9rem; }
 .stepper span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pink-50); color: var(--pink-600); font-weight: 700; font-size: 0.82rem; }
 .stepper li.on { border-color: var(--pink-600); color: var(--purple-900); }
 .stepper li.on span { background: var(--pink-600); color: #fff; }

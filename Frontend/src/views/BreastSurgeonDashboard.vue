@@ -218,9 +218,9 @@ onMounted(load)
 .pill { padding: 0.15rem 0.65rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: #fff; }
 .pill.approved, .pill.open { color: #1b5e20; }
 .pill.pending { color: #8a5300; }
-.pill.rejected, .pill.closed { color: var(--high); }
+.pill.rejected, .pill.closed { color: #c62828; }
 .hero .btn-outline { background: transparent; border-color: rgba(255, 255, 255, 0.7); color: #fff; }
-.hero .btn-outline:hover { background: #fff; color: var(--purple-900); }
+.hero .btn-outline:hover { background: var(--surface); color: var(--purple-900); }
 .alert.info { margin-top: 1rem; }
 .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.8rem; margin-top: 1.2rem; }
 .stat { display: grid; gap: 0.15rem; padding: 1rem 1.1rem; border-radius: 18px; }
@@ -234,14 +234,14 @@ onMounted(load)
 .upcoming { margin-top: 1.2rem; border-radius: 20px; }
 .upcoming h2, .panel h2 { margin: 0 0 0.6rem; font-size: 1.1rem; color: var(--purple-900); }
 .upcoming ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
-.upcoming li { display: grid; grid-template-columns: 150px 90px minmax(0, 1fr) auto; align-items: center; gap: 0.8rem; padding: 0.55rem 0.8rem; border-radius: 12px; background: #f8f6fa; font-size: 0.9rem; }
+.upcoming li { display: grid; grid-template-columns: 150px 90px minmax(0, 1fr) auto; align-items: center; gap: 0.8rem; padding: 0.55rem 0.8rem; border-radius: 12px; background: var(--pink-50); font-size: 0.9rem; }
 .upcoming .date { font-weight: 600; color: var(--purple-900); }
 .upcoming .time { color: var(--pink-600); font-weight: 600; }
 .upcoming .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tabs { display: flex; gap: 0.5rem; margin: 1.5rem 0 0.8rem; }
 .tabs button {
   display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.1rem; border-radius: 14px; border: 1.5px solid var(--border);
-  background: #fff; color: var(--purple-900); font: 600 0.92rem 'Poppins', sans-serif; cursor: pointer;
+  background: var(--surface); color: var(--purple-900); font: 600 0.92rem 'Poppins', sans-serif; cursor: pointer;
 }
 .tabs button.on { background: linear-gradient(120deg, var(--pink-600), #b5179e); border-color: transparent; color: #fff; box-shadow: 0 8px 18px rgba(216, 27, 106, 0.25); }
 .badge-count { min-width: 22px; padding: 0 0.4rem; border-radius: 999px; background: var(--pink-600); color: #fff; font-size: 0.72rem; line-height: 22px; text-align: center; }

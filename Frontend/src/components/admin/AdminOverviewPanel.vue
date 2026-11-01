@@ -248,7 +248,7 @@ onMounted(load)
 }
 .todo:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
 .todo:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-.todo-icon { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: #fff; color: var(--pink-600); }
+.todo-icon { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: var(--surface); color: var(--pink-600); }
 .todo.calm .todo-icon { color: #16a34a; }
 .todo-text { flex: 1; display: grid; min-width: 0; line-height: 1.25; }
 .todo-text strong { font-size: 1.5rem; }

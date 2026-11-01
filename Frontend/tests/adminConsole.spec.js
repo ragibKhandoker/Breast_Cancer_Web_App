@@ -254,33 +254,32 @@ describe('Admin portal: verification and password help', () => {
     expect(wrapper.find('.chip.on').text()).toContain('0') // nobody left pending
   })
 
-  it('verifies a self-registered doctor from the Doctors queue', async () => {
+  it('lists patients only: doctors are checked in the Breast Surgeons tab', async () => {
     const pendingDoctor = { id: 'd2', fullName: 'Dr. Nasrin Akter', email: 'nasrin@example.com', role: 'DOCTOR', createdAt: '2026-10-30T00:00:00Z', disabled: false, lastLoginAt: null, verificationStatus: 'PENDING' }
-    const { wrapper, admin } = await mountPortal('verification', [...PATIENTS, pendingDoctor])
-    expect(wrapper.find('.queue-tab.on').text()).toContain('Patients')
-    const doctorsTab = wrapper.findAll('.queue-tab').find((t) => t.text().startsWith('Doctors'))
-    expect(doctorsTab.find('.n').text()).toBe('1') // one doctor waiting
+    const { wrapper } = await mountPortal('verification', [...PATIENTS, pendingDoctor])
+    expect(wrapper.find('.queue-tab').exists()).toBe(false)
+    expect(wrapper.find('#queue-title').text()).toBe('Patients')
+    await wrapper.findAll('.chip').find((c) => c.text().startsWith('All')).trigger('click')
+    expect(wrapper.text()).not.toContain('Dr. Nasrin Akter')
+    expect(wrapper.text()).not.toContain('Dr. Karim')
+  })
 
-    await doctorsTab.trigger('click')
-    // Pending doctors only; the admin-made Dr. Karim is already verified.
-    expect(wrapper.findAll('.person')).toHaveLength(1)
-    expect(wrapper.find('.person').text()).toContain('Dr. Nasrin Akter')
-
-    admin.getUserDetail.mockResolvedValue({ ...pendingDoctor, updatedAt: pendingDoctor.createdAt, mustChangePassword: false, phone: '+8801712345678',
-      dateOfBirth: null, gender: null, address: null, specialization: 'Breast Surgery', hospital: 'Dhaka Breast Centre',
-      verificationNote: null, verifiedBy: null, verifiedAt: null, predictionCount: 0 })
-    await wrapper.find('.person').trigger('click')
-    await flushPromises()
-    expect(wrapper.text()).toContain('Dhaka Breast Centre')
-    expect(wrapper.find('label[for="verify-note"]').text()).toContain('Note to the doctor')
-
-    await wrapper.find('.reject').trigger('click')
-    expect(wrapper.text()).toContain('Tell the doctor what needs to be corrected.')
-    admin.setVerification.mockResolvedValue({ ...pendingDoctor, verificationStatus: 'VERIFIED' })
-    await wrapper.find('.approve').trigger('click')
-    await flushPromises()
-    expect(admin.setVerification).toHaveBeenCalledWith('d2', 'VERIFIED', '')
-    expect(wrapper.text()).toContain('Doctor verified. Patients can now share reports with them.')
+  it('lists doctors who have not created a Breast Surgeon profile yet', async () => {
+    const doctors = [
+      { id: 'd1', fullName: 'Dr. Mira Pervin', email: 'pervin@example.com', role: 'DOCTOR', disabled: false },
+      { id: 'd2', fullName: 'Dr. Afrin Sultana', email: 'afrin@example.com', role: 'DOCTOR', disabled: false },
+      { id: 'd3', fullName: 'Dr. Old Account', email: 'old@example.com', role: 'DOCTOR', disabled: true },
+    ]
+    vi.resetModules()
+    const adminMock = await import('../src/services/adminService')
+    adminMock.listSurgeonProfiles.mockResolvedValue([{ id: 's2', userId: 'd2', fullName: 'Dr. Afrin Sultana', registrationNumber: 'BMDC-1',
+      status: 'APPROVED', documents: [], photoUrl: null }])
+    const { wrapper } = await mountPortal('surgeons', [...PATIENTS, ...doctors])
+    const section = wrapper.find('.no-profile')
+    expect(section.text()).toContain('Profile not created yet')
+    expect(section.text()).toContain('Dr. Mira Pervin')
+    expect(section.text()).not.toContain('Dr. Afrin Sultana')
+    expect(section.text()).not.toContain('Dr. Old Account')
   })
 
   it('resets a password from a request and shows the temporary password once', async () => {

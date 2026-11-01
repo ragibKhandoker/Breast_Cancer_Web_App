@@ -194,13 +194,13 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .list-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
 .search, .picker input { width: 100%; padding: 0.55rem 0.8rem; border: 1.5px solid var(--border); border-radius: 12px; font: 400 0.9rem 'Poppins', sans-serif; }
 .search:focus, .picker input:focus { outline: none; border-color: var(--pink-600); }
-.picker { margin-bottom: 0.75rem; padding: 0.6rem; border-radius: 14px; background: #fbf8fd; border: 1px solid var(--border); }
+.picker { margin-bottom: 0.75rem; padding: 0.6rem; border-radius: 14px; background: var(--pink-50); border: 1px solid var(--border); }
 .picker ul { list-style: none; margin: 0.4rem 0 0; padding: 0; display: grid; gap: 0.2rem; max-height: 260px; overflow-y: auto; }
 .picker button, .conv {
   display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.55rem 0.6rem; border: 0; border-radius: 12px;
   background: transparent; text-align: left; font: inherit; color: var(--text); cursor: pointer;
 }
-.picker button:hover, .conv:hover { background: #fbf6fa; }
+.picker button:hover, .conv:hover { background: var(--pink-50); }
 .none { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
 .convs { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.2rem; max-height: 62vh; overflow-y: auto; }
 .conv.on { background: var(--pink-50); }

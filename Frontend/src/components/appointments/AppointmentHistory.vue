@@ -87,7 +87,7 @@ const shown = computed(() => props.appointments.filter((a) => filter.value === '
 .filters { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1rem; }
 .filters button {
   display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.95rem; border-radius: 999px; border: 1.5px solid var(--border);
-  background: #fff; color: var(--purple-900); font: 500 0.88rem 'Poppins', sans-serif; cursor: pointer;
+  background: var(--surface); color: var(--purple-900); font: 500 0.88rem 'Poppins', sans-serif; cursor: pointer;
 }
 .filters button:hover { border-color: var(--pink-300); }
 .filters button.on { background: var(--purple-900); border-color: var(--purple-900); color: #fff; }
@@ -115,7 +115,7 @@ const shown = computed(() => props.appointments.filter((a) => filter.value === '
 .info-line :deep(svg) { flex: none; }
 .cancelled-line { background: #f3f1f6; color: #5f5873; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
-.cancel-btn { background: #fff; border-color: #f5b5b0; color: var(--high); }
+.cancel-btn { background: var(--surface); border-color: #f5b5b0; color: var(--high); }
 .cancel-btn:hover { background: #fdecea; box-shadow: none; }
 @media (max-width: 600px) {
   .item { grid-template-columns: 1fr; }

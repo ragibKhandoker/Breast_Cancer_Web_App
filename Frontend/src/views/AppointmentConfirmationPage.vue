@@ -106,7 +106,7 @@ async function copyCode() {
 .facts dt { display: flex; align-items: center; gap: 0.35rem; font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .facts dt :deep(svg) { color: var(--pink-600); }
 .facts dd { margin: 0.2rem 0 0; color: var(--purple-900); font-weight: 500; }
-.next { margin: 0; padding: 1rem 1rem 1rem 2.2rem; border-radius: 16px; background: #f6f0ff; color: var(--text); line-height: 1.6; font-size: 0.92rem; }
+.next { margin: 0; padding: 1rem 1rem 1rem 2.2rem; border-radius: 16px; background: var(--pink-50); color: var(--text); line-height: 1.6; font-size: 0.92rem; }
 .next li + li { margin-top: 0.4rem; }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; margin-top: 1.5rem; }
 @media (max-width: 520px) { .ticket { padding: 1.3rem; } .actions .btn { flex: 1; justify-content: center; } }

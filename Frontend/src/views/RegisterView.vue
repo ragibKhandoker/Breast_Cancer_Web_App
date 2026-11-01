@@ -121,7 +121,7 @@ async function submit() {
 <template>
   <section class="register-page">
     <div class="container">
-      <div v-reveal class="shell">
+      <div v-reveal class="shell dark-box">
         <!-- Photo panel: the faces stay visible; text sits on a dark fade at the bottom. -->
         <aside class="visual" aria-hidden="true">
           <div class="visual-frame"><div class="visual-photo"></div></div>
@@ -288,7 +288,7 @@ async function submit() {
 .shell {
   display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   max-width: 1060px; margin: 0 auto; border-radius: 28px; overflow: hidden;
-  background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 0.8);
+  background: var(--surface); border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 30px 80px rgba(42, 22, 80, 0.22), 0 4px 14px rgba(216, 27, 106, 0.08);
 }
 
@@ -331,7 +331,7 @@ async function submit() {
 .account-types { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
 .account-type {
   position: relative; display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.85rem; border-radius: 14px;
-  border: 1.5px solid var(--border); background: #fff; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+  border: 1.5px solid var(--border); background: var(--surface); cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
 }
 .account-type:hover { border-color: var(--pink-300); }
 .account-type.on { border-color: var(--pink-600); background: var(--pink-50); box-shadow: 0 6px 16px rgba(216, 27, 106, 0.12); }

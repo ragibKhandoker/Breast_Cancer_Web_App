@@ -16,7 +16,7 @@ import radiologistPhoto from '../../assets/images/radiologist-mammogram.jpg'
       />
     </figure>
 
-    <div v-reveal="150" class="copy">
+    <div v-reveal="150" class="copy dark-box">
       <span class="pill">About Our Platform</span>
       <h2>Better Awareness. Better Care.</h2>
       <p>
@@ -46,7 +46,7 @@ import radiologistPhoto from '../../assets/images/radiologist-mammogram.jpg'
 /* Frosted panel so the text stays readable over the Home page photo. */
 .copy {
   padding: 1.75rem 2rem; border-radius: 22px;
-  background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(8px); box-shadow: var(--shadow);
+  background: var(--surface); backdrop-filter: blur(8px); box-shadow: var(--shadow);
 }
 .pill { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 999px; background: var(--pink-100); color: var(--pink-600); font-weight: 600; font-size: 0.9rem; }
 h2 { color: var(--purple-900); font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0.75rem 0; }

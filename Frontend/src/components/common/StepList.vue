@@ -8,7 +8,7 @@ defineProps({
 
 <template>
   <ol class="steps">
-    <li v-for="(step, i) in steps" :key="step.title" v-reveal="(i % 3) * 100" class="step">
+    <li v-for="(step, i) in steps" :key="step.title" v-reveal="(i % 3) * 100" class="step dark-box">
       <span class="number" aria-hidden="true">{{ i + 1 }}</span>
       <span class="icon" aria-hidden="true"><AppIcon :name="step.icon" :size="26" /></span>
       <h3>{{ step.title }}</h3>
@@ -24,7 +24,7 @@ defineProps({
 }
 .step {
   position: relative; padding: 1.75rem 1.5rem 1.5rem;
-  background: #fff; border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow);
 }
 .number {
   position: absolute; top: 1.1rem; right: 1.25rem;

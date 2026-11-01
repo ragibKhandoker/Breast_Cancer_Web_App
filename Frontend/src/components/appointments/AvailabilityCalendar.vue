@@ -166,11 +166,11 @@ onMounted(load)
 .weekdays span { text-align: center; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-bottom: 0.2rem; }
 .day {
   position: relative; display: grid; place-items: center; aspect-ratio: 1; min-height: 40px; border-radius: 12px;
-  border: 1.5px solid transparent; background: #f6f3f8; color: #b3abc4; font: 600 0.92rem 'Poppins', sans-serif; cursor: not-allowed;
+  border: 1.5px solid transparent; background: var(--pink-50); color: #b3abc4; font: 600 0.92rem 'Poppins', sans-serif; cursor: not-allowed;
 }
-.day.offered { background: #fff; border-color: var(--border); color: var(--purple-900); cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+.day.offered { background: var(--surface); border-color: var(--border); color: var(--purple-900); cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
 .day.offered:hover { border-color: var(--pink-300); transform: translateY(-1px); }
-.day.full { color: var(--muted); background: #fbf7fa; }
+.day.full { color: var(--muted); background: var(--pink-50); }
 .day.active { background: linear-gradient(135deg, var(--pink-600), #b5179e); border-color: transparent; color: #fff; box-shadow: 0 8px 18px rgba(216, 27, 106, 0.28); }
 .day:focus-visible, .slot:focus-visible { outline: 3px solid var(--pink-300); outline-offset: 2px; }
 .mon { position: absolute; top: 3px; left: 0; right: 0; text-align: center; font-size: 0.58rem; font-weight: 600; text-transform: uppercase; opacity: 0.75; }
@@ -191,11 +191,11 @@ onMounted(load)
 .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 0.45rem; }
 .slot {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; flex-wrap: wrap; padding: 0.55rem 0.5rem;
-  border-radius: 12px; border: 1.5px solid var(--border); background: #fff; color: var(--purple-900);
+  border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface); color: var(--purple-900);
   font: 600 0.86rem 'Poppins', sans-serif; cursor: pointer; transition: border-color 0.15s, background-color 0.15s;
 }
 .slot:hover:not(:disabled) { border-color: var(--pink-600); background: var(--pink-50); }
-.slot:disabled { cursor: not-allowed; color: #b3abc4; background: #f8f6fa; text-decoration: line-through; }
+.slot:disabled { cursor: not-allowed; color: #b3abc4; background: var(--pink-50); text-decoration: line-through; }
 .slot.current { text-decoration: none; border-style: dashed; }
 .slot.chosen { background: var(--pink-600); border-color: var(--pink-600); color: #fff; }
 .slot-note { font-size: 0.66rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }

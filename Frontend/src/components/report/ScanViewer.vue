@@ -237,12 +237,12 @@ const heatmapNote = computed(() => {
   padding: 0.4rem 1rem; border: 0; border-radius: 999px; background: transparent; color: var(--purple-900);
   font: 600 0.9rem 'Poppins', sans-serif; cursor: pointer;
 }
-.segmented button[aria-pressed='true'] { background: #fff; color: var(--pink-600); box-shadow: 0 2px 6px rgba(216, 27, 106, 0.18); }
+.segmented button[aria-pressed='true'] { background: var(--surface); color: var(--pink-600); box-shadow: 0 2px 6px rgba(216, 27, 106, 0.18); }
 .segmented button:disabled { opacity: 0.45; cursor: not-allowed; }
 .zoom { display: inline-flex; align-items: center; gap: 0.35rem; }
 .icon-btn, .reset {
   min-width: 34px; height: 34px; padding: 0 0.6rem; border: 1.5px solid var(--border); border-radius: 10px;
-  background: #fff; color: var(--purple-900); font: 600 1rem 'Poppins', sans-serif; cursor: pointer;
+  background: var(--surface); color: var(--purple-900); font: 600 1rem 'Poppins', sans-serif; cursor: pointer;
 }
 .reset { font-size: 0.85rem; }
 .icon-btn:disabled, .reset:disabled { opacity: 0.45; cursor: not-allowed; }

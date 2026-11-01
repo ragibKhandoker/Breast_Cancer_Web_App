@@ -15,7 +15,7 @@ import radiologistsPhoto from '../assets/images/contact-radiologists.webp'
     />
 
     <section class="container section">
-      <div v-reveal class="contact-card">
+      <div v-reveal class="contact-card dark-box">
         <!-- Photo side: two radiologists reading a mammogram, with the contact details over it. -->
         <aside class="photo-side">
           <img :src="radiologistsPhoto" alt="Two radiologists reviewing a mammogram on a monitor" class="photo" />
@@ -77,7 +77,7 @@ import radiologistsPhoto from '../assets/images/contact-radiologists.webp'
 
 .contact-card {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  background: #fff; border: 1px solid var(--border); border-radius: 28px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 28px; overflow: hidden;
   box-shadow: 0 24px 60px rgba(42, 22, 80, 0.14);
 }
 
@@ -124,7 +124,7 @@ import radiologistsPhoto from '../assets/images/contact-radiologists.webp'
 }
 .form-head h2 { margin: 0; color: var(--purple-900); font-size: 1.4rem; }
 .form-head p { margin: 0.15rem 0 0; font-size: 0.9rem; }
-.form-side :deep(input), .form-side :deep(textarea) { background: #fffafc; }
+.form-side :deep(input), .form-side :deep(textarea) { background: var(--pink-50); }
 .form-side :deep(input:focus), .form-side :deep(textarea:focus) { background: #fff; }
 .form-side :deep(.submit) { background: linear-gradient(120deg, var(--pink-600), #b5179e); border-color: transparent; }
 

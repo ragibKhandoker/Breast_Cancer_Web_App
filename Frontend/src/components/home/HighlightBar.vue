@@ -11,7 +11,7 @@ const items = [
 
 <template>
   <div class="container">
-    <div class="highlights">
+    <div class="highlights dark-box">
       <RouterLink v-for="(item, i) in items" :key="item.label" v-reveal="i * 100" :to="item.to" class="item">
         <span class="icon"><AppIcon :name="item.icon" :size="30" /></span>
         <span class="label">{{ item.label }}</span>
@@ -24,7 +24,7 @@ const items = [
 .highlights {
   display: grid; grid-template-columns: repeat(4, 1fr);
   margin-top: -3.5rem; position: relative; z-index: 1;
-  background: #fff; border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow);
 }
 .item { display: flex; align-items: center; gap: 1rem; padding: 1.4rem 1.5rem; }
 .item + .item { border-left: 1px solid var(--border); }
