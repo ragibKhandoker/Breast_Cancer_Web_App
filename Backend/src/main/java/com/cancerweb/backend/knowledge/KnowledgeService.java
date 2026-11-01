@@ -41,6 +41,7 @@ import com.cancerweb.backend.service.NotificationService;
 import com.mongodb.client.gridfs.model.GridFSFile;
 
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The Breast Cancer Knowledge Hub. Visitors read published modules without signing in; administrators edit,
@@ -144,9 +145,16 @@ public class KnowledgeService {
         return added + updated;
     }
 
-    /** SHA-256 of a module's content, to tell whether it still matches the seed it came from. */
+    /**
+     * SHA-256 of a module's content, to tell whether it still matches the seed it came from. Empty top-level fields
+     * are left out, so adding a new optional field (such as {@code video}) does not change the hash of modules
+     * saved before it existed.
+     */
     static String contentHash(KnowledgeContent content) {
-        return AuditHasher.sha256(JSON.writeValueAsString(content));
+        ObjectNode tree = JSON.valueToTree(content);
+        List<String> empty = tree.properties().stream().filter(e -> e.getValue().isNull()).map(Map.Entry::getKey).toList();
+        empty.forEach(tree::remove);
+        return AuditHasher.sha256(JSON.writeValueAsString(tree));
     }
 
     // ----- Public reading -----
@@ -221,7 +229,7 @@ public class KnowledgeService {
         KnowledgeModule c = get(slug);
         KnowledgeModule saved = mongo.save(new KnowledgeModule(c.id(), c.slug(), c.order(), c.title(), c.category(),
                 c.illustration(), c.readingMinutes(), c.description(), c.sections(), c.references(), c.related(), published,
-                c.seeded(), c.createdAt(), Instant.now(), c.seedHash()));
+                c.seeded(), c.createdAt(), Instant.now(), c.seedHash(), c.video()));
         record(published ? AuditEventType.KNOWLEDGE_MODULE_PUBLISHED : AuditEventType.KNOWLEDGE_MODULE_UNPUBLISHED, admin, saved);
         return saved;
     }
@@ -397,7 +405,7 @@ public class KnowledgeService {
             return null;
         }
         return new KnowledgeContent(slug, c.order(), c.title(), c.category(), c.illustration(), c.readingMinutes(),
-                c.description(), c.sections(), c.references(), c.related());
+                c.description(), c.sections(), c.references(), c.related(), c.video());
     }
 
     private void record(AuditEventType type, CurrentUser admin, KnowledgeModule module) {

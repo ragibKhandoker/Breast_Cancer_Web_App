@@ -81,6 +81,16 @@ async function upload(section, i, event) {
     </fieldset>
 
     <fieldset class="group">
+      <legend>YouTube video (optional)</legend>
+      <p class="hint">From a trusted channel (hospital, cancer charity, health service). Shown at the top of the lesson.</p>
+      <label class="f">Video link <input v-model="content.videoUrl" placeholder="https://www.youtube.com/watch?v=…" maxlength="200" /></label>
+      <div class="row">
+        <label class="f grow">Video title <input v-model="content.videoTitle" maxlength="200" /></label>
+        <label class="f grow">Channel <input v-model="content.videoChannel" maxlength="120" placeholder="e.g. Mayo Clinic" /></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="group">
       <legend>Sections</legend>
       <p class="hint">In text: an empty line starts a paragraph, “- ” starts a bullet, “&gt; ” starts a highlighted note.</p>
       <div v-for="(s, i) in content.sections" :key="i" class="section-box" :class="{ open: open === i }">

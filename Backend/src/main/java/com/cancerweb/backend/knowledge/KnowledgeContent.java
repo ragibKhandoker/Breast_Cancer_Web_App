@@ -19,7 +19,8 @@ public record KnowledgeContent(
         String description,
         List<Section> sections,
         List<Reference> references,
-        List<String> related) {
+        List<String> related,
+        Video video) {
 
     /**
      * One part of a module. {@code display} picks how {@code items} are drawn (timeline, cards, steps, stages,
@@ -45,5 +46,9 @@ public record KnowledgeContent(
     }
 
     public record Reference(String title, String publisher, String url) {
+    }
+
+    /** An optional YouTube video shown at the top of the lesson; only the 11-character video id is stored. */
+    public record Video(String youtubeId, String title, String channel) {
     }
 }

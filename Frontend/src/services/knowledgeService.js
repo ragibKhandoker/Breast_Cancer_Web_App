@@ -43,6 +43,6 @@ export const submitContent = (targetSlug, content) =>
 
 /** The editable fields of a module, as the editor and the API use them. */
 export function contentOf(module) {
-  const { slug, order, title, category, illustration, readingMinutes, description, sections, references, related } = module
-  return structuredClone({ slug, order, title, category, illustration, readingMinutes, description, sections, references, related })
+  const { slug, order, title, category, illustration, readingMinutes, description, sections, references, related, video } = module
+  return structuredClone({ slug, order, title, category, illustration, readingMinutes, description, sections, references, related, video: video ?? null })
 }

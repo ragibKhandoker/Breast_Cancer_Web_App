@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import ModuleIllustration from '../components/knowledge/ModuleIllustration.vue'
 import KnowledgeSection from '../components/knowledge/KnowledgeSection.vue'
+import YouTubeEmbed from '../components/common/YouTubeEmbed.vue'
 import { getModule, listModules } from '../services/knowledgeService'
 import { useLearningProgress } from '../composables/useLearningProgress'
 import { errorMessage } from '../services/http'
@@ -63,7 +64,7 @@ function observeSections() {
     const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
     if (visible[0]) activeId.value = visible[0].target.id
   }, { rootMargin: '-90px 0px -60% 0px' })
-  module.value.sections.forEach((s) => {
+  ;[...(module.value.video ? [{ id: 'video' }] : []), ...module.value.sections].forEach((s) => {
     const el = document.getElementById(s.id)
     if (el) observer.observe(el)
   })
@@ -142,6 +143,7 @@ watch(slug, (value, old) => {
             <details open class="toc-box">
               <summary>Contents</summary>
               <ol>
+                <li v-if="module.video"><a href="#video" :class="{ active: activeId === 'video' }" @click.prevent="goTo('video')">Watch the video</a></li>
                 <li v-for="s in module.sections" :key="s.id">
                   <a :href="`#${s.id}`" :class="{ active: activeId === s.id }" @click.prevent="goTo(s.id)">{{ s.title }}</a>
                 </li>
@@ -152,6 +154,13 @@ watch(slug, (value, old) => {
           </aside>
 
           <article ref="article" class="content">
+            <section v-if="module.video" id="video" class="video-block">
+              <h2><AppIcon name="youtube" :size="22" /> Watch: {{ module.video.title }}</h2>
+              <YouTubeEmbed :url="`https://www.youtube.com/watch?v=${module.video.youtubeId}`" :title="module.video.title" />
+              <p class="video-note">
+                Video from <strong>{{ module.video.channel || 'YouTube' }}</strong> on YouTube, for general education. It is not medical advice for you.
+              </p>
+            </section>
             <KnowledgeSection v-for="s in module.sections" :key="s.id" :section="s" />
 
             <section id="references" class="refs">
@@ -238,6 +247,10 @@ watch(slug, (value, old) => {
 .toc-progress { margin: 0.6rem 0 0; color: #6f6787; }
 
 .content { display: grid; gap: 2.2rem; min-width: 0; }
+.video-block { display: grid; gap: 0.8rem; scroll-margin-top: 90px; }
+.video-block h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0; color: #2a1650; font-size: 1.3rem; }
+.video-block h2 :deep(svg) { flex: none; color: #d81b6a; }
+.video-note { margin: 0; font-size: 0.86rem; color: #6f6787; }
 .refs h2, .related h2 { margin: 0 0 0.75rem; color: #2a1650; font-size: 1.3rem; }
 .refs ol { margin: 0; padding-left: 1.3rem; display: grid; gap: 0.45rem; color: #3d3557; line-height: 1.5; }
 .refs a { color: #b0155a; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }

@@ -36,13 +36,14 @@ const summaries = [
   { slug: 'history', order: 1, title: 'History of Breast Cancer', category: 'Foundations', illustration: 'history', readingMinutes: 7,
     description: 'From ancient texts to AI.', sectionTitles: ['Timeline of key developments'] },
   { slug: 'mammography-birads', order: 9, title: 'Mammography and BI-RADS', category: 'Diagnosis', illustration: 'mammogram',
-    readingMinutes: 7, description: 'How a mammogram works.', sectionTitles: ['BI-RADS categories'] },
+    readingMinutes: 7, description: 'How a mammogram works.', sectionTitles: ['BI-RADS categories'], hasVideo: true },
   { slug: 'treatment', order: 10, title: 'Breast Cancer Treatment', category: 'Treatment', illustration: 'treatment', readingMinutes: 9,
     description: 'Local and systemic treatment.', sectionTitles: ['Local treatment'] },
 ]
 const birads = {
   slug: 'mammography-birads', order: 9, title: 'Mammography and BI-RADS', category: 'Diagnosis', illustration: 'mammogram', readingMinutes: 7,
   description: 'How a mammogram works.', related: ['history', 'unknown'],
+  video: { youtubeId: 'Sz1YL4EX2pI', title: 'What women need to know about mammograms', channel: 'Mayo Clinic' },
   sections: [
     { id: 'mammogram', title: 'What a mammogram is', body: 'A low-dose X-ray.\n- 2D\n- 3D', advanced: 'Density categories.' },
     { id: 'birads', title: 'BI-RADS categories', display: 'birads', items: [
@@ -112,6 +113,8 @@ describe('Knowledge Hub page', () => {
     expect(cards[0].text()).toContain('7 min read')
     expect(cards[0].find('a.btn').text()).toBe('Explore More')
     expect(cards[0].find('a.btn').attributes('href')).toBe('/knowledge/history')
+    expect(cards[0].find('.video-badge').exists()).toBe(false)
+    expect(cards[1].find('.video-badge').text()).toBe('Video')
     expect(w.text()).toContain('Is every breast lump cancer?')
   })
 
@@ -139,7 +142,10 @@ describe('lesson page', () => {
   it('shows contents, sections, references, related lessons and previous/next links', async () => {
     const w = await mountAt('/knowledge/mammography-birads', KnowledgeModuleView)
     expect(w.find('h1').text()).toBe('Mammography and BI-RADS')
-    expect(w.findAll('.toc a').map((a) => a.text())).toEqual(['What a mammogram is', 'BI-RADS categories', 'References'])
+    expect(w.findAll('.toc a').map((a) => a.text())).toEqual(['Watch the video', 'What a mammogram is', 'BI-RADS categories', 'References'])
+    const frame = w.find('#video iframe')
+    expect(frame.attributes('src')).toBe('https://www.youtube-nocookie.com/embed/Sz1YL4EX2pI?rel=0&modestbranding=1')
+    expect(w.find('.video-note').text()).toContain('Mayo Clinic')
     expect(w.find('.advanced summary').text()).toBe('Learn more (advanced)')
     const ref = w.find('.refs a')
     expect(ref.attributes('href')).toBe('https://www.cancer.org/x')
@@ -190,6 +196,14 @@ describe('content editing', () => {
     expect(payload.sections[0].items).toBeNull()
     expect(payload.sections[0].imageFileId).toBeNull()
     expect(payload.references).toHaveLength(1)
+  })
+
+  it('keeps only the video id from any YouTube link', () => {
+    const e = { ...blankContent(), slug: 'x', videoUrl: 'https://youtu.be/xcg7jWrlLJ8?si=abc', videoTitle: 'Check', videoChannel: 'NHS' }
+    expect(toPayload(e).video).toEqual({ youtubeId: 'xcg7jWrlLJ8', title: 'Check', channel: 'NHS' })
+    expect(toPayload({ ...e, videoUrl: ' ' }).video).toBeNull()
+    expect(toEditable({ ...blankContent(), video: { youtubeId: 'xcg7jWrlLJ8', title: 'Check', channel: 'NHS' } }).videoUrl)
+      .toBe('https://www.youtube.com/watch?v=xcg7jWrlLJ8')
   })
 
   it('names fields from server errors in plain words', () => {

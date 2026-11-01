@@ -24,11 +24,12 @@ public class KnowledgeController {
 
     /** What the hub page needs for a card, the search and previous/next links. */
     public record ModuleSummary(String slug, int order, String title, String category, String illustration,
-            int readingMinutes, String description, List<String> sectionTitles, Instant updatedAt) {
+            int readingMinutes, String description, List<String> sectionTitles, Instant updatedAt, boolean hasVideo) {
 
         static ModuleSummary from(KnowledgeModule m) {
             return new ModuleSummary(m.slug(), m.order(), m.title(), m.category(), m.illustration(), m.readingMinutes(),
-                    m.description(), m.sections().stream().map(KnowledgeContent.Section::title).toList(), m.updatedAt());
+                    m.description(), m.sections().stream().map(KnowledgeContent.Section::title).toList(), m.updatedAt(),
+                    m.video() != null);
         }
     }
 

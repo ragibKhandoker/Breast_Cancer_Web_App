@@ -77,6 +77,10 @@ class KnowledgeHubTest extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Mammography and BI-RADS"))
                 .andExpect(jsonPath("$.sections[?(@.display == 'birads')].items.length()").value(7));
+        mvc.perform(get("/api/knowledge/modules/symptoms"))
+                .andExpect(jsonPath("$.video.youtubeId").value("df1FBYmfZmU"))
+                .andExpect(jsonPath("$.video.channel").value("Circle Health Group"));
+        assertThat(JsonPath.<List<Boolean>>read(list, "$[*].hasVideo")).containsOnly(true);
         mvc.perform(get("/api/knowledge/glossary")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThan(20)));
         mvc.perform(get("/api/knowledge/faqs")).andExpect(status().isOk()).andExpect(jsonPath("$[0].question").exists());
         mvc.perform(get("/api/knowledge/modules/no-such-lesson")).andExpect(status().isNotFound());
@@ -110,13 +114,13 @@ class KnowledgeHubTest extends IntegrationTest {
         // A module written from an older seed and never edited: older content, matching seedHash.
         KnowledgeModule m = knowledge.find("symptoms");
         KnowledgeContent old = new KnowledgeContent(m.slug(), m.order(), "Old title", m.category(), m.illustration(),
-                m.readingMinutes(), m.description(), m.sections().subList(0, 1), m.references(), m.related());
+                m.readingMinutes(), m.description(), m.sections().subList(0, 1), m.references(), m.related(), null);
         mongo.save(KnowledgeModule.from(old, m.id(), m.published(), true, m.createdAt(), m.updatedAt(),
                 KnowledgeService.contentHash(old)));
         // One saved before seedHash existed and never saved again counts as untouched too.
         KnowledgeModule t = knowledge.find("types");
         KnowledgeContent oldTypes = new KnowledgeContent(t.slug(), t.order(), "Old title", t.category(), t.illustration(),
-                t.readingMinutes(), t.description(), t.sections(), t.references(), t.related());
+                t.readingMinutes(), t.description(), t.sections(), t.references(), t.related(), null);
         mongo.save(KnowledgeModule.from(oldTypes, t.id(), t.published(), true, t.createdAt(), t.createdAt(), null));
 
         assertThat(knowledge.seed()).isEqualTo(2);
@@ -126,6 +130,24 @@ class KnowledgeHubTest extends IntegrationTest {
         assertThat(symptoms.createdAt()).isEqualTo(m.createdAt());
         assertThat(knowledge.find("types").title()).isEqualTo("Types of Breast Cancer");
         assertThat(knowledge.seed()).isZero();
+    }
+
+    @Test
+    void addingAnOptionalFieldKeepsOlderSeedHashes() {
+        // Hashes saved before "video" existed were computed from JSON without that key.
+        KnowledgeContent c = knowledge.find("history").content();
+        KnowledgeContent noVideo = new KnowledgeContent(c.slug(), c.order(), c.title(), c.category(), c.illustration(),
+                c.readingMinutes(), c.description(), c.sections(), c.references(), c.related(), null);
+        tools.jackson.databind.node.ObjectNode tree = tools.jackson.databind.json.JsonMapper.builder().build().valueToTree(noVideo);
+        tree.remove("video");
+        String olderHash = com.cancerweb.backend.audit.AuditHasher.sha256(tree.toString());
+        assertThat(KnowledgeService.contentHash(noVideo)).isEqualTo(olderHash);
+
+        // A module seeded before videos existed, never edited, is brought up to date (and gets its video).
+        KnowledgeModule m = knowledge.find("history");
+        mongo.save(KnowledgeModule.from(noVideo, m.id(), m.published(), true, m.createdAt(), m.updatedAt(), olderHash));
+        assertThat(knowledge.seed()).isEqualTo(1);
+        assertThat(knowledge.find("history").video().youtubeId()).isEqualTo("idjP7Y_qIIM");
     }
 
     // ----- Progress -----
@@ -207,6 +229,11 @@ class KnowledgeHubTest extends IntegrationTest {
                         .cookie(admin))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.slug").exists());
+        String badVideo = moduleJson("bad-video", "Bad video", "https://www.who.int")
+                .replace("\"related\":", "\"video\":{\"youtubeId\":\"javascript:x\",\"title\":\"Video\"},\"related\":");
+        mvc.perform(withJson(post("/api/admin/knowledge/modules"), badVideo).cookie(admin))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors['video.youtubeId']").exists());
         String noRefs = moduleJson("no-refs", "No references", "https://www.who.int")
                 .replaceAll("\"references\":\\[[^\\]]*\\]", "\"references\":[]");
         mvc.perform(withJson(post("/api/admin/knowledge/modules"), noRefs).cookie(admin)).andExpect(status().isBadRequest());

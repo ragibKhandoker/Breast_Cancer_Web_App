@@ -139,6 +139,7 @@ onMounted(async () => {
           <article v-for="m in filtered" :key="m.slug" class="module-card">
             <div class="art">
               <ModuleIllustration :name="m.illustration" :alt="m.title" />
+              <span v-if="m.hasVideo" class="video-badge"><AppIcon name="youtube" :size="13" /> Video</span>
               <span v-if="progress.completed.includes(m.slug)" class="done-badge"><AppIcon name="check-circle" :size="14" /> Done</span>
             </div>
             <div class="card-body">
@@ -240,6 +241,7 @@ h2 { margin: 0; color: #2a1650; font-size: 1.3rem; }
 .module-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(216, 27, 106, 0.13); }
 .art { position: relative; padding: 0.8rem 0.8rem 0; }
 .done-badge { position: absolute; top: 1.2rem; left: 1.2rem; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 999px; background: #e8f5e9; color: #1b5e20; font-size: 0.75rem; font-weight: 600; }
+.video-badge { position: absolute; top: 1.2rem; right: 1.2rem; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(42, 22, 80, 0.85); color: #fff; font-size: 0.75rem; font-weight: 600; }
 .card-body { display: grid; grid-template-rows: auto auto 1fr auto; gap: 0.5rem; padding: 0.9rem 1.1rem 1.1rem; }
 .card-top { display: flex; justify-content: space-between; align-items: center; }
 .chip { padding: 0.15rem 0.65rem; border-radius: 999px; background: #fde3ef; color: #a3134f; font-size: 0.75rem; font-weight: 600; }

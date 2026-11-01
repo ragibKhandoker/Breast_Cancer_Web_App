@@ -115,7 +115,12 @@
         "understanding",
         "treatment",
         "mammography-birads"
-      ]
+      ],
+      "video": {
+        "youtubeId": "idjP7Y_qIIM",
+        "title": "The History Of Breast Cancer Diagnosis, Subtypes And Treatment",
+        "channel": "Tucker Medical"
+      }
     },
     {
       "slug": "understanding",
@@ -213,7 +218,12 @@
         "classification",
         "symptoms",
         "risk-factors"
-      ]
+      ],
+      "video": {
+        "youtubeId": "mCmJQGpjGNA",
+        "title": "Mayo Clinic Explains Breast Cancer",
+        "channel": "Mayo Clinic"
+      }
     },
     {
       "slug": "classification",
@@ -372,7 +382,12 @@
         "types",
         "stages",
         "treatment"
-      ]
+      ],
+      "video": {
+        "youtubeId": "Yzh6ZPJJ96c",
+        "title": "Insights into Hormone Receptor in Breast Cancer",
+        "channel": "Dr Tasha"
+      }
     },
     {
       "slug": "types",
@@ -646,7 +661,12 @@
         "classification",
         "treatment",
         "symptoms"
-      ]
+      ],
+      "video": {
+        "youtubeId": "BsSoM9iE2CU",
+        "title": "Non Invasive and Invasive Breast Cancer",
+        "channel": "Susan G. Komen"
+      }
     },
     {
       "slug": "stages",
@@ -745,7 +765,12 @@
         "classification",
         "treatment",
         "diagnosis"
-      ]
+      ],
+      "video": {
+        "youtubeId": "zQ_7W9diH_0",
+        "title": "Stages of Breast Cancer Animation",
+        "channel": "Rocky Mountain Cancer Centers"
+      }
     },
     {
       "slug": "risk-factors",
@@ -888,7 +913,12 @@
         "prevention",
         "symptoms",
         "diagnosis"
-      ]
+      ],
+      "video": {
+        "youtubeId": "CGNb3ysiGIM",
+        "title": "A guide to BRCA1 and BRCA2 gene mutations in hereditary breast and ovarian cancer",
+        "channel": "Women's College Hospital"
+      }
     },
     {
       "slug": "symptoms",
@@ -1017,7 +1047,12 @@
         "diagnosis",
         "understanding",
         "types"
-      ]
+      ],
+      "video": {
+        "youtubeId": "df1FBYmfZmU",
+        "title": "Breast Cancer Symptoms | Early Signs, Breast Lumps & Screening",
+        "channel": "Circle Health Group"
+      }
     },
     {
       "slug": "diagnosis",
@@ -1147,7 +1182,12 @@
         "mammography-birads",
         "classification",
         "symptoms"
-      ]
+      ],
+      "video": {
+        "youtubeId": "e086vgswwo8",
+        "title": "What You Should Know About Your Breast Diagnostic Appointment",
+        "channel": "ACR Patient- and Family-Centered Care"
+      }
     },
     {
       "slug": "mammography-birads",
@@ -1241,7 +1281,12 @@
         "diagnosis",
         "symptoms",
         "history"
-      ]
+      ],
+      "video": {
+        "youtubeId": "Sz1YL4EX2pI",
+        "title": "Mayo Clinic Minute: What women need to know about mammograms",
+        "channel": "Mayo Clinic"
+      }
     },
     {
       "slug": "treatment",
@@ -1347,7 +1392,12 @@
         "surgery-recovery",
         "classification",
         "prevention"
-      ]
+      ],
+      "video": {
+        "youtubeId": "1K320WzPtpI",
+        "title": "Mayo Clinic Q&A podcast: Systemic therapies for breast cancer",
+        "channel": "Mayo Clinic"
+      }
     },
     {
       "slug": "surgery-recovery",
@@ -1443,7 +1493,12 @@
         "treatment",
         "prevention",
         "stages"
-      ]
+      ],
+      "video": {
+        "youtubeId": "OCShXskGW20",
+        "title": "Ask Mayo Clinic Health System – Lumpectomy vs. Mastectomy",
+        "channel": "Mayo Clinic Health System"
+      }
     },
     {
       "slug": "prevention",
@@ -1524,7 +1579,12 @@
         "risk-factors",
         "surgery-recovery",
         "symptoms"
-      ]
+      ],
+      "video": {
+        "youtubeId": "xD6gO3Z7KPw",
+        "title": "Survivorship Series: Moving Forward After Breast Cancer",
+        "channel": "Dana-Farber Cancer Institute"
+      }
     }
   ],
   "glossary": [

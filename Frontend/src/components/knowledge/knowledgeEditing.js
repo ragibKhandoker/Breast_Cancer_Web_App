@@ -28,6 +28,7 @@ export function blankContent() {
   return {
     slug: '', order: 50, title: '', category: '', illustration: 'book', readingMinutes: 5, description: '',
     sections: [blankSection()], references: [{ title: '', publisher: '', url: '' }], related: [],
+    videoUrl: '', videoTitle: '', videoChannel: '',
   }
 }
 
@@ -37,9 +38,12 @@ export function blankItem() {
 
 /** A module's content as the editor's working copy. */
 export function toEditable(content) {
-  const c = structuredClone(content)
+  const { video, ...c } = structuredClone(content)
   return {
     ...c,
+    videoUrl: video?.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : '',
+    videoTitle: video?.title ?? '',
+    videoChannel: video?.channel ?? '',
     sections: (c.sections ?? []).map((s) => ({
       id: s.id ?? '', title: s.title ?? '', body: s.body ?? '', advanced: s.advanced ?? '', display: s.display ?? '',
       items: (s.items ?? []).map((i) => ({ ...blankItem(), ...i })), diagram: s.diagram ?? '',
@@ -82,7 +86,17 @@ export function toPayload(e) {
     }),
     references: e.references.filter((r) => r.title || r.url),
     related: e.related,
+    video: e.videoUrl?.trim()
+      ? { youtubeId: youtubeId(e.videoUrl), title: e.videoTitle, channel: e.videoChannel || null }
+      : null,
   }
+}
+
+/** The 11-character id from a watch, youtu.be, embed or Shorts link, or the id itself; anything else is sent as typed. */
+export function youtubeId(value) {
+  const v = value.trim()
+  const match = v.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/)
+  return match ? match[1] : v
 }
 
 /** "sections[2].items[0].title" → "Section 3 · item 1 · title" */

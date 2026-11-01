@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.cancerweb.backend.knowledge.KnowledgeContent.Reference;
 import com.cancerweb.backend.knowledge.KnowledgeContent.Section;
+import com.cancerweb.backend.knowledge.KnowledgeContent.Video;
 
 /**
  * A Knowledge Hub module as stored. Visitors see only published ones. {@code seeded} marks modules that came from
@@ -31,16 +32,18 @@ public record KnowledgeModule(
         boolean seeded,
         Instant createdAt,
         Instant updatedAt,
-        String seedHash) {
+        String seedHash,
+        Video video) {
 
     static KnowledgeModule from(KnowledgeContent c, String id, boolean published, boolean seeded, Instant createdAt,
             Instant updatedAt, String seedHash) {
         return new KnowledgeModule(id, c.slug(), c.order(), c.title(), c.category(), c.illustration(), c.readingMinutes(),
-                c.description(), c.sections(), c.references(), c.related(), published, seeded, createdAt, updatedAt, seedHash);
+                c.description(), c.sections(), c.references(), c.related(), published, seeded, createdAt, updatedAt, seedHash,
+                c.video());
     }
 
     KnowledgeContent content() {
         return new KnowledgeContent(slug, order, title, category, illustration, readingMinutes, description, sections,
-                references, related);
+                references, related, video);
     }
 }

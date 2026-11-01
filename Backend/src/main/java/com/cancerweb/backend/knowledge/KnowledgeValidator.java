@@ -15,6 +15,7 @@ import com.cancerweb.backend.knowledge.KnowledgeContent.Item;
 import com.cancerweb.backend.knowledge.KnowledgeContent.Reference;
 import com.cancerweb.backend.knowledge.KnowledgeContent.Section;
 import com.cancerweb.backend.knowledge.KnowledgeContent.Table;
+import com.cancerweb.backend.knowledge.KnowledgeContent.Video;
 
 /**
  * Checks and tidies module content before it is stored: trims text, applies size limits, and allows only the
@@ -24,6 +25,7 @@ final class KnowledgeValidator {
 
     static final Pattern SLUG = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
     static final Pattern URL = Pattern.compile("https://[^\\s<>\"'`]+");
+    static final Pattern YOUTUBE_ID = Pattern.compile("[A-Za-z0-9_-]{11}");
     static final Set<String> DISPLAYS = Set.of("timeline", "cards", "steps", "stages", "birads");
     static final Set<String> DIAGRAMS = Set.of("anatomy", "cell-growth", "receptors", "grade", "tnm");
     static final Set<String> ILLUSTRATIONS = Set.of("history", "cells", "classification", "microscope", "stages", "dna",
@@ -66,7 +68,7 @@ final class KnowledgeValidator {
         List<Reference> references = references(c.references());
         List<String> related = related(c.related(), slug);
         return new KnowledgeContent(slug, order, title, category, illustration, minutes, description, sections, references,
-                related);
+                related, video(c.video()));
     }
 
     private static List<Section> sections(List<Section> input) {
@@ -193,6 +195,18 @@ final class KnowledgeValidator {
             out.add(new Reference(text(r.title(), at + ".title", 2, 250, true), text(r.publisher(), at + ".publisher", 0, 120, false), url));
         }
         return List.copyOf(out);
+    }
+
+    /** Optional; when given, a YouTube video id (the site builds the embed link itself) and a title. */
+    private static Video video(Video input) {
+        if (input == null || input.youtubeId() == null || input.youtubeId().isBlank()) {
+            return null;
+        }
+        String id = input.youtubeId().trim();
+        if (!YOUTUBE_ID.matcher(id).matches()) {
+            throw new FieldValidationException("video.youtubeId", "Use a YouTube video link or its 11-character id");
+        }
+        return new Video(id, text(input.title(), "video.title", 2, 200, true), text(input.channel(), "video.channel", 0, 120, false));
     }
 
     private static List<String> related(List<String> input, String slug) {
