@@ -335,14 +335,14 @@ onMounted(() => {
   .owner-card { grid-template-columns: auto minmax(0, 1fr); }
   .portal-btn { grid-column: 1 / -1; justify-content: center; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
-  .owner-card { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 1.5rem 1.25rem; }
+  .owner-card { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; padding: 1.5rem 1.25rem; }
   .email, .badges { justify-content: center; }
   .avatar { width: 84px; height: 84px; font-size: 1.8rem; }
   .identity h1 { font-size: 1.5rem; }
-  .row { grid-template-columns: 1fr; gap: 0; }
+  .row { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .section { padding: 1.25rem; }
 }
 </style>

@@ -174,7 +174,7 @@ const photo = computed(() => (photoFailed.value ? '' : photoSrc(props.surgeon.ph
 .book { gap: 0.35rem; font-weight: 600; }
 
 @media (max-width: 420px) {
-  .banner { grid-template-columns: 1fr; }
+  .banner { grid-template-columns: minmax(0, 1fr); }
   .portrait { order: -1; padding-top: 1rem; }
   .portrait img { max-height: 180px; }
 }

@@ -246,7 +246,7 @@ onMounted(load)
 .upcoming .date { font-weight: 600; color: var(--purple-900); }
 .upcoming .time { color: var(--pink-600); font-weight: 600; }
 .upcoming .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tabs { display: flex; gap: 0.5rem; margin: 1.5rem 0 0.8rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0.8rem; }
 .tabs button {
   display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.1rem; border-radius: 14px; border: 1.5px solid var(--border);
   background: var(--surface); color: var(--purple-900); font: 600 0.92rem 'Poppins', sans-serif; cursor: pointer;
@@ -268,12 +268,15 @@ onMounted(load)
 .save-row { display: flex; justify-content: flex-end; gap: 0.5rem; }
 @media (max-width: 1000px) {
   .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .availability-grid { grid-template-columns: 1fr; }
+  .availability-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .hero { grid-template-columns: auto minmax(0, 1fr); }
   .hero .btn { grid-column: 1 / -1; justify-content: center; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .upcoming li { grid-template-columns: 1fr auto; }
+  .stats > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .tabs button { flex: 1 1 auto; justify-content: center; padding: 0.55rem 0.8rem; }
+  .panel { padding: 1rem; }
 }
 </style>

@@ -223,6 +223,6 @@ textarea { resize: vertical; line-height: 1.5; }
 .small { font-size: 0.85rem; margin: 0; }
 .group > .btn { justify-self: start; }
 @media (max-width: 700px) {
-  .item-row, .ref-row { grid-template-columns: 1fr; }
+  .item-row, .ref-row { grid-template-columns: minmax(0, 1fr); }
 }
 </style>

@@ -333,6 +333,6 @@ onMounted(load)
 .doc-list .muted, .doc-list .remove { flex: none; white-space: nowrap; }
 .remove { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
 .remove:hover { background: #fdecea; color: var(--high); }
-@media (max-width: 900px) { .grid-view { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .summary dl { grid-template-columns: 1fr; } .summary-top { flex-direction: column; text-align: center; } }
+@media (max-width: 900px) { .grid-view { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .summary dl { grid-template-columns: minmax(0, 1fr); } .summary-top { flex-direction: column; text-align: center; } }
 </style>

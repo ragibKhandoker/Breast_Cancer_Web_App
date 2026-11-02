@@ -186,4 +186,7 @@ onMounted(load)
   .filters { grid-template-columns: 1fr 1fr; }
   .search { grid-column: 1 / -1; }
 }
+@media (max-width: 480px) {
+  .filters { grid-template-columns: minmax(0, 1fr); }
+}
 </style>

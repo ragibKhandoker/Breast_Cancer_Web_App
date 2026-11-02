@@ -118,7 +118,7 @@ const shown = computed(() => props.appointments.filter((a) => filter.value === '
 .cancel-btn { background: var(--surface); border-color: #f5b5b0; color: var(--high); }
 .cancel-btn:hover { background: #fdecea; box-shadow: none; }
 @media (max-width: 600px) {
-  .item { grid-template-columns: 1fr; }
+  .item { grid-template-columns: minmax(0, 1fr); }
   .when { grid-auto-flow: column; justify-content: start; gap: 0.5rem; }
   .when .time { margin: 0; }
   .surgeon { flex-wrap: wrap; }

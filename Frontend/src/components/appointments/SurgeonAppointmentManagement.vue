@@ -165,8 +165,8 @@ async function doCancel(reason) {
 .views button.on { background: #6b3fb5; border-color: #6b3fb5; color: #fff; }
 .count { min-width: 20px; padding: 0 0.35rem; border-radius: 999px; background: var(--pink-50); color: var(--pink-600); font-size: 0.72rem; font-weight: 700; text-align: center; }
 .views button.on .count { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.search { display: flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; color: #6f6787; }
-.search input { border: 0; outline: none; padding: 0.5rem 0; font: inherit; min-width: 210px; background: transparent; color: #241445; }
+.search { flex: 0 1 280px; min-width: 0; display: flex; align-items: center; gap: 0.4rem; padding: 0 0.8rem; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; color: #6f6787; }
+.search input { border: 0; outline: none; padding: 0.5rem 0; font: inherit; flex: 1; min-width: 0; width: 100%; background: transparent; color: #241445; }
 .search input::placeholder { color: #8d86a0; }
 .search:focus-within { border-color: var(--pink-600); }
 .empty { padding: 2rem; text-align: center; border: 2px dashed var(--border); border-radius: 18px; }
@@ -184,7 +184,7 @@ async function doCancel(reason) {
 .toggle { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--pink-50); color: var(--purple-900); cursor: pointer; transition: transform 0.2s; }
 .row.open .toggle { transform: rotate(90deg); }
 .details { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--border); }
-.details dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.6rem 1rem; margin: 0; }
+.details dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 0.6rem 1rem; margin: 0; }
 .details .wide { grid-column: 1 / -1; }
 .details dt { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .details dd { margin: 0.1rem 0 0; font-size: 0.9rem; overflow-wrap: anywhere; }
@@ -196,5 +196,12 @@ async function doCancel(reason) {
   .row-main { grid-template-columns: auto minmax(0, 1fr) auto; }
   .slot { grid-column: 2 / 3; grid-row: 2; }
   .row-main > .status-badge { grid-column: 3; grid-row: 2; }
+  .search { flex: 1 1 100%; }
+}
+/* Phones: date and time on one line under the name, the status below them. */
+@media (max-width: 480px) {
+  .row { padding: 0.8rem; }
+  .slot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; }
+  .row-main > .status-badge { grid-column: 1 / -1; grid-row: 3; justify-self: start; }
 }
 </style>

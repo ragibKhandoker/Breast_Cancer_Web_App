@@ -574,12 +574,12 @@ const stepHasErrors = (id) => Object.keys(allErrors.value).some((k) => STEP_OF[k
   .span-2 { grid-column: 1 / -1; }
 }
 @media (max-width: 820px) {
-  .surgeon-form { grid-template-columns: 1fr; }
+  .surgeon-form { grid-template-columns: minmax(0, 1fr); }
   .steps { position: static; grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
-  .grid-3 { grid-template-columns: 1fr; }
-  .steps { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: minmax(0, 1fr); }
+  .steps { grid-template-columns: minmax(0, 1fr); }
   .card-body, .card-head, .card-foot { padding-left: 1rem; padding-right: 1rem; }
   .photo-row { flex-direction: column; align-items: flex-start; }
   .card-foot .btn { flex: 1; justify-content: center; }

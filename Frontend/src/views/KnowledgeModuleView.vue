@@ -266,13 +266,13 @@ watch(slug, (value, old) => {
 .pager-link.next { text-align: right; }
 
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
   .toc { position: static; }
-  .lesson-head { grid-template-columns: 1fr; }
+  .lesson-head { grid-template-columns: minmax(0, 1fr); }
   .head-art { max-width: 220px; }
 }
 @media (max-width: 560px) {
-  .pager { grid-template-columns: 1fr; }
+  .pager { grid-template-columns: minmax(0, 1fr); }
   .pager-link.next { text-align: left; }
 }
 </style>

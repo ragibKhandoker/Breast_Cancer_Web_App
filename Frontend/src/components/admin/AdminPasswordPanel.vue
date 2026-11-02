@@ -207,6 +207,6 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .guide strong { color: var(--purple-900); }
 .waiting { margin: 0.5rem 0 0; display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; background: var(--pink-600); color: #fff; font-weight: 600; font-size: 0.82rem; }
 
-@media (max-width: 1000px) { .pw-layout { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .pw-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .actions, .delivery { margin-left: 0; } }
 </style>

@@ -150,5 +150,5 @@ a.contact-value:hover { color: var(--pink-300); }
 .disclaimer { margin: 0 auto; padding-bottom: 1.5rem; font-size: 0.78rem; color: #7f7594; }
 
 @media (max-width: 960px) { .columns { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 560px) { .columns { grid-template-columns: 1fr; gap: 2rem; } .bottom { justify-content: center; text-align: center; } }
+@media (max-width: 560px) { .columns { grid-template-columns: minmax(0, 1fr); gap: 2rem; } .bottom { justify-content: center; text-align: center; } }
 </style>

@@ -47,5 +47,5 @@ h3 { color: var(--purple-900); font-size: 1.05rem; margin: 1rem 0 0.5rem; }
 p { margin: 0; color: var(--text); font-size: 0.92rem; line-height: 1.5; }
 
 @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .cards { grid-template-columns: 1fr; } .rule { width: 32px; } }
+@media (max-width: 520px) { .cards { grid-template-columns: minmax(0, 1fr); } .rule { width: 32px; } }
 </style>

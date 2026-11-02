@@ -52,5 +52,5 @@ onMounted(async () => {
 .pill.requested { background: #fff4e5; color: #8a4b00; }
 .pill.reviewed { background: #e8f5e9; color: #1b5e20; }
 .go { background: #d81b6a; color: #fff; }
-@media (max-width: 600px) { .item { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .item { grid-template-columns: minmax(0, 1fr); } }
 </style>

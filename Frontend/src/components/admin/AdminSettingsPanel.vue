@@ -189,6 +189,6 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
   background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); box-shadow: 0 -6px 20px rgba(42, 22, 80, 0.06);
 }
 .savebar .alert { flex: 1; margin: 0; padding: 0.55rem 0.8rem; font-size: 0.88rem; }
-@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .savebar .btn { flex: 1; justify-content: center; } }
 </style>

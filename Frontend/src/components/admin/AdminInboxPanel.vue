@@ -221,5 +221,5 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .placeholder { margin: auto; display: grid; justify-items: center; gap: 0.4rem; text-align: center; max-width: 360px; padding: 2rem 1rem; }
 .ph-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--pink-50); color: var(--pink-600); }
 .placeholder p { margin: 0; }
-@media (max-width: 900px) { .inbox { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .inbox { grid-template-columns: minmax(0, 1fr); } }
 </style>

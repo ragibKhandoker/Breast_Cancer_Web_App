@@ -200,8 +200,8 @@ onMounted(load)
 </template>
 
 <style scoped>
-.kh-admin { display: grid; gap: 1rem; }
-.bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; }
+.kh-admin { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; height: auto; overflow: visible; background: none; border-radius: 0; }
 .bar.end { justify-content: flex-end; margin: 0.8rem 0 0; }
 .bar h3 { margin: 0; color: var(--purple-900); font-size: 1.05rem; }
 .bar p { margin: 0.15rem 0 0; }

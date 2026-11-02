@@ -73,5 +73,5 @@ dd { display: grid; gap: 0.25rem; margin: 0; }
 .badge--pending { background: #ede7fb; color: #5b3fa8; }
 .badge--idle { background: #f1eff5; color: var(--muted); }
 .detail { font-size: 0.85rem; color: var(--text); overflow-wrap: anywhere; }
-@media (max-width: 480px) { .row { grid-template-columns: 1fr; gap: 0.3rem; } }
+@media (max-width: 480px) { .row { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; } }
 </style>

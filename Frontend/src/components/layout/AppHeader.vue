@@ -158,7 +158,14 @@ async function logout() {
 }
 @media (max-width: 560px) {
   .auth, .auth-menu { display: none; }
-  .menu-auth { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
-  .menu-auth .btn { flex: 1; justify-content: center; }
+  .menu-auth { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
+  .menu-auth .btn { flex: 1 1 40%; justify-content: center; }
+}
+/* Small phones: the logo and the three round buttons share about 320px. */
+@media (max-width: 420px) {
+  .header-inner { gap: 0.5rem; }
+  .header-inner > :first-child { flex: 0 1 auto; min-width: 0; }
+  .actions { gap: 0.25rem; }
+  .msg-btn { width: 38px; height: 38px; }
 }
 </style>

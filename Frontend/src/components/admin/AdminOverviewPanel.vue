@@ -255,7 +255,7 @@ onMounted(load)
 .todo-label { font-weight: 600; font-size: 0.9rem; }
 .todo-note { font-size: 0.76rem; opacity: 0.8; }
 .todo-go { flex: none; opacity: 0.7; }
-@media (max-width: 860px) { .todo-grid { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .todo-grid { grid-template-columns: minmax(0, 1fr); } }
 
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .tile { display: grid; gap: 0.15rem; text-align: left; font: inherit; color: inherit; }
@@ -307,7 +307,7 @@ h4 { margin: 1rem 0 0.5rem; font-size: 0.9rem; color: var(--purple-900); }
 .shortcuts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-@media (max-width: 1000px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-2 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) {
   .tiles { gap: 0.6rem; }
   .tile { padding: 0.9rem; }

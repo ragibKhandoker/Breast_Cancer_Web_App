@@ -328,6 +328,6 @@ h3 { margin: 0; font-size: 1.05rem; color: var(--purple-900); }
 .password-help { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 1.1rem; padding: 0.9rem 1rem; border-radius: 14px; background: var(--pink-50); border: 1px solid var(--border); }
 .password-help h4 { margin: 0; color: var(--purple-900); font-size: 0.95rem; }
 
-@media (max-width: 1000px) { .verify-layout { grid-template-columns: 1fr; } .people { max-height: 340px; } }
-@media (max-width: 520px) { .facts { grid-template-columns: 1fr; } .password-help { flex-direction: column; align-items: stretch; } }
+@media (max-width: 1000px) { .verify-layout { grid-template-columns: minmax(0, 1fr); } .people { max-height: 340px; } }
+@media (max-width: 520px) { .facts { grid-template-columns: minmax(0, 1fr); } .password-help { flex-direction: column; align-items: stretch; } }
 </style>

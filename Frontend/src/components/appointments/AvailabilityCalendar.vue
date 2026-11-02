@@ -201,6 +201,14 @@ onMounted(load)
 .slot-note { font-size: 0.66rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 
 @media (max-width: 720px) {
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+}
+/* Phones: seven days must fit in about 270px. */
+@media (max-width: 480px) {
+  .weekdays, .grid { gap: 0.22rem; }
+  .weekdays span { font-size: 0.6rem; letter-spacing: 0; }
+  .day { min-height: 0; border-radius: 9px; font-size: 0.8rem; }
+  .mon { display: none; }
+  .pip { bottom: 3px; width: 5px; height: 5px; }
 }
 </style>

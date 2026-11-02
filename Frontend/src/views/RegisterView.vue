@@ -391,7 +391,7 @@ async function submit() {
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (max-width: 880px) {
-  .shell { grid-template-columns: 1fr; max-width: 560px; }
+  .shell { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
   .visual-content { padding: 0 1.5rem 1.5rem; }
   .visual h2 { margin-bottom: 0; }
   .benefits, .trust { display: none; }
@@ -402,8 +402,8 @@ async function submit() {
   .visual h2 { font-size: 1.35rem; }
   .form-head h1 { font-size: 1.5rem; line-height: 1.25; }
   .form-side { padding: 1.75rem 1.25rem 1.5rem; }
-  .rules { grid-template-columns: 1fr; }
-  .account-types { grid-template-columns: 1fr; }
+  .rules { grid-template-columns: minmax(0, 1fr); }
+  .account-types { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   .visual-photo { animation: none; }

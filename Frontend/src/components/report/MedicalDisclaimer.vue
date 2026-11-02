@@ -15,4 +15,8 @@
   background: var(--warn-bg); color: var(--warn-text); font-size: 0.9rem; line-height: 1.5;
   box-shadow: 0 8px 24px rgba(42, 22, 80, 0.12);
 }
+/* Phones: same text, smaller, so it covers less of the report while it stays on screen. */
+@media (max-width: 640px) {
+  .disclaimer { margin-right: 3.9rem; padding: 0.5rem 0.7rem; border-left-width: 4px; font-size: 0.76rem; line-height: 1.35; }
+}
 </style>

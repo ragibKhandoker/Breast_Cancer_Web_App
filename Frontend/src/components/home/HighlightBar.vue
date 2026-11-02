@@ -41,7 +41,7 @@ const items = [
   .item:nth-child(n + 3) { border-top: 1px solid var(--border); }
 }
 @media (max-width: 520px) {
-  .highlights { grid-template-columns: 1fr; }
+  .highlights { grid-template-columns: minmax(0, 1fr); }
   .item + .item { border-left: 0; border-top: 1px solid var(--border); }
 }
 </style>

@@ -268,6 +268,6 @@ tr.off td { background: var(--pink-50); }
 .owner-tag { margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 4px; background: #fef3c7; color: #92400e; font-size: 0.72rem; font-weight: 700; }
 .reset-notice { margin: 0 0 0.75rem; }
 .create .btn { justify-content: center; }
-@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 520px) { .filters, .filters input { width: 100%; min-width: 0; } .filters select { flex: 1; } }
 </style>

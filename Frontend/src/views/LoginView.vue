@@ -375,7 +375,7 @@ async function submit() {
 .form-field input::placeholder { color: #b3aac4; }
 
 .password-block { display: grid; }
-.forgot { justify-self: end; margin-top: -0.55rem; margin-bottom: 0.3rem; color: var(--pink-600); font-size: 0.86rem; font-weight: 500; }
+.forgot { justify-self: end; margin-top: 0; margin-bottom: 0.3rem; color: var(--pink-600); font-size: 0.86rem; font-weight: 500; }
 .forgot:hover { text-decoration: underline; }
 
 /* "Log in as administrator", drawn as a card so it is easy to spot and tap. */
@@ -428,7 +428,7 @@ async function submit() {
 .switch { margin: 1.4rem 0 0; padding-top: 1.1rem; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.9rem; }
 
 @media (max-width: 880px) {
-  .shell { grid-template-columns: 1fr; max-width: 520px; }
+  .shell { grid-template-columns: minmax(0, 1fr); max-width: 520px; }
   .visual-frame { aspect-ratio: 16 / 7; }
   .visual-content { padding: 0 1.5rem 1.4rem; }
   .visual h2 { margin-bottom: 0; }
@@ -440,7 +440,7 @@ async function submit() {
   .visual h2 { font-size: 1.3rem; }
   .form-side { padding: 1.75rem 1.25rem 1.5rem; }
   .form-head h1 { font-size: 1.55rem; }
-  .join { grid-template-columns: 1fr; }
+  .join { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   .visual-photo { animation: none; }

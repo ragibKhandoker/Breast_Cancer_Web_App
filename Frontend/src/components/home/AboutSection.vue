@@ -54,7 +54,7 @@ h2 { color: var(--purple-900); font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0.
 .ribbon { transform: rotate(12deg); opacity: 0.95; }
 
 @media (max-width: 900px) {
-  .about { grid-template-columns: 1fr; text-align: center; }
+  .about { grid-template-columns: minmax(0, 1fr); text-align: center; }
   .copy p { margin-left: auto; margin-right: auto; }
   .ribbon { display: none; }
 }

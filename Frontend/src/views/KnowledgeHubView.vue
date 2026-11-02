@@ -271,7 +271,7 @@ h2 { margin: 0; color: #2a1650; font-size: 1.3rem; }
 .disclaimer-note { margin: 0; padding: 0.8rem 1rem; border-radius: 12px; background: #fff4e5; color: #6b3a00; text-align: center; font-size: 0.9rem; }
 
 @media (max-width: 720px) {
-  .continue { grid-template-columns: 1fr; }
+  .continue { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   .module-card, .bar span { transition: none; }

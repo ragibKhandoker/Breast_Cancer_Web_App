@@ -215,7 +215,7 @@ textarea:focus { outline: none; border-color: var(--pink-600); box-shadow: 0 0 0
 .decide { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
 .reject { background: var(--surface); border-color: #f5b5b0; color: var(--high); }
 .reject:hover { background: #fdecea; box-shadow: none; }
-@media (max-width: 960px) { .surgeon-review { grid-template-columns: 1fr; } .facts { grid-template-columns: 1fr; } }
+@media (max-width: 960px) { .surgeon-review { grid-template-columns: minmax(0, 1fr); } .facts { grid-template-columns: minmax(0, 1fr); } }
 .no-profile { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px dashed var(--border); }
 .no-profile h4 { display: flex; align-items: center; gap: 0.4rem; margin: 0; font-size: 0.92rem; color: var(--purple-900); }
 .no-profile > p { margin: 0.2rem 0 0.5rem; font-size: 0.82rem; }

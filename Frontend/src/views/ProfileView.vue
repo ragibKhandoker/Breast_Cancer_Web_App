@@ -586,16 +586,16 @@ onMounted(load)
 @media (max-width: 960px) {
   .hero-body { grid-template-columns: auto minmax(0, 1fr); }
   .completion { grid-column: 1 / -1; max-width: none; }
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
-  .hero-body { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 1rem; padding: 1.75rem 1.25rem 1.25rem; }
+  .hero-body { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 1rem; padding: 1.75rem 1.25rem 1.25rem; }
   .avatar { width: 88px; height: 88px; font-size: 1.9rem; }
   .identity h1 { font-size: 1.5rem; }
   .email, .badges { justify-content: center; }
   .completion { width: 100%; text-align: left; }
   .facts { grid-template-columns: 1fr 1fr; padding: 0.75rem; }
-  .row { grid-template-columns: 1fr; gap: 0; }
+  .row { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .actions { flex-direction: column-reverse; }
   .actions .btn { width: 100%; }
   .section { padding: 1.25rem; }

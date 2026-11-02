@@ -135,6 +135,6 @@ p { line-height: 1.75; margin: 0 0 1rem; }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
 
 @media (max-width: 820px) {
-  .overview, .problem { grid-template-columns: 1fr; }
+  .overview, .problem { grid-template-columns: minmax(0, 1fr); }
 }
 </style>

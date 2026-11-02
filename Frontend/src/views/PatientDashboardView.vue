@@ -108,5 +108,5 @@ h2 { color: var(--purple-900); margin: 2rem 0 0; font-size: 1.3rem; }
 .pill.requested { background: #fff4e5; color: #8a4b00; }
 .pill.reviewed { background: #e8f5e9; color: #1b5e20; }
 .open { color: var(--pink-600); font-weight: 600; text-decoration: underline; white-space: nowrap; }
-@media (max-width: 600px) { .review { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .review { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -243,5 +243,5 @@ watch(() => route.params.id, (id) => id && load(id), { immediate: true })
 .footer-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
 .footer-actions .link-danger { margin: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-@media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .layout { grid-template-columns: minmax(0, 1fr); } }
 </style>

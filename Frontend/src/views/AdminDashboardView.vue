@@ -210,9 +210,9 @@ onMounted(refreshCounts)
 .content-head p { margin: 0.15rem 0 0; }
 
 @media (max-width: 960px) {
-  .portal { grid-template-columns: 1fr; }
-  .sidebar { position: static; padding: 0.5rem; }
-  .tabs { display: flex; overflow-x: auto; gap: 0.3rem; }
+  .portal { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; padding: 0.5rem; min-width: 0; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0.3rem; }
   .group, .side-note { display: none; }
   .tabs button { flex: none; width: auto; }
 }
@@ -223,5 +223,8 @@ onMounted(refreshCounts)
   .avatar { width: 58px; height: 58px; font-size: 1.3rem; }
   .who h1 { font-size: 1.3rem; }
   .tab-icon { width: 28px; height: 28px; }
+  .tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tabs button { width: 100%; padding: 0.45rem 0.5rem; gap: 0.4rem; font-size: 0.8rem; line-height: 1.25; }
+  .tab-label { min-width: 0; overflow-wrap: break-word; hyphens: auto; }
 }
 </style>

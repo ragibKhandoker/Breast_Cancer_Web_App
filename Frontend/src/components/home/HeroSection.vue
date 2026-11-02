@@ -77,7 +77,7 @@ h1 { margin: 0; font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800; line-he
 
 @media (max-width: 860px) {
   .hero { padding: 2.5rem 0 5rem; }
-  .hero-inner { grid-template-columns: 1fr; text-align: center; }
+  .hero-inner { grid-template-columns: minmax(0, 1fr); text-align: center; }
   .copy p { margin-left: auto; margin-right: auto; }
   .cta { justify-content: center; }
   /* Single column: let the video or monitor size the box instead of a fixed height, so it never spills

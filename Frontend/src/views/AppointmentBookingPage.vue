@@ -177,11 +177,11 @@ async function submit() {
 .side li { display: flex; gap: 0.5rem; align-items: center; font-size: 0.88rem; }
 .side li :deep(svg) { flex: none; color: var(--pink-600); }
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
   .side { position: static; order: -1; }
 }
 @media (max-width: 560px) {
-  .summary { grid-template-columns: 1fr; }
+  .summary { grid-template-columns: minmax(0, 1fr); }
   .nav .btn { flex: 1; justify-content: center; }
 }
 </style>

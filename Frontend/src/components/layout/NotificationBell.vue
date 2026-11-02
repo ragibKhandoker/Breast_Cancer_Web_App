@@ -180,6 +180,9 @@ time { font-size: 0.72rem; color: var(--pink-600); font-weight: 500; }
 @media (max-width: 560px) {
   .panel { position: fixed; top: 76px; left: 12px; right: 12px; width: auto; }
 }
+@media (max-width: 420px) {
+  .bell { width: 38px; height: 38px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .bell.ringing :deep(svg) { animation: none; }
 }

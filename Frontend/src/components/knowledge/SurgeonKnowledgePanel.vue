@@ -104,12 +104,12 @@ onMounted(load)
 </template>
 
 <style scoped>
-.sk { display: grid; gap: 0.8rem; }
+.sk { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8rem; }
 h2 { margin: 0; font-size: 1.1rem; color: var(--purple-900); }
 h3 { margin: 0.6rem 0 0; font-size: 1rem; color: var(--purple-900); }
 .small { font-size: 0.86rem; margin: 0; }
 .start-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.start-row select { min-width: 260px; padding: 0.5rem 0.7rem; border: 1.5px solid #f3d4e3; border-radius: 10px; background: #fff; color: #2a1650; font: inherit; }
+.start-row select { flex: 1 1 260px; min-width: 0; max-width: 100%; padding: 0.5rem 0.7rem; border: 1.5px solid #f3d4e3; border-radius: 10px; background: #fff; color: #2a1650; font: inherit; }
 .go { background: #d81b6a; color: #fff; }
 .draft { display: grid; gap: 0.8rem; }
 .actions { display: flex; justify-content: flex-end; gap: 0.5rem; }

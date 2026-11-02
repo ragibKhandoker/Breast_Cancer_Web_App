@@ -224,6 +224,7 @@ onBeforeUnmount(stop)
 
 @media (max-width: 480px) {
   .chat { right: 0.75rem; bottom: 0.75rem; }
+  .launcher { width: 50px; height: 50px; }
   .panel { width: calc(100vw - 1.5rem); height: calc(100vh - 6rem); }
 }
 </style>

@@ -202,9 +202,9 @@ function book() {
 @media (max-width: 900px) {
   .hero { grid-template-columns: auto minmax(0, 1fr); }
   .book-box { grid-column: 1 / -1; }
-  .layout { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 520px) {
-  .hero { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 1.4rem; }
+  .hero { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; padding: 1.4rem; }
 }
 </style>
