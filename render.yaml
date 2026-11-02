@@ -6,8 +6,9 @@ services:
     name: breastcare-backend          # Render gave https://breastcare-backend-skx9.onrender.com (Frontend/vercel.json points here)
     runtime: docker
     rootDir: Backend
-    dockerfilePath: ./Backend/Dockerfile   # relative to the repo root
-    dockerContext: ./Backend
+    # With rootDir set, Render resolves these inside Backend/ ("./Backend/Dockerfile" failed as Backend/Backend).
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     # Free plan (512 MB): the site runs without the AI models (about 220 MB measured), and analyses answer
     # "not available". Running the five models here needs about 3 GB: plan 2c-4g plus HF_MODEL_REPO / HF_TOKEN.
     plan: free
