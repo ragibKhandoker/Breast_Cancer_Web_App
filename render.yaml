@@ -1,0 +1,38 @@
+# Render Blueprint for the BreastCare backend (Spring Boot + the ONNX models, one Docker service).
+# Render -> New -> Blueprint -> pick this GitHub repo. Values marked sync: false are asked for once in the dashboard
+# and never stored in Git. See DEPLOYMENT.md for every step.
+services:
+  - type: web
+    name: breastcare-backend          # gives https://breastcare-backend.onrender.com (Frontend/vercel.json points here)
+    runtime: docker
+    rootDir: Backend
+    dockerfilePath: ./Backend/Dockerfile   # relative to the repo root
+    dockerContext: ./Backend
+    # Free plan (512 MB): the site runs without the AI models (about 220 MB measured), and analyses answer
+    # "not available". Running the five models here needs about 3 GB: plan 2c-4g plus HF_MODEL_REPO / HF_TOKEN.
+    plan: free
+    region: singapore
+    branch: main
+    healthCheckPath: /actuator/health/liveness
+    autoDeploy: true
+    envVars:
+      - key: PORT                     # Render sends traffic to this port; the image's Spring Boot listens on 8080
+        value: "8080"
+      - key: MONGODB_URI              # MongoDB Atlas connection string (Atlas -> Connect -> Drivers)
+        sync: false
+      - key: JWT_SECRET               # signs login tokens; Render generates a long random value
+        generateValue: true
+      - key: AUTH_COOKIE_SECURE       # the site is HTTPS-only, so login cookies are Secure
+        value: "true"
+      - key: CORS_ORIGINS             # the Vercel site (Frontend/vercel.json forwards /api here)
+        value: https://breastcare-fawn.vercel.app
+      - key: JAVA_TOOL_OPTIONS        # keeps Java inside the free plan's 512 MB
+        value: "-XX:MaxRAMPercentage=60 -XX:MaxMetaspaceSize=160m -Xss512k -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+      - key: ADMIN_EMAIL              # first administrator, created once on the first start
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY           # optional: without it the chatbot answers from the Knowledge Hub
+        sync: false
+      - key: BACKUP_SCHEDULE          # Render's disk is temporary, so local backup files would be lost; off
+        value: "-"

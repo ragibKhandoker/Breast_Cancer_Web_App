@@ -26,9 +26,11 @@ RUN apt-get update \
     && groupadd --system --gid 10001 app \
     && useradd --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app \
     && mkdir -p /app /models /data/backups \
-    && chown -R app:app /app /data
+    && chown -R app:app /app /data /models
 WORKDIR /app
 COPY --from=build --chown=app:app /app.jar /app/app.jar
+# Checks the model files in /models, or downloads them from a private Hugging Face repo (HF_MODEL_REPO, HF_TOKEN).
+COPY --chmod=0755 scripts/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 # Non-secret defaults only. MONGODB_URI, JWT_SECRET, BACKUP_ENCRYPTION_KEY and other secrets come from the
 # environment (docker compose env_file / Kubernetes Secret), never from the image.
@@ -47,6 +49,6 @@ ENV SERVER_PORT=8080 \
 USER 10001:10001
 EXPOSE 8080
 # Liveness: the app is running (MongoDB is checked by readiness, so a database outage does not restart it).
-HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=300s --retries=3 \
     CMD curl -fsS http://127.0.0.1:8080/actuator/health/liveness || exit 1
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
