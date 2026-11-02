@@ -3,7 +3,7 @@
 # and never stored in Git. See DEPLOYMENT.md for every step.
 services:
   - type: web
-    name: breastcare-backend          # gives https://breastcare-backend.onrender.com (Frontend/vercel.json points here)
+    name: breastcare-backend          # Render gave https://breastcare-backend-skx9.onrender.com (Frontend/vercel.json points here)
     runtime: docker
     rootDir: Backend
     dockerfilePath: ./Backend/Dockerfile   # relative to the repo root

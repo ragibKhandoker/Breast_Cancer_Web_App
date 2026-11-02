@@ -26,7 +26,7 @@ How a request flows after deployment:
 Browser → https://<your-site>.vercel.app
           ├─ pages, JS, CSS      (served by Vercel)
           └─ /api/...            (Vercel forwards it to Render)
-                 → https://breastcare-backend.onrender.com  (Spring Boot + ONNX models)
+                 → https://breastcare-backend-skx9.onrender.com  (Spring Boot + ONNX models)
                         → MongoDB Atlas  (accounts, scans, images, reports)
 ```
 
@@ -108,9 +108,9 @@ The deployment files are `render.yaml`, `Frontend/vercel.json`, `Backend/scripts
 4. **Apply**. The first build takes about 10 minutes. Then the service downloads the models and starts.
    In **Logs** you should see `Starting without mammogram analysis` followed by the Spring Boot start-up
    (or `Downloading model files ...` once `HF_MODEL_REPO` is set).
-5. The backend address is shown at the top, e.g. `https://breastcare-backend.onrender.com`.
+5. The backend address is shown at the top, e.g. `https://breastcare-backend-skx9.onrender.com`.
    **If it is different**, change the `destination` of the `/api` rule in `Frontend/vercel.json` and push again.
-6. Check it: open `https://breastcare-backend.onrender.com/actuator/health`. It should show `{"status":"UP"}`.
+6. Check it: open `https://breastcare-backend-skx9.onrender.com/actuator/health`. It should show `{"status":"UP"}`.
 
 Build and start commands (already in the Dockerfile; Render runs them):
 - build: `mvn -B -Dmaven.test.skip=true package`
@@ -161,7 +161,7 @@ Frontend: no variables.
 Do these on the deployed site and tick them yourself:
 
 1. [ ] `https://<site>.vercel.app` opens; refreshing on `/knowledge` or `/login` still works (SPA fallback).
-2. [ ] `https://breastcare-backend.onrender.com/actuator/health` → `UP`.
+2. [ ] `https://breastcare-backend-skx9.onrender.com/actuator/health` → `UP`.
 3. [ ] `https://<site>.vercel.app/api/knowledge/modules` returns JSON (Vercel → Render forwarding works).
 4. [ ] Register a patient account; log in; log out; log in again.
 5. [ ] Upload a mammogram from `/prediction`. A result (Benign or Malignant with the probability) appears after up to
@@ -194,5 +194,5 @@ Do these on the deployed site and tick them yourself:
 Fill these in after deploying:
 
 - Website: `https://…vercel.app`
-- Backend health: `https://breastcare-backend.onrender.com/actuator/health`
+- Backend health: `https://breastcare-backend-skx9.onrender.com/actuator/health`
 - Model repo (private): `https://huggingface.co/<user>/breastcare-models`
